@@ -50,8 +50,19 @@ class BrowserSmokeTest {
 
     private fun js(code: String) = main { BrowserState.current?.view?.evaluateJavascript(code, null) }
 
+    /** Memory of this (the app's) process every second, to see what grows. */
+    private fun sampleMemory(): Thread = Thread {
+        while (!Thread.currentThread().isInterrupted) {
+            val rss = runCatching { java.io.File("/proc/self/status").readLines().firstOrNull { it.startsWith("VmRSS") }?.substringAfter(":")?.trim() }.getOrNull()
+            val rt = Runtime.getRuntime()
+            println("KU-MEM rss=$rss java=${(rt.totalMemory() - rt.freeMemory()) / 1_048_576}MB native=${android.os.Debug.getNativeHeapAllocatedSize() / 1_048_576}MB threads=${Thread.activeCount()}")
+            try { Thread.sleep(1000) } catch (_: InterruptedException) { break }
+        }
+    }.apply { isDaemon = true; start() }
+
     @Test
     fun youtubeSearchVideoAndTabs() {
+        val sampler = sampleMemory()
         val ctx = inst.targetContext
         Prefs.init(ctx)
         Prefs.welcomed.value = true
@@ -124,5 +135,6 @@ class BrowserSmokeTest {
             main { tabs = BrowserState.tabs.size }
             assertTrue(tabs >= 5)
         }
+        sampler.interrupt()
     }
 }

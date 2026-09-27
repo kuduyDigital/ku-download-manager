@@ -564,13 +564,28 @@ private val TILE_COLORS = listOf(
     Color(0xFFD6409F), Color(0xFF6F6E77),
 )
 
+/** Well-known sites keep their own colours. */
+private val BRAND_COLORS = mapOf(
+    "youtube.com" to listOf(Color(0xFFFF3B30), Color(0xFFD70015)),
+    "youtu.be" to listOf(Color(0xFFFF3B30), Color(0xFFD70015)),
+    "instagram.com" to listOf(Color(0xFFFEDA75), Color(0xFFD62976), Color(0xFF4F5BD5)),
+    "tiktok.com" to listOf(Color(0xFF2B2B2B), Color(0xFF000000)),
+    "facebook.com" to listOf(Color(0xFF1877F2), Color(0xFF0B5BD3)),
+    "x.com" to listOf(Color(0xFF2B2B2B), Color(0xFF000000)),
+    "twitter.com" to listOf(Color(0xFF2B2B2B), Color(0xFF000000)),
+    "vimeo.com" to listOf(Color(0xFF1AB7EA), Color(0xFF0E8DB8)),
+    "reddit.com" to listOf(Color(0xFFFF5700), Color(0xFFE04300)),
+    "soundcloud.com" to listOf(Color(0xFFFF8800), Color(0xFFFF3300)),
+)
+
 /** A rounded-square tile with the site's initial (a stand-in for its icon). */
 @Composable
 private fun SiteTile(name: String, url: String, size: Int) {
     val key = host(url).ifBlank { name }
-    val c = TILE_COLORS[(key.hashCode() and Int.MAX_VALUE) % TILE_COLORS.size]
+    val brand = BRAND_COLORS.entries.firstOrNull { (k, _) -> key == k || key.endsWith(".$k") }?.value
+    val colors = brand ?: TILE_COLORS[(key.hashCode() and Int.MAX_VALUE) % TILE_COLORS.size].let { listOf(it, lerp(it, Color.Black, 0.18f)) }
     Box(
-        Modifier.size(size.dp).clip(RoundedCornerShape((size * 0.26f).dp)).background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(c, lerp(c, Color.Black, 0.18f)))),
+        Modifier.size(size.dp).clip(RoundedCornerShape((size * 0.26f).dp)).background(androidx.compose.ui.graphics.Brush.linearGradient(colors)),
         contentAlignment = Alignment.Center,
     ) {
         Text(

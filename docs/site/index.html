@@ -28,6 +28,7 @@
         <a href="#features">Features</a>
         <a href="#airsend">KuAirSend</a>
         <a href="#download">Download</a>
+        <a href="docs.html">Docs</a>
         <a href="https://github.com/kuduyDigital/ku-download-manager">GitHub</a>
       </nav>
       <a class="pill dark small" href="#download" data-os-link>Download <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></a>
@@ -35,7 +36,7 @@
   </header>
 
   <main id="main">
-    <!-- Hero: a field of small dashes that drift and swirl away from the pointer. -->
+    <!-- Hero: a star field that drifts with the pointer. -->
     <section class="hero">
       <canvas class="field" data-field aria-hidden="true"></canvas>
       <div class="hero-copy">
@@ -243,7 +244,7 @@
       </div>
     </section>
 
-    <!-- Closing call to action over its own dash field. -->
+    <!-- Closing call to action under the same stars. -->
     <section class="final">
       <canvas class="field" data-field data-dense aria-hidden="true"></canvas>
       <div class="final-copy reveal">
@@ -257,14 +258,31 @@
   </main>
 
   <footer class="foot">
+    <canvas class="field" data-field aria-hidden="true"></canvas>
     <div class="foot-inner">
-      <a class="brand" href="./"><img src="icon.svg" width="26" height="26" alt=""> <span>KuDownloader</span></a>
-      <div class="cols">
-        <div><h4>Product</h4><a href="#download">Download</a><a href="#features">Features</a><a href="#airsend">KuAirSend</a><a href="https://github.com/kuduyDigital/ku-download-manager/releases">Changelog</a></div>
-        <div><h4>Project</h4><a href="https://github.com/kuduyDigital/ku-download-manager">Source code</a><a href="https://github.com/kuduyDigital/ku-download-manager/issues">Report a problem</a><a href="privacy.html">Privacy</a></div>
+      <div class="foot-brand">
+        <a class="brand" href="./"><img src="icon.svg" width="30" height="30" alt=""> <span>KuDownloader</span></a>
+        <p>The fast, free download manager for your computer and your phone. No ads, no accounts, no tracking.</p>
+        <div class="foot-os" aria-label="Available for">
+          <span>Windows</span><span>macOS</span><span>Linux</span><span>Android</span>
+        </div>
+        <a class="pill light small gh" href="https://github.com/kuduyDigital/ku-download-manager">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.1-1.47-1.1-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.3 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.75c0 .27.18.58.69.48A10 10 0 0 0 12 2z"/></svg>
+          Star on GitHub
+        </a>
       </div>
+      <nav class="cols" aria-label="Footer">
+        <div><h4>Product</h4><a href="./#download">Download</a><a href="./#features">Features</a><a href="./#airsend">KuAirSend</a><a href="https://github.com/kuduyDigital/ku-download-manager/releases">Changelog</a></div>
+        <div><h4>Help</h4><a href="docs.html">Documentation</a><a href="docs.html#install">Install guide</a><a href="docs.html#faq">Troubleshooting</a><a href="https://github.com/kuduyDigital/ku-download-manager/issues">Report a problem</a></div>
+        <div><h4>Project</h4><a href="https://github.com/kuduyDigital/ku-download-manager">Source code</a><a href="https://kuduy.com/">Kuduy</a><a href="https://github.com/kuduyDigital">Kuduy on GitHub</a><a href="privacy.html">Privacy</a></div>
+      </nav>
     </div>
-    <p class="copy">KuDownloader · Free and open source</p>
+    <div class="foot-word" aria-hidden="true">KuDownloader</div>
+    <div class="foot-bar">
+      <span>© <span data-year>2026</span> KuDownloader · Free and open source</span>
+      <span class="made">Made with <span class="heart" aria-label="love">♥</span> by <a href="https://kuduy.com/"><b>Kuduy</b></a></span>
+      <a class="to-top" href="#" aria-label="Back to top"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m0 0-6 6m6-6 6 6"/></svg></a>
+    </div>
   </footer>
 </body>
 </html>

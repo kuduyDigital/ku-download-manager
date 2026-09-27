@@ -31,6 +31,12 @@ import digital.kuduy.kudownloader.i18n.t
 
 /** What changed in each version (newest first), shown once after an update. */
 private val NOTES = listOf(
+    "0.2.12" to listOf(
+        "The browser no longer closes the app when a heavy page (like YouTube) runs out of memory: the page reloads instead.",
+        "A smaller download button: a pulsing circle in the corner.",
+        "Tidier address bar, and choices open as a sheet instead of a dropdown at the edge.",
+        "If the app ever closes unexpectedly, you can share a report so it can be fixed.",
+    ),
     "0.2.11" to listOf(
         "Choose the video quality right in the browser; it also shows up much faster.",
         "A new page loading bar, and the address can be edited on web pages again.",

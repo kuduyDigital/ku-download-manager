@@ -3,6 +3,8 @@ package digital.kuduy.kudownloader.ui
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -199,17 +201,35 @@ fun ClickRow(title: String, subtitle: String? = null, icon: ImageVector? = null,
 @Composable
 fun <T> ChoiceRow(title: String, value: T, choices: List<Pair<T, String>>, subtitle: String? = null, onChange: (T) -> Unit) {
     var open by remember { mutableStateOf(false) }
-    Box {
-        ClickRow(title, subtitle ?: choices.firstOrNull { it.first == value }?.second ?: value.toString()) { open = true }
-        DropdownMenu(open, { open = false }) {
-            choices.forEach { (v, label) ->
-                DropdownMenuItem(
-                    text = { Text(label, fontWeight = if (v == value) FontWeight.SemiBold else FontWeight.Normal) },
-                    onClick = {
-                        open = false
-                        onChange(v)
-                    },
-                )
+    ClickRow(title, subtitle ?: choices.firstOrNull { it.first == value }?.second ?: value.toString()) { open = true }
+    if (open) ChoiceSheet(title, value, choices, { open = false }) { onChange(it) }
+}
+
+/**
+ * Pick one of a few options: a bottom sheet with the current choice ticked
+ * (a dropdown anchored to a full-width row opens at the far left edge).
+ */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+fun <T> ChoiceSheet(title: String, value: T, choices: List<Pair<T, String>>, onDismiss: () -> Unit, onPick: (T) -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    androidx.compose.material3.ModalBottomSheet(onDismissRequest = onDismiss, containerColor = scheme.surfaceContainerLow) {
+        Column(Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
+            Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 8.dp))
+            Column(Modifier.verticalScroll(androidx.compose.foundation.rememberScrollState())) {
+                choices.forEach { (v, label) ->
+                    val selected = v == value
+                    Row(
+                        Modifier.fillMaxWidth().clickable {
+                            onPick(v)
+                            onDismiss()
+                        }.padding(horizontal = 24.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(label, style = MaterialTheme.typography.bodyLarge, fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal, color = if (selected) scheme.primary else scheme.onSurface, modifier = Modifier.weight(1f))
+                        if (selected) Icon(androidx.compose.material.icons.Icons.Filled.Check, null, tint = scheme.primary)
+                    }
+                }
             }
         }
     }

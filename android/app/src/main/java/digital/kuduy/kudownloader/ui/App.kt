@@ -231,6 +231,27 @@ private fun Main() {
     val welcomed by Prefs.welcomed.state.collectAsStateWithLifecycle()
     if (!welcomed) WelcomeDialog { Prefs.welcomed.value = true }
     // After an update: what changed (checked once per start).
+    // The app crashed last time: offer the report (it helps fix the cause).
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    var crash by remember { androidx.compose.runtime.mutableStateOf(runCatching { java.io.File(ctx.filesDir, digital.kuduy.kudownloader.CRASH_FILE).takeIf { it.exists() }?.readText() }.getOrNull()) }
+    crash?.let { report ->
+        val dismiss = {
+            runCatching { java.io.File(ctx.filesDir, digital.kuduy.kudownloader.CRASH_FILE).delete() }
+            crash = null
+        }
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = dismiss,
+            title = { Text(t("KuDownloader closed unexpectedly")) },
+            text = { Text(t("Share the report so the problem can be fixed.")) },
+            confirmButton = {
+                androidx.compose.material3.TextButton({
+                    digital.kuduy.kudownloader.core.Files.shareText(ctx, report)
+                    dismiss()
+                }) { Text(t("Share report")) }
+            },
+            dismissButton = { androidx.compose.material3.TextButton(dismiss) { Text(t("Close")) } },
+        )
+    }
     val notes = remember { pendingWhatsNew() }
     var showNotes by remember { androidx.compose.runtime.mutableStateOf(notes != null) }
     if (showNotes && notes != null && welcomed) WhatsNewDialog(notes) { showNotes = false }

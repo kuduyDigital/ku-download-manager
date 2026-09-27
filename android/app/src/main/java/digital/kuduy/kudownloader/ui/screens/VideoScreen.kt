@@ -320,7 +320,7 @@ fun VideoScreen() {
                     }
                 }
                 if (mode == "video") {
-                    items(i.video, key = { "v${it.height}" }) { v ->
+                    items(i.video) { v ->
                         Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).clickable { height = v.height }.padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(height == v.height, { height = v.height })
                             Column(Modifier.weight(1f)) {
@@ -410,12 +410,8 @@ fun ChoiceLine(label: String, value: String, options: List<Pair<String, String>>
     var open by remember { mutableStateOf(false) }
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(label, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-        Box {
-            TextButton({ open = true }) { Text(options.firstOrNull { it.first == value }?.second ?: value) }
-            DropdownMenu(open, { open = false }) {
-                options.forEach { (v, l) -> DropdownMenuItem({ Text(l) }, { open = false; onPick(v) }) }
-            }
-        }
+        TextButton({ open = true }) { Text(options.firstOrNull { it.first == value }?.second ?: value, maxLines = 1, overflow = TextOverflow.Ellipsis) }
     }
+    if (open) digital.kuduy.kudownloader.ui.ChoiceSheet(label, value, options, { open = false }) { onPick(it) }
 }
 

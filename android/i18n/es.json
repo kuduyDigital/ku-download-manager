@@ -360,5 +360,8 @@
  "Mocha": "Moca",
  "Nord": "Nord",
  "Ocean": "Océano",
- "Cyberpunk": "Cyberpunk"
+ "Cyberpunk": "Cyberpunk",
+ "KuDownloader closed unexpectedly": "KuDownloader se cerró inesperadamente",
+ "Share the report so the problem can be fixed.": "Comparte el informe para que se pueda corregir el problema.",
+ "Share report": "Compartir informe"
 }

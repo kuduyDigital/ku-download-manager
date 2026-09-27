@@ -148,7 +148,13 @@ private fun Appearance() {
     val dynamic by Prefs.dynamicColor.state.collectAsStateWithLifecycle()
     ChoiceRow(t("Theme"), s.str("theme", "system"), listOf("system" to t("System"), "light" to t("Light"), "dark" to t("Dark"))) { save(mapOf("theme" to it)) }
     SectionTitle(t("Accent colour"))
-    Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+    // Wraps onto a second line on narrow screens instead of running off the edge.
+    @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+    androidx.compose.foundation.layout.FlowRow(
+        Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
         ACCENTS.forEach { (name, color) ->
             val chosen = s.str("accent", "blue") == name && !dynamic
             Box(

@@ -7,6 +7,8 @@
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 
+  $$("[data-year]").forEach((y) => (y.textContent = String(new Date().getFullYear())));
+
   // ───────── Navigation shadow once the page moves ─────────
   const nav = $("[data-nav]");
   const onScrollNav = () => nav.classList.toggle("scrolled", scrollY > 8);
@@ -139,14 +141,18 @@
 
   // ───────── Docs: highlight the section being read ─────────
   const tocLinks = $$(".toc a");
-  if (tocLinks.length) {
-    const byId = new Map(tocLinks.map((a) => [a.getAttribute("href").slice(1), a]));
-    const spy = new IntersectionObserver((entries) => entries.forEach((e) => {
-      if (!e.isIntersecting) return;
-      tocLinks.forEach((a) => a.classList.remove("on"));
-      byId.get(e.target.id)?.classList.add("on");
-    }), { rootMargin: "-20% 0px -70% 0px" });
-    $$(".docs-body section[id]").forEach((s) => spy.observe(s));
+  const docSections = $$(".docs-body section[id]");
+  if (tocLinks.length && docSections.length) {
+    const spy = () => {
+      // The last section whose top has passed a third of the way down the window.
+      const line = innerHeight * 0.33;
+      let current = docSections[0];
+      for (const s of docSections) if (s.getBoundingClientRect().top <= line) current = s;
+      tocLinks.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === `#${current.id}`));
+    };
+    addEventListener("scroll", spy, { passive: true });
+    addEventListener("resize", spy);
+    spy();
   }
   // ───────── The product frame stands up as it scrolls into view ─────────
   const frameEl = $("[data-tilt]");

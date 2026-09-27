@@ -43,7 +43,8 @@ body {
   color: var(--text);
   font: 400 17px/1.6 var(--body);
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  /* clip, not hidden: hidden makes the body a scroll box and breaks sticky. */
+  overflow-x: clip;
 }
 img { max-width: 100%; height: auto; display: block; }
 a { color: inherit; }
@@ -114,21 +115,28 @@ h3 { font: 600 20px/1.3 var(--display); letter-spacing: -0.01em; margin: 0; }
   text-align: center; padding: 120px 20px 80px; overflow: hidden;
 }
 .field { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-/* Night sky behind the stars: a soft glow rising from below. */
+/* Night sky behind the stars: a soft glow, and edges that fade into the page
+   (no hard line where the sky ends). */
 .hero, .final, .foot {
   background:
-    radial-gradient(ellipse 80% 60% at 50% 115%, rgba(37, 99, 235, 0.10), transparent 70%),
-    radial-gradient(ellipse 50% 40% at 85% -10%, rgba(124, 58, 237, 0.06), transparent 70%);
+    radial-gradient(ellipse 70% 55% at 50% 78%, rgba(37, 99, 235, 0.09), transparent 70%),
+    radial-gradient(ellipse 45% 40% at 85% 5%, rgba(124, 58, 237, 0.05), transparent 70%);
 }
 @media (prefers-color-scheme: dark) {
   .hero, .final, .foot {
     background:
-      radial-gradient(ellipse 80% 60% at 50% 115%, rgba(59, 130, 246, 0.22), transparent 70%),
-      radial-gradient(ellipse 50% 40% at 85% -10%, rgba(139, 92, 246, 0.16), transparent 70%),
-      #07080d;
+      radial-gradient(ellipse 70% 55% at 50% 78%, rgba(59, 130, 246, 0.16), transparent 70%),
+      radial-gradient(ellipse 45% 40% at 85% 5%, rgba(139, 92, 246, 0.12), transparent 70%),
+      linear-gradient(180deg, #06070b 0%, var(--bg) 100%);
   }
+  .final, .foot { background-color: var(--bg); }
 }
-.hero-copy { position: relative; z-index: 1; max-width: 1000px; }
+.hero::after, .final::before, .foot::before {
+  content: ""; position: absolute; left: 0; right: 0; height: 200px; pointer-events: none;
+}
+.hero::after { bottom: 0; background: linear-gradient(180deg, transparent, var(--bg)); }
+.final::before, .foot::before { top: 0; background: linear-gradient(0deg, transparent, var(--bg)); }
+.foot::before { height: 120px; }.hero-copy { position: relative; z-index: 1; max-width: 1000px; }
 .eyebrow { display: inline-flex; align-items: center; gap: 9px; font: 500 18px/1 var(--display); color: var(--text-2); margin: 0 0 30px; }
 .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 38px; }
 
@@ -306,18 +314,52 @@ h3 { font: 600 20px/1.3 var(--display); letter-spacing: -0.01em; margin: 0; }
 
 /* ───────── Footer ───────── */
 .foot { position: relative; overflow: hidden; border-top: 1px solid var(--line); }
-.foot-inner, .foot .copy { position: relative; z-index: 1; }
-.foot-inner { max-width: var(--max); margin: 0 auto; padding: 56px 24px 24px; display: flex; justify-content: space-between; gap: 40px; flex-wrap: wrap; }
-.cols { display: flex; gap: 72px; flex-wrap: wrap; }
-.cols h4 { margin: 0 0 14px; font-size: 14px; color: var(--text-3); font-weight: 500; }
-.cols a { display: block; text-decoration: none; color: var(--text-2); font-size: 15px; margin-bottom: 10px; }
-.cols a:hover { color: var(--text); }
-.copy { max-width: var(--max); margin: 0 auto; padding: 18px 24px 40px; color: var(--text-3); font-size: 14px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.foot-inner, .foot-bar, .foot-word { position: relative; z-index: 1; }
+.foot-inner {
+  max-width: var(--max); margin: 0 auto; padding: 72px 24px 40px;
+  display: grid; grid-template-columns: minmax(260px, 1.1fr) 2fr; gap: 56px;
+}
+.foot-brand { display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
+.foot-brand .brand { font-size: 20px; }
+.foot-brand p { margin: 0; color: var(--text-2); font-size: 15px; max-width: 340px; }
+.foot-os { display: flex; flex-wrap: wrap; gap: 6px; }
+.foot-os span { font-size: 12.5px; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--text-2); background: color-mix(in srgb, var(--bg-card) 70%, transparent); }
+.pill.gh { gap: 8px; margin-top: 4px; }
+.pill.gh svg { width: 18px; height: 18px; }
+.cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+.cols h4 { margin: 4px 0 16px; font: 600 13px/1 var(--display); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+.cols a { display: block; width: fit-content; text-decoration: none; color: var(--text-2); font-size: 15px; margin-bottom: 11px; transition: color 0.2s, transform 0.2s var(--ease); }
+.cols a:hover { color: var(--text); transform: translateX(3px); }
+/* A huge, faded wordmark along the bottom edge. */
+.foot-word {
+  max-width: var(--max); margin: 0 auto; padding: 0 24px; text-align: center; user-select: none;
+  font: 600 clamp(56px, 13.5vw, 184px)/0.9 var(--display); letter-spacing: -0.055em; white-space: nowrap;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--text) 16%, transparent), transparent 88%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  margin-bottom: -0.12em;
+}
+.foot-bar {
+  max-width: var(--max); margin: 0 auto; padding: 18px 24px 28px; border-top: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  color: var(--text-3); font-size: 14px;
+}
 .made { color: var(--text-2); }
 .made b { color: var(--text); font-weight: 600; }
 .made a { text-decoration: none; }
 .made a:hover b { color: var(--blue); }
-
+.heart { color: #ef4444; display: inline-block; animation: beat 1.6s ease-in-out infinite; }
+@keyframes beat { 0%, 60%, 100% { transform: scale(1); } 10% { transform: scale(1.25); } 20% { transform: scale(1); } 30% { transform: scale(1.15); } }
+.top { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--line); color: var(--text-2); transition: background 0.2s, color 0.2s, transform 0.25s var(--ease); }
+.top:hover { background: var(--bg-soft); color: var(--text); transform: translateY(-3px); }
+.top svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+@media (max-width: 860px) {
+  .foot-inner { grid-template-columns: 1fr; gap: 40px; padding-top: 56px; }
+}
+@media (max-width: 520px) {
+  .cols { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .foot-bar { justify-content: center; text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) { .heart { animation: none; } }
 /* ───────── Scroll reveal ───────── */
 .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.9s var(--ease), transform 0.9s var(--ease); }
 .reveal.in { opacity: 1; transform: none; }
@@ -345,7 +387,7 @@ h3 { font: 600 20px/1.3 var(--display); letter-spacing: -0.01em; margin: 0; }
 /* ───────── Documentation ───────── */
 .docs { max-width: var(--max); margin: 0 auto; padding: 110px 24px 80px; display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 56px; align-items: start; }
 .docs > * { min-width: 0; }
-.toc { position: sticky; top: 96px; display: flex; flex-direction: column; gap: 2px; }
+.toc { position: sticky; top: 96px; display: flex; flex-direction: column; gap: 2px; max-height: calc(100vh - 120px); overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
 .toc-title { margin: 0 0 10px; font: 600 13px/1 var(--display); letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-3); }
 .toc a { padding: 7px 12px; border-radius: 10px; color: var(--text-2); text-decoration: none; font-size: 15px; transition: background 0.2s, color 0.2s; }
 .toc a:hover { background: var(--bg-soft); color: var(--text); }
@@ -368,7 +410,7 @@ h3 { font: 600 20px/1.3 var(--display); letter-spacing: -0.01em; margin: 0; }
 .docs-body details p { margin: 0 0 16px; }
 @media (max-width: 900px) {
   .docs { grid-template-columns: 1fr; gap: 24px; padding-top: 96px; }
-  .toc { position: static; flex-direction: row; flex-wrap: wrap; gap: 6px; }
+  .toc { position: static; max-height: none; overflow: visible; flex-direction: row; flex-wrap: wrap; gap: 6px; }
   .toc-title { width: 100%; }
   .toc a { background: var(--bg-soft); font-size: 14px; }
 }

@@ -57,7 +57,9 @@ jobs:
         with:
           api-level: 34
           arch: x86_64
-          target: google_apis
+          # Plain Android: no Play services, which restarts itself on a fresh
+          # emulator and takes every app using its font provider (WebView) down.
+          target: default
           ram-size: 4096M
           disk-size: 6000M
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot

@@ -31,6 +31,11 @@ import digital.kuduy.kudownloader.i18n.t
 
 /** What changed in each version (newest first), shown once after an update. */
 private val NOTES = listOf(
+    "0.2.11" to listOf(
+        "Choose the video quality right in the browser; it also shows up much faster.",
+        "A new page loading bar, and the address can be edited on web pages again.",
+        "Cyberpunk theme: neon KuAirSend animals, a radar scanner and a glitching loading bar.",
+    ),
     "0.2.10" to listOf(
         "Fixed screen titles sitting under the status bar on some phones.",
         "Buttons no longer squeeze on small screens.",

@@ -4,6 +4,15 @@
  */
 export const WHATS_NEW: { version: string; items: string[] }[] = [
   {
+    version: "0.2.11",
+    items: [
+      "Cyberpunk theme: glitching neon progress bars, network card and percentages.",
+      "KuAirSend in Cyberpunk: neon cyber-animals and a radar scanner with a glowing beam.",
+      "Android: choose the video quality right in the browser, and it shows up much faster.",
+      "Android: a new page loading bar, and the address can be edited on web pages again.",
+    ],
+  },
+  {
     version: "0.2.10",
     items: [
       "The Download File and progress windows fit any size: make them small and the details scroll, the buttons stay.",

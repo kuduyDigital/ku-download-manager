@@ -222,18 +222,28 @@ fun VideoScreen() {
                 )
             }
             item {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                // The playlist switch and the button share a line when both fit, and
+                // wrap onto two lines on narrow screens or with long translations.
+                FlowRow(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    itemVerticalAlignment = Alignment.CenterVertically,
+                ) {
                     if (url.contains("list=") || playlist) {
-                        Switch(playlist, { playlist = it })
-                        Spacer(Modifier.width(8.dp))
-                        Text(t("Whole playlist"), Modifier.weight(1f))
-                    } else {
-                        Spacer(Modifier.weight(1f))
+                        Row(
+                            Modifier.weight(1f, fill = false).clip(RoundedCornerShape(12.dp)).clickable { playlist = !playlist }.padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Switch(playlist, { playlist = it })
+                            Spacer(Modifier.width(10.dp))
+                            Text(t("Whole playlist"), maxLines = 2)
+                        }
                     }
                     Button({ analyze() }, enabled = url.isNotBlank() && !loading) {
-                        Icon(Icons.Filled.Search, null)
+                        Icon(Icons.Filled.Search, null, Modifier.size(18.dp))
                         Spacer(Modifier.width(6.dp))
-                        Text(t("Find formats"))
+                        Text(t("Find formats"), maxLines = 1)
                     }
                 }
             }

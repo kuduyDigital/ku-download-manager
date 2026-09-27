@@ -9,6 +9,7 @@ import digital.kuduy.kudownloader.i18n.I18n
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -376,8 +377,41 @@ object Ku {
     suspend fun probe(url: String, options: JsonObject? = null): ProbeInfo = get("probeUrl", args("url" to url, "options" to options))
     suspend fun add(req: JsonObject): Download = get("addDownload", args("req" to req))
     suspend fun addBatch(urls: List<String>, template: JsonObject): JsonObject = call("addBatch", args("urls" to urls, "template" to template)).jsonObject
-    suspend fun analyze(url: String, playlist: Boolean, cookies: List<BrowserCookie> = emptyList(), referer: String? = null): MediaInfo =
-        get("mediaAnalyze", args("url" to url, "playlist" to playlist, "cookies" to json.encodeToJsonElement(cookies), "referer" to referer))
+    /**
+     * Reading a page's formats runs yt-dlp (seconds on a phone). Results are
+     * kept for 10 minutes and a check already running is shared, so the browser
+     * can start it early and "Choose quality" shows the answer at once.
+     */
+    private val mediaCache = java.util.concurrent.ConcurrentHashMap<String, Pair<Long, kotlinx.coroutines.Deferred<MediaInfo>>>()
+
+    suspend fun analyze(url: String, playlist: Boolean, cookies: List<BrowserCookie> = emptyList(), referer: String? = null): MediaInfo {
+        val key = "$playlist|$url"
+        val now = System.currentTimeMillis()
+        mediaCache[key]?.let { (at, job) ->
+            val failed = job.isCompleted && job.getCompletionExceptionOrNull() != null
+            if (now - at < 10 * 60_000 && !failed) return job.await()
+        }
+        val job = scope.async { get<MediaInfo>("mediaAnalyze", args("url" to url, "playlist" to playlist, "cookies" to json.encodeToJsonElement(cookies), "referer" to referer)) }
+        mediaCache[key] = now to job
+        if (mediaCache.size > 30) mediaCache.entries.sortedBy { it.value.first }.take(mediaCache.size - 30).forEach { mediaCache.remove(it.key) }
+        return try {
+            job.await()
+        } catch (e: Exception) {
+            mediaCache.remove(key)
+            throw e
+        }
+    }
+
+    /** Start reading a video page's formats in the background (the browser, on a video page). */
+    fun prefetchMedia(url: String, cookies: List<BrowserCookie>, referer: String?) {
+        if (toolsState.value?.videoReady != true) return
+        scope.launch { runCatching { analyze(url, false, cookies, referer) } }
+    }
+
+    /** The result for [url] if it is already known (no waiting). */
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    fun cachedMedia(url: String): MediaInfo? =
+        mediaCache["false|$url"]?.second?.takeIf { it.isCompleted && it.getCompletionExceptionOrNull() == null }?.getCompleted()
     suspend fun addMedia(req: JsonObject): Download = get("mediaDownload", args("req" to req))
     suspend fun grab(url: String): List<GrabLink> = get("grabPage", args("url" to url))
     suspend fun extractLinks(html: String, base: String): List<GrabLink> = get("extractLinks", args("html" to html, "base" to base))

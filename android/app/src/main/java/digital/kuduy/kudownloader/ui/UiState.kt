@@ -60,6 +60,8 @@ object UiState {
 
     var add by mutableStateOf<AddPrefill?>(null)
     var media by mutableStateOf<MediaPrefill?>(null)
+    /** Quality picker over the current screen (the browser's Download button). */
+    var quality by mutableStateOf<MediaPrefill?>(null)
     var grab by mutableStateOf<GrabPrefill?>(null)
     var batch by mutableStateOf<List<String>?>(null)
     var details by mutableStateOf<String?>(null)

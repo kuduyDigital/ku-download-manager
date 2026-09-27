@@ -68,6 +68,7 @@ import digital.kuduy.kudownloader.ui.screens.DetailsSheet
 import digital.kuduy.kudownloader.ui.screens.DownloadsScreen
 import digital.kuduy.kudownloader.ui.screens.FetchScreen
 import digital.kuduy.kudownloader.ui.screens.MoreScreen
+import digital.kuduy.kudownloader.ui.screens.QualitySheet
 import digital.kuduy.kudownloader.ui.screens.QueuesScreen
 import digital.kuduy.kudownloader.ui.screens.RemoteSendSheet
 import digital.kuduy.kudownloader.ui.screens.SettingsScreen
@@ -223,6 +224,7 @@ private fun Main() {
     }
 
     UiState.add?.let { AddSheet(it) { UiState.add = null } }
+    UiState.quality?.let { QualitySheet(it) { UiState.quality = null } }
     UiState.details?.let { id -> DetailsSheet(id) { UiState.details = null } }
     AirSendPrompts()
     UiState.remoteSend?.let { RemoteSendSheet(it) { UiState.remoteSend = null } }

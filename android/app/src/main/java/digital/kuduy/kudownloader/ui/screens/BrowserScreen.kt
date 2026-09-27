@@ -101,6 +101,7 @@ import digital.kuduy.kudownloader.browser.BrowserSignals
 import digital.kuduy.kudownloader.browser.BrowserState
 import digital.kuduy.kudownloader.browser.FoundMedia
 import digital.kuduy.kudownloader.browser.Tab
+import digital.kuduy.kudownloader.browser.isVideoPage
 import digital.kuduy.kudownloader.core.Files
 import digital.kuduy.kudownloader.core.Ku
 import digital.kuduy.kudownloader.core.Prefs
@@ -135,6 +136,14 @@ fun BrowserScreen() {
     val tab = BrowserState.current ?: return
     // Switching tabs: let go of the WebViews of tabs not used for a while.
     LaunchedEffect(tab.id) { BrowserState.trim() }
+    // On a video page, start reading its formats in the background (after a
+    // moment, so pages flicked through are skipped): "Download" is then instant.
+    LaunchedEffect(tab.url) {
+        if (isVideoPage(tab.url)) {
+            kotlinx.coroutines.delay(1500)
+            Ku.prefetchMedia(tab.url, BrowserState.cookies(tab.url), tab.url)
+        }
+    }
     val focus = LocalFocusManager.current
     var address by remember(tab.id) { mutableStateOf(tab.url) }
     var editing by remember { mutableStateOf(false) }
@@ -238,12 +247,7 @@ fun BrowserScreen() {
                 }
             }
         }
-        Box(Modifier.fillMaxWidth().height(2.dp)) {
-            if (tab.progress in 1..99) {
-                val p by androidx.compose.animation.core.animateFloatAsState(tab.progress / 100f, label = "load")
-                LinearProgressIndicator(progress = { p }, modifier = Modifier.fillMaxSize(), trackColor = Color.Transparent, drawStopIndicator = {})
-            }
-        }
+        LoadingBar(tab.progress)
 
         Box(Modifier.weight(1f).fillMaxWidth()) {
             if (tab.isStart) {
@@ -271,7 +275,11 @@ fun BrowserScreen() {
                     exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.slideOutVertically { it },
                 ) {
                     ExtendedFloatingActionButton(
-                        onClick = { mediaOpen = true },
+                        // A video page: its qualities straight away; otherwise the streams it loaded.
+                        onClick = {
+                            if (tab.media.isEmpty() || isVideoPage(tab.url)) UiState.quality = MediaPrefill(tab.url, BrowserState.cookies(tab.url), tab.url, tab.title)
+                            else mediaOpen = true
+                        },
                         icon = { Icon(Icons.Filled.Download, null) },
                         text = { Text(if (tab.media.size > 1) tf("Download video ({count})", "count" to tab.media.size) else t("Download video"), fontWeight = FontWeight.SemiBold) },
                         containerColor = MaterialTheme.colorScheme.primary,
@@ -290,6 +298,107 @@ fun BrowserScreen() {
 }
 
 private fun host(url: String) = runCatching { java.net.URI(url).host?.removePrefix("www.") }.getOrNull() ?: url
+
+/**
+ * Cyberpunk theme: a segmented neon bar (Cyberpunk 2077 style). Now and then
+ * it glitches: slices jump sideways and split into magenta and cyan.
+ */
+@Composable
+private fun CyberLoadingBar(p: Float, alpha: Float, loading: Boolean) {
+    val cyan = Color(0xFF05D9E8)
+    val magenta = Color(0xFFFF2A6D)
+    val yellow = Color(0xFFF9F002)
+    // Glitch state: a horizontal shift and a colour split, for a few frames at a time.
+    var shift by remember { mutableStateOf(0f) }
+    var split by remember { mutableStateOf(0f) }
+    LaunchedEffect(loading) {
+        val rnd = kotlin.random.Random
+        while (loading) {
+            kotlinx.coroutines.delay(rnd.nextLong(500, 1400))
+            repeat(rnd.nextInt(2, 5)) {
+                shift = rnd.nextFloat() * 24f - 12f
+                split = rnd.nextFloat() * 6f + 2f
+                kotlinx.coroutines.delay(rnd.nextLong(40, 90))
+            }
+            shift = 0f
+            split = 0f
+        }
+    }
+    Box(Modifier.fillMaxWidth().height(4.dp)) {
+        if (alpha > 0.01f) {
+            androidx.compose.foundation.Canvas(Modifier.fillMaxSize()) {
+                val w = size.width * p
+                val h = size.height
+                drawRect(cyan.copy(alpha = 0.10f * alpha), size = size)
+                // Segments: 14 px blocks with 3 px gaps, like a HUD meter.
+                val seg = 14f
+                val gap = 3f
+                fun blocks(color: Color, dx: Float) {
+                    var x = 0f
+                    while (x < w) {
+                        val bw = minOf(seg, w - x)
+                        drawRect(color, topLeft = androidx.compose.ui.geometry.Offset(x + dx, 0f), size = androidx.compose.ui.geometry.Size(bw, h))
+                        x += seg + gap
+                    }
+                }
+                if (split > 0f) {
+                    blocks(magenta.copy(alpha = 0.8f * alpha), shift - split)
+                    blocks(cyan.copy(alpha = 0.8f * alpha), shift + split)
+                }
+                blocks(cyan.copy(alpha = alpha), shift)
+                // The leading edge burns yellow.
+                if (w > 6f) drawRect(yellow.copy(alpha = alpha), topLeft = androidx.compose.ui.geometry.Offset(w - 6f + shift, 0f), size = androidx.compose.ui.geometry.Size(6f, h))
+            }
+        }
+    }
+}
+
+/**
+ * Page loading bar (Helium / Chrome style): a 3 dp accent strip under the
+ * address bar with a moving sheen, that finishes to the end and fades out.
+ */
+@Composable
+private fun LoadingBar(progress: Int) {
+    val loading = progress in 0..99
+    val target = if (loading) progress.coerceAtLeast(8) / 100f else 1f
+    // A new load starts from the left instead of shrinking back from the end.
+    val anim = remember { androidx.compose.animation.core.Animatable(0f) }
+    LaunchedEffect(loading, target) {
+        if (loading && anim.value >= 0.999f) anim.snapTo(0f)
+        anim.animateTo(target, androidx.compose.animation.core.tween(if (loading) 350 else 200))
+    }
+    val p = anim.value
+    val alpha by androidx.compose.animation.core.animateFloatAsState(if (loading) 1f else 0f, androidx.compose.animation.core.tween(if (loading) 120 else 450, delayMillis = if (loading) 0 else 150), label = "fade")
+    val sheen = androidx.compose.animation.core.rememberInfiniteTransition(label = "sheen")
+    val x by sheen.animateFloat(-0.3f, 1.3f, androidx.compose.animation.core.infiniteRepeatable(androidx.compose.animation.core.tween(1100, easing = androidx.compose.animation.core.LinearEasing)), label = "x")
+    val accent = MaterialTheme.colorScheme.primary
+    val palette = Ku.settings.collectAsStateWithLifecycle().value["darkPalette"]?.let { (it as? kotlinx.serialization.json.JsonPrimitive)?.content }
+    if (palette == "cyberpunk" && digital.kuduy.kudownloader.ui.LocalKuColors.current.dark) {
+        CyberLoadingBar(p, alpha, loading)
+        return
+    }
+    Box(Modifier.fillMaxWidth().height(3.dp)) {
+        if (alpha > 0.01f) {
+            androidx.compose.foundation.Canvas(Modifier.fillMaxSize()) {
+                val w = size.width * p
+                drawRect(accent.copy(alpha = 0.18f * alpha), size = size)
+                drawRect(
+                    androidx.compose.ui.graphics.Brush.horizontalGradient(listOf(accent.copy(alpha = 0.75f * alpha), accent.copy(alpha = alpha))),
+                    size = androidx.compose.ui.geometry.Size(w, size.height),
+                )
+                // A light sweep across the filled part while loading.
+                val cx = size.width * x
+                if (cx < w) {
+                    drawRect(
+                        androidx.compose.ui.graphics.Brush.horizontalGradient(listOf(Color.Transparent, Color.White.copy(alpha = 0.45f * alpha), Color.Transparent), startX = cx - 60f, endX = cx + 60f),
+                        topLeft = androidx.compose.ui.geometry.Offset(0f, 0f),
+                        size = androidx.compose.ui.geometry.Size(w, size.height),
+                    )
+                }
+            }
+        }
+    }
+}
 
 /**
  * The address field. Idle it shows the site's name centred (with a lock on
@@ -442,8 +551,7 @@ private fun BrowserMenu(tab: Tab, expanded: Boolean, onDismiss: () -> Unit, onHi
                 MenuGroup {
                     MenuRow(Icons.Filled.Movie, t("Download video on this page")) {
                         onDismiss()
-                        UiState.media = MediaPrefill(tab.url, BrowserState.cookies(tab.url), tab.url, tab.title)
-                        UiState.go(Screen.Video)
+                        UiState.quality = MediaPrefill(tab.url, BrowserState.cookies(tab.url), tab.url, tab.title)
                     }
                     MenuRow(Icons.Filled.Link, t("Download all links…")) { onDismiss(); tab.view?.evaluateJavascript("window.__kuLinks&&window.__kuLinks()", null) }
                 }
@@ -618,8 +726,7 @@ private fun PillSheet(page: String, src: String?, title: String, onClose: () -> 
             FilledTonalButton(
                 {
                     onClose()
-                    UiState.media = MediaPrefill(page, BrowserState.cookies(page), page, title)
-                    UiState.go(Screen.Video)
+                    UiState.quality = MediaPrefill(page, BrowserState.cookies(page), page, title)
                 },
                 Modifier.fillMaxWidth(),
             ) { Text(t("Choose quality")) }
@@ -655,8 +762,7 @@ private fun MediaSheet(tab: Tab, onClose: () -> Unit) {
                     androidx.compose.material3.Button(
                         {
                             onClose()
-                            UiState.media = MediaPrefill(tab.url, BrowserState.cookies(tab.url), tab.url, tab.title)
-                            UiState.go(Screen.Video)
+                            UiState.quality = MediaPrefill(tab.url, BrowserState.cookies(tab.url), tab.url, tab.title)
                         },
                         Modifier.fillMaxWidth().height(52.dp),
                     ) {
@@ -691,8 +797,7 @@ private fun MediaRow(m: FoundMedia, onClose: () -> Unit) {
     ) {
         onClose()
         if (stream) {
-            UiState.media = MediaPrefill(m.url, BrowserState.cookies(m.page), m.page, m.title)
-            UiState.go(Screen.Video)
+            UiState.quality = MediaPrefill(m.url, BrowserState.cookies(m.page), m.page, m.title)
         } else {
             UiState.add = AddPrefill(url = m.url, referer = m.page, cookies = BrowserState.cookies(m.url), source = "browser")
         }
@@ -805,8 +910,7 @@ private fun Fullscreen() {
                 {
                     fs.second.onCustomViewHidden()
                     BrowserSignals.fullscreen = null
-                    UiState.media = MediaPrefill(tab.url, BrowserState.cookies(tab.url), tab.url, tab.title)
-                    UiState.go(Screen.Video)
+                    UiState.quality = MediaPrefill(tab.url, BrowserState.cookies(tab.url), tab.url, tab.title)
                 },
                 Modifier.align(Alignment.TopEnd).statusBarsPadding().padding(12.dp),
                 colors = ButtonDefaults.filledTonalButtonColors(containerColor = Color.Black.copy(alpha = 0.55f), contentColor = Color.White),

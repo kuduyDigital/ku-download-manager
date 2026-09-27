@@ -8,7 +8,9 @@ export function applyAppearance(s: Settings | null | undefined): "light" | "dark
   root.dataset.theme = resolved;
   root.dataset.material = "none";
   root.dataset.accent = s?.accent && s.accent !== "blue" ? s.accent : "";
-  root.dataset.palette = s?.darkPalette && s.darkPalette !== "default" ? s.darkPalette : "";
+  // One palette attribute: the dark one in dark mode, the light one in light mode.
+  const palette = resolved === "dark" ? s?.darkPalette : s?.lightPalette;
+  root.dataset.palette = palette && palette !== "default" ? palette : "";
   root.dataset.density = s?.compact ? "compact" : "comfortable";
   return resolved;
 }

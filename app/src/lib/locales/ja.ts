@@ -923,6 +923,23 @@ const ja: Record<string, string> = {
   "Checking for updates…": "アップデートを確認中…",
   "Version {version}": "バージョン {version}",
   "Made by Kuduy": "制作: Kuduy",
+  // What's new
+  "What's new": "新機能",
+  "Got it": "OK",
+  // Colour palettes
+  "Light palette": "ライトパレット",
+  "Light mode colours": "ライトモードの配色",
+  "Paper": "ペーパー",
+  "Mist": "ミスト",
+  "Mint": "ミント",
+  "Rose": "ローズ",
+  "Lavender": "ラベンダー",
+  "Forest": "フォレスト",
+  "Plum": "プラム",
+  "Mocha": "モカ",
+  "Nord": "ノルド",
+  "Ocean": "オーシャン",
+  "Cyberpunk": "サイバーパンク",
 };
 
 export default ja;

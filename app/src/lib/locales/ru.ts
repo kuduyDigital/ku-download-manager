@@ -923,6 +923,23 @@ const ru: Record<string, string> = {
   "Checking for updates…": "Поиск обновлений…",
   "Version {version}": "Версия {version}",
   "Made by Kuduy": "Разработано Kuduy",
+  // What's new
+  "What's new": "Что нового",
+  "Got it": "Понятно",
+  // Colour palettes
+  "Light palette": "Светлая палитра",
+  "Light mode colours": "Цвета светлой темы",
+  "Paper": "Бумага",
+  "Mist": "Туман",
+  "Mint": "Мята",
+  "Rose": "Роза",
+  "Lavender": "Лаванда",
+  "Forest": "Лес",
+  "Plum": "Слива",
+  "Mocha": "Мокко",
+  "Nord": "Норд",
+  "Ocean": "Океан",
+  "Cyberpunk": "Киберпанк",
 };
 
 export default ru;

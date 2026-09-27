@@ -28,8 +28,11 @@ pub struct Settings {
     pub theme: String,
     /// Accent colour: "blue" (default), "violet", "teal", "green", "orange", "pink", "red", "graphite".
     pub accent: String,
-    /// Dark palette: "default", "midnight", "black" (OLED).
+    /// Dark palette: "default" (graphite), "midnight", "black" (OLED), "forest",
+    /// "plum", "mocha", "nord", "ocean".
     pub dark_palette: String,
+    /// Light palette: "default", "paper", "mist", "mint", "rose", "lavender".
+    pub light_palette: String,
     /// Interface language: "system", "en", "bn".
     pub language: String,
     pub compact: bool,
@@ -168,6 +171,7 @@ impl Default for Settings {
             theme: "system".into(),
             accent: "blue".into(),
             dark_palette: "default".into(),
+            light_palette: "default".into(),
             language: "system".into(),
             compact: false,
             translucent: false,

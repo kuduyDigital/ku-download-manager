@@ -43,6 +43,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -200,7 +201,10 @@ private fun Main() {
             }
         },
     ) { pad ->
-        Box(Modifier.fillMaxSize().padding(bottom = pad.calculateBottomPadding()).consumeWindowInsets(pad).imePadding()) {
+        // Only the bottom is handled here (tab bar, keyboard): each screen's own top
+        // bar still keeps clear of the status bar, so the top must not be consumed.
+        val bottomPad = androidx.compose.foundation.layout.PaddingValues(bottom = pad.calculateBottomPadding())
+        Box(Modifier.fillMaxSize().padding(bottomPad).consumeWindowInsets(bottomPad).imePadding()) {
             AnimatedContent(screen, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "screen") { s ->
                 when (s) {
                     Screen.Downloads -> DownloadsScreen()
@@ -224,4 +228,8 @@ private fun Main() {
     UiState.remoteSend?.let { RemoteSendSheet(it) { UiState.remoteSend = null } }
     val welcomed by Prefs.welcomed.state.collectAsStateWithLifecycle()
     if (!welcomed) WelcomeDialog { Prefs.welcomed.value = true }
+    // After an update: what changed (checked once per start).
+    val notes = remember { pendingWhatsNew() }
+    var showNotes by remember { androidx.compose.runtime.mutableStateOf(notes != null) }
+    if (showNotes && notes != null && welcomed) WhatsNewDialog(notes) { showNotes = false }
 }

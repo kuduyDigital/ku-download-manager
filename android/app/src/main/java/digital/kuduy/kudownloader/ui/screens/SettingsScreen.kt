@@ -163,7 +163,19 @@ private fun Appearance() {
         }
     }
     if (Build.VERSION.SDK_INT >= 31) SwitchRow(t("Colours from the wallpaper"), dynamic, t("Material You")) { Prefs.dynamicColor.value = it }
-    ChoiceRow(t("Dark palette"), s.str("darkPalette", "default"), listOf("default" to t("Default"), "midnight" to t("Midnight"), "black" to t("Black (OLED)"))) { save(mapOf("darkPalette" to it)) }
+    ChoiceRow(
+        t("Light palette"),
+        s.str("lightPalette", "default"),
+        listOf("default" to t("Default"), "paper" to t("Paper"), "mist" to t("Mist"), "mint" to t("Mint"), "rose" to t("Rose"), "lavender" to t("Lavender")),
+    ) { save(mapOf("lightPalette" to it)) }
+    ChoiceRow(
+        t("Dark palette"),
+        s.str("darkPalette", "default"),
+        listOf(
+            "default" to t("Default"), "midnight" to t("Midnight"), "black" to t("Black (OLED)"), "forest" to t("Forest"),
+            "plum" to t("Plum"), "mocha" to t("Mocha"), "nord" to t("Nord"), "ocean" to t("Ocean"), "cyberpunk" to t("Cyberpunk"),
+        ),
+    ) { save(mapOf("darkPalette" to it)) }
     SectionTitle(t("Language"))
     ChoiceRow(
         t("Language"),

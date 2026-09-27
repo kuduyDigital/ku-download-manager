@@ -535,7 +535,8 @@
   color: var(--fg-disabled);
 }
 
-.menu-item.is-danger {
+.menu-item.is-danger,
+.menu-item.is-danger > svg {
   color: var(--danger);
 }
 

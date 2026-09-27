@@ -921,6 +921,23 @@ const bn: Record<string, string> = {
   "Checking for updates…": "আপডেট খোঁজা হচ্ছে…",
   "Version {version}": "সংস্করণ {version}",
   "Made by Kuduy": "তৈরি করেছে Kuduy",
+  // What's new
+  "What's new": "নতুন কী আছে",
+  "Got it": "বুঝেছি",
+  // Colour palettes
+  "Light palette": "হালকা রঙের প্যালেট",
+  "Light mode colours": "লাইট মোডের রং",
+  "Paper": "কাগজ",
+  "Mist": "কুয়াশা",
+  "Mint": "পুদিনা",
+  "Rose": "গোলাপি",
+  "Lavender": "ল্যাভেন্ডার",
+  "Forest": "বন",
+  "Plum": "প্লাম",
+  "Mocha": "মোকা",
+  "Nord": "নর্ড",
+  "Ocean": "সমুদ্র",
+  "Cyberpunk": "সাইবারপাঙ্ক",
 };
 
 export default bn;

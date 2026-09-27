@@ -923,6 +923,23 @@ const ko: Record<string, string> = {
   "Checking for updates…": "업데이트 확인 중…",
   "Version {version}": "버전 {version}",
   "Made by Kuduy": "제작: Kuduy",
+  // What's new
+  "What's new": "새로운 기능",
+  "Got it": "확인",
+  // Colour palettes
+  "Light palette": "라이트 팔레트",
+  "Light mode colours": "라이트 모드 색상",
+  "Paper": "페이퍼",
+  "Mist": "미스트",
+  "Mint": "민트",
+  "Rose": "로즈",
+  "Lavender": "라벤더",
+  "Forest": "포레스트",
+  "Plum": "플럼",
+  "Mocha": "모카",
+  "Nord": "노르드",
+  "Ocean": "오션",
+  "Cyberpunk": "사이버펑크",
 };
 
 export default ko;

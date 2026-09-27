@@ -11,6 +11,8 @@ import { applyAppearance } from "./lib/appearance";
 import { syncLanguage, t, tf, tj } from "./lib/i18n";
 import { WelcomeGuide } from "./app/WelcomeGuide";
 import { AboutDialog } from "./app/AboutDialog";
+import { WhatsNew } from "./app/WhatsNew";
+import { pendingNotes } from "./lib/whatsNew";
 import { ToolDownloadsPanel } from "./app/MediaTools";
 import { AirSendPrompts } from "./app/airsend/AirSendPrompts";
 import { loadAir } from "./lib/airsend";
@@ -57,7 +59,7 @@ function useTheme(setMaterial: (m: string) => void) {
     apply();
     mq.addEventListener("change", apply);
     return () => mq.removeEventListener("change", apply);
-  }, [s?.theme, s?.compact, s?.accent, s?.darkPalette, s?.language, setMaterial]);
+  }, [s?.theme, s?.compact, s?.accent, s?.darkPalette, s?.lightPalette, s?.language, setMaterial]);
 }
 
 /** Once per launch, shortly after startup: a toast when a newer release exists. */
@@ -139,6 +141,17 @@ export default function App() {
     window.addEventListener("ku:welcome", open);
     return () => window.removeEventListener("ku:welcome", open);
   }, []);
+  // After an update (never on a fresh install): what changed.
+  const [notes, setNotes] = useState<ReturnType<typeof pendingNotes>>(null);
+  const settingsLoaded = !!settingsNow;
+  useEffect(() => {
+    if (!settingsLoaded) return;
+    const upgraded = !!settingsStore.get()?.onboarded;
+    void api
+      .appInfo()
+      .then((i) => setNotes(pendingNotes(i.version, upgraded)))
+      .catch(() => {});
+  }, [settingsLoaded]);
   const [about, setAbout] = useState(false);
   useEffect(() => {
     const open = () => setAbout(true);
@@ -410,6 +423,7 @@ export default function App() {
       <MenuHost />
       {welcome && <WelcomeGuide onClose={() => setWelcome(false)} />}
       {about && <AboutDialog onClose={() => setAbout(false)} />}
+      {notes && !welcome && <WhatsNew notes={notes} onClose={() => setNotes(null)} />}
       <ToolDownloadsPanel />
       <AirSendPrompts />
       <ToastHost />

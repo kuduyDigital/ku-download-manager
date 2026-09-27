@@ -74,6 +74,7 @@ const settings: Settings = {
   compact: params.get("compact") === "1",
   accent: params.get("accent") ?? "blue",
   darkPalette: params.get("palette") ?? "default",
+  lightPalette: params.get("lpalette") ?? "default",
   language: params.get("lang") ?? "en",
   translucent: false,
   startWithOs: false,
@@ -211,7 +212,7 @@ mockIPC(
       case "check_update":
         return null;
       case "app_info":
-        return { version: "0.2.7", dataDir: "C:\\Users\\you\\AppData\\Roaming\\KuDownloader", apiPort: 64669, platform: "windows", defaultDownloadDir: "C:\\Users\\you\\Downloads" };
+        return { version: params.get("v") ?? "0.2.7", dataDir: "C:\\Users\\you\\AppData\\Roaming\\KuDownloader", apiPort: 64669, platform: "windows", defaultDownloadDir: "C:\\Users\\you\\Downloads" };
       case "native_host_status":
         return {
           hostPath: "C:\\Program Files\\KuDownloader\\ku-native-host.exe",
@@ -285,6 +286,12 @@ mockIPC(
         return { url: "", finalUrl: "", filename: "ubuntu-24.04.1-desktop-amd64.iso", size: 6227702579, mime: "application/x-iso9660-image", resumable: true, engine: "aria2", kind: "http", category: "images-disk" };
       case "plugin:window|is_maximized":
         return false;
+      case "plugin:window|set_size": {
+        // Popup windows size themselves: keep the requests to check them.
+        const w = window as unknown as { __sizes?: unknown[] };
+        (w.__sizes ??= []).push((args as { value: unknown }).value);
+        return null;
+      }
       default:
         return null;
     }

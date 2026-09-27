@@ -247,6 +247,7 @@ export interface Settings {
   theme: "light" | "dark" | "system";
   accent: string;
   darkPalette: string;
+  lightPalette?: string;
   language: string;
   compact: boolean;
   translucent: boolean;

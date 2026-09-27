@@ -923,6 +923,23 @@ const pt: Record<string, string> = {
   "Checking for updates…": "Procurando atualizações…",
   "Version {version}": "Versão {version}",
   "Made by Kuduy": "Feito por Kuduy",
+  // What's new
+  "What's new": "Novidades",
+  "Got it": "Entendi",
+  // Colour palettes
+  "Light palette": "Paleta clara",
+  "Light mode colours": "Cores do modo claro",
+  "Paper": "Papel",
+  "Mist": "Névoa",
+  "Mint": "Menta",
+  "Rose": "Rosa",
+  "Lavender": "Lavanda",
+  "Forest": "Floresta",
+  "Plum": "Ameixa",
+  "Mocha": "Moca",
+  "Nord": "Nord",
+  "Ocean": "Oceano",
+  "Cyberpunk": "Cyberpunk",
 };
 
 export default pt;

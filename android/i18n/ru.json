@@ -345,5 +345,20 @@
  "Favorites": "Избранное",
  "Privacy report": "Отчёт о конфиденциальности",
  "Ad and tracker blocking is off.": "Блокировка рекламы и трекеров выключена.",
- "Recently visited": "Недавно посещённые"
+ "Recently visited": "Недавно посещённые",
+ "What's new": "Что нового",
+ "Got it": "Понятно",
+ "Light palette": "Светлая палитра",
+ "Light mode colours": "Цвета светлой темы",
+ "Paper": "Бумага",
+ "Mist": "Туман",
+ "Mint": "Мята",
+ "Rose": "Роза",
+ "Lavender": "Лаванда",
+ "Forest": "Лес",
+ "Plum": "Слива",
+ "Mocha": "Мокко",
+ "Nord": "Норд",
+ "Ocean": "Океан",
+ "Cyberpunk": "Киберпанк"
 }

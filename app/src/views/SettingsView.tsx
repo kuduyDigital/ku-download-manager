@@ -262,6 +262,52 @@ const ACCENTS: [string, string, string][] = [
   ["graphite", "#52525B", "Graphite"],
 ];
 
+/** [id, name, window colour, content colour] — mirrors tokens.css. */
+type Palette = [string, string, string, string];
+const LIGHT_PALETTES: Palette[] = [
+  ["default", "Default", "#F5F5F7", "#FFFFFF"],
+  ["paper", "Paper", "#F4F1EA", "#FCFAF6"],
+  ["mist", "Mist", "#EEF2F7", "#FAFCFE"],
+  ["mint", "Mint", "#EDF5F0", "#FAFDFB"],
+  ["rose", "Rose", "#F8EFF1", "#FEFAFB"],
+  ["lavender", "Lavender", "#F1EFF9", "#FCFBFF"],
+];
+const DARK_PALETTES: Palette[] = [
+  ["default", "Graphite", "#161618", "#2C2C2E"],
+  ["midnight", "Midnight blue", "#0E1320", "#1C2439"],
+  ["black", "Pure black (OLED)", "#000000", "#141416"],
+  ["forest", "Forest", "#0E1512", "#1B2822"],
+  ["plum", "Plum", "#15101C", "#271E34"],
+  ["mocha", "Mocha", "#17130F", "#2B241E"],
+  ["nord", "Nord", "#1F232B", "#323846"],
+  ["ocean", "Ocean", "#0A1618", "#16292D"],
+  ["cyberpunk", "Cyberpunk", "#0B0717", "#FF2A6D"],
+];
+
+function PaletteSwatches({ value, palettes, onChange }: { value: string; palettes: Palette[]; onChange: (id: string) => void }) {
+  const current = palettes.find(([id]) => id === value) ?? palettes[0];
+  return (
+    <div className="palette-picker">
+      <div className="palette-swatches" role="radiogroup">
+        {palettes.map(([id, name, win, content]) => (
+          <button
+            key={id}
+            type="button"
+            role="radio"
+            aria-checked={value === id}
+            aria-label={t(name)}
+            title={t(name)}
+            className="palette-swatch"
+            style={{ background: `linear-gradient(135deg, ${win} 0 50%, ${content} 50% 100%)` }}
+            onClick={() => onChange(id)}
+          />
+        ))}
+      </div>
+      <span className="palette-name">{t(current[1])}</span>
+    </div>
+  );
+}
+
 export function SettingsView() {
   const { settingsSection, navigate } = useApp();
   const [section, setSection] = useState<Section>((SECTIONS.find(([k]) => k === settingsSection)?.[0] ?? "general") as Section);
@@ -455,16 +501,12 @@ export function SettingsView() {
                     ))}
                   </div>
                 </PrefRow>
-                <SelectPref
-                  k="darkPalette"
-                  label={t("Dark mode colours")}
-                  options={[
-                    { value: "default", label: t("Graphite") },
-                    { value: "midnight", label: t("Midnight blue") },
-                    { value: "black", label: t("Pure black (OLED)") },
-                  ]}
-                  width={180}
-                />
+                <PrefRow label={t("Light mode colours")}>
+                  <PaletteSwatches value={settings.lightPalette || "default"} palettes={LIGHT_PALETTES} onChange={(v) => void save({ lightPalette: v })} />
+                </PrefRow>
+                <PrefRow label={t("Dark mode colours")}>
+                  <PaletteSwatches value={settings.darkPalette || "default"} palettes={DARK_PALETTES} onChange={(v) => void save({ darkPalette: v })} />
+                </PrefRow>
                 <SwitchPref k="compact" label={t("Compact rows")} desc={t("Shows more downloads at once by hiding the second line.")} />
                 <SelectPref
                   k="language"

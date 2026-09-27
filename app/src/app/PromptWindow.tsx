@@ -1,9 +1,10 @@
 import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import type { AddRequest } from "../lib/types";
 import { settingsStore } from "../lib/store";
 import { applyAppearance } from "../lib/appearance";
+import { autoFit } from "../lib/fitWindow";
 import { ToastHost } from "../ui/overlays";
 import { AddDownloadDialog } from "./AddDownloadDialog";
 import { AppContext, type AppApi } from "./context";
@@ -24,25 +25,14 @@ export function PromptWindow({ id }: { id: string }) {
 
   useEffect(() => void applyAppearance(settings), [settings]);
 
-  // Fit the window to the dialog (it grows with "More options"), then show it.
+  // Fit the window to the dialog, then show it. It follows "More options"
+  // opening and closing; resized by hand, the fields scroll instead.
   useLayoutEffect(() => {
     if (!request) return;
     const form = document.querySelector<HTMLElement>(".dialog");
-    if (!form) return;
-    let shown = false;
-    const fit = () => {
-      const h = Math.min(Math.ceil(form.scrollHeight) + 2, window.screen.availHeight - 80);
-      void win.setSize(new LogicalSize(window.innerWidth, h)).then(() => {
-        if (!shown) {
-          shown = true;
-          void win.show().then(() => win.setFocus());
-        }
-      });
-    };
-    const ro = new ResizeObserver(fit);
-    ro.observe(form);
-    fit();
-    return () => ro.disconnect();
+    const body = form?.querySelector<HTMLElement>(".dialog-body");
+    if (!form || !body) return;
+    return autoFit(form, body, { onFirstFit: () => void win.show().then(() => win.setFocus()) });
   }, [request, win]);
 
   const close = () => void win.close();

@@ -61,6 +61,7 @@ class ScreensTest(private val dark: Boolean) {
 
     private fun show(screen: Screen, downloads: List<Download> = samples) {
         Prefs.welcomed.value = true
+        Prefs.seenVersion.value = BuildConfig.VERSION_NAME.substringBefore('-')
         Ku.sample(downloads, settings = JsonObject(mapOf("theme" to JsonPrimitive(if (dark) "dark" else "light"), "accent" to JsonPrimitive("blue"))))
         Ku.speedHistory.value = List(Ku.HISTORY) { i -> (20 + (i % 7) * 3) * MB to (i % 5) * 200 * 1024L }
         UiState.stack.clear()

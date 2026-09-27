@@ -923,6 +923,23 @@ const hi: Record<string, string> = {
   "Checking for updates…": "अपडेट खोजे जा रहे हैं…",
   "Version {version}": "संस्करण {version}",
   "Made by Kuduy": "Kuduy द्वारा निर्मित",
+  // What's new
+  "What's new": "नया क्या है",
+  "Got it": "ठीक है",
+  // Colour palettes
+  "Light palette": "हल्का पैलेट",
+  "Light mode colours": "लाइट मोड के रंग",
+  "Paper": "कागज़",
+  "Mist": "धुंध",
+  "Mint": "पुदीना",
+  "Rose": "गुलाबी",
+  "Lavender": "लैवेंडर",
+  "Forest": "जंगल",
+  "Plum": "आलूबुखारा",
+  "Mocha": "मोका",
+  "Nord": "नॉर्ड",
+  "Ocean": "समुद्र",
+  "Cyberpunk": "साइबरपंक",
 };
 
 export default hi;

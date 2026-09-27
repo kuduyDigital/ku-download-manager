@@ -923,6 +923,23 @@ const zh: Record<string, string> = {
   "Checking for updates…": "正在检查更新…",
   "Version {version}": "版本 {version}",
   "Made by Kuduy": "由 Kuduy 制作",
+  // What's new
+  "What's new": "新功能",
+  "Got it": "知道了",
+  // Colour palettes
+  "Light palette": "浅色调色板",
+  "Light mode colours": "浅色模式配色",
+  "Paper": "纸张",
+  "Mist": "薄雾",
+  "Mint": "薄荷",
+  "Rose": "玫瑰",
+  "Lavender": "薰衣草",
+  "Forest": "森林",
+  "Plum": "梅子",
+  "Mocha": "摩卡",
+  "Nord": "北境",
+  "Ocean": "海洋",
+  "Cyberpunk": "赛博朋克",
 };
 
 export default zh;

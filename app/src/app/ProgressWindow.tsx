@@ -3,12 +3,13 @@ import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { t } from "../lib/i18n";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { ArrowDownToLine, Check, ChevronDown, ChevronRight, Minus, X } from "lucide-react";
 import { glyphFor } from "./downloads/FileGlyph";
 import { api, errorText } from "../lib/api";
 import { settingsStore } from "../lib/store";
 import { applyAppearance } from "../lib/appearance";
+import { autoFit } from "../lib/fitWindow";
 import * as fmt from "../lib/format";
 import type { CoreEvent, Details, Download } from "../lib/types";
 import { Button, Icon, IconButton, Progress } from "../ui/primitives";
@@ -88,27 +89,17 @@ export function ProgressWindow({ id }: { id: string }) {
     };
   }, [id, live, more]);
 
-  // Fit the window to its content when it opens and when the content changes
-  // (details shown/hidden, finished, error). In between the user can resize
-  // freely: the details area scrolls and the buttons stay pinned at the bottom.
-  const [shown, setShown] = useState(false);
-  const finished = d?.status === "completed" || d?.status === "seeding";
-  const hasConns = (details?.segments?.length || details?.connections?.length || 0) > 0;
+  // Fit the window to its content when it opens and whenever the content grows
+  // or shrinks (details shown / hidden, finished, error). Resized by hand, it
+  // keeps the user's size: the body scrolls and the buttons stay at the bottom.
+  const ready = !!d;
   useLayoutEffect(() => {
-    if (!d) return;
+    if (!ready) return;
     const el = document.querySelector<HTMLElement>(".pw");
     const body = el?.querySelector<HTMLElement>(".pw-body");
     if (!el || !body) return;
-    const natural = el.offsetHeight - body.clientHeight + body.scrollHeight;
-    // Grow to fit, but not past a comfortable height: the rest scrolls.
-    void win.setSize(new LogicalSize(window.innerWidth, Math.min(natural + 2, 620, screen.availHeight - 80))).then(() => {
-      if (!shown) {
-        setShown(true);
-        void win.show().then(() => win.setFocus());
-      }
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [!!d, win, more, finished, !!error, hasConns]);
+    return autoFit(el, body, { max: 640, onFirstFit: () => void win.show().then(() => win.setFocus()) });
+  }, [ready, win]);
 
   if (!d) return null;
   const pct = fmt.percent(d.done, d.total);

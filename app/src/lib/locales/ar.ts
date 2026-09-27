@@ -923,6 +923,23 @@ const ar: Record<string, string> = {
   "Checking for updates…": "جارٍ البحث عن تحديثات…",
   "Version {version}": "الإصدار {version}",
   "Made by Kuduy": "من صنع Kuduy",
+  // What's new
+  "What's new": "ما الجديد",
+  "Got it": "حسنًا",
+  // Colour palettes
+  "Light palette": "لوحة الألوان الفاتحة",
+  "Light mode colours": "ألوان الوضع الفاتح",
+  "Paper": "ورقي",
+  "Mist": "ضبابي",
+  "Mint": "نعناعي",
+  "Rose": "وردي",
+  "Lavender": "خزامى",
+  "Forest": "غابة",
+  "Plum": "برقوقي",
+  "Mocha": "موكا",
+  "Nord": "نورد",
+  "Ocean": "محيط",
+  "Cyberpunk": "سايبربانك",
 };
 
 export default ar;

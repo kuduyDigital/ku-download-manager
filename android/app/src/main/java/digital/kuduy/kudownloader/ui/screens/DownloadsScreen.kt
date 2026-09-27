@@ -297,7 +297,12 @@ fun DownloadsScreen() {
                         if (map.isEmpty()) t("Tap Add URL, share a link to KuDownloader, or browse to a file.") else t("No download matches these filters."),
                     ) {
                         if (map.isEmpty()) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            // Wraps onto a second line on narrow screens instead of squeezing a button.
+                            @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+                            androidx.compose.foundation.layout.FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
                                 androidx.compose.material3.FilledTonalButton({
                                     val cm = ctx.getSystemService(android.content.ClipboardManager::class.java)
                                     val text = cm?.primaryClip?.getItemAt(0)?.coerceToText(ctx)?.toString()?.trim().orEmpty()

@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KuDownloader documentation — install and use</title>
+  <meta name="description" content="How to install KuDownloader on Windows, macOS, Linux and Android, add the browser extension, download files, videos and torrents, and send files with KuAirSend.">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0b0c10" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="main.js" defer></script>
+</head>
+<body class="docs-page">
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav scrolled" data-nav>
+    <div class="nav-inner">
+      <a class="brand" href="./" aria-label="KuDownloader home"><img src="icon.svg" width="26" height="26" alt=""> <span>KuDownloader</span></a>
+      <nav class="nav-links" aria-label="Main">
+        <a href="./#products">Products</a>
+        <a href="./#features">Features</a>
+        <a href="docs.html" aria-current="page">Docs</a>
+        <a href="https://github.com/kuduyDigital/ku-download-manager">GitHub</a>
+      </nav>
+      <a class="pill dark small" href="./#download">Download <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></a>
+    </div>
+  </header>
+
+  <div class="docs">
+    <aside class="toc" aria-label="On this page">
+      <p class="toc-title">Documentation</p>
+      <a href="#install">Install</a>
+      <a href="#extension">Browser extension</a>
+      <a href="#first">Your first download</a>
+      <a href="#queues">Queues &amp; schedules</a>
+      <a href="#video">Videos &amp; music</a>
+      <a href="#torrents">Torrents</a>
+      <a href="#airsend">KuAirSend</a>
+      <a href="#android">Android</a>
+      <a href="#settings">Settings &amp; themes</a>
+      <a href="#updates">Updates</a>
+      <a href="#faq">Troubleshooting</a>
+    </aside>
+
+    <main id="main" class="prose docs-body">
+      <p class="kicker">Documentation</p>
+      <h1>Get started with KuDownloader</h1>
+      <p class="lead-doc">Everything you need to install KuDownloader, connect it to your browser and get the most out of it on your computer and your phone.</p>
+
+      <section id="install">
+        <h2>Install</h2>
+        <p>Download the file for your system from the <a href="./#download">download section</a> or the <a href="https://github.com/kuduyDigital/ku-download-manager/releases/latest">latest release</a>.</p>
+
+        <h3>Windows 10 and 11</h3>
+        <ol>
+          <li>Download <code>KuDownloader_x.y.z_x64-setup.exe</code> and open it.</li>
+          <li>If Windows shows <b>“Windows protected your PC”</b>, choose <b>More info › Run anyway</b>. The installer is not yet signed with a paid certificate; updates are signed and checked before they install.</li>
+          <li>KuDownloader installs for your user only (no administrator needed) and starts when it is done.</li>
+        </ol>
+
+        <h3>macOS 11 or later</h3>
+        <ol>
+          <li>Pick <b>Apple silicon</b> (M1 and later) or <b>Intel</b>, open the <code>.dmg</code> and drag KuDownloader to Applications.</li>
+          <li>The first time, right-click the app and choose <b>Open</b>, then <b>Open</b> again. If macOS still refuses, go to <b>System Settings › Privacy &amp; Security</b> and click <b>Open Anyway</b>.</li>
+        </ol>
+
+        <h3>Linux</h3>
+        <p>Debian, Ubuntu, Mint and Pop!_OS:</p>
+        <pre><code>sudo apt install ./KuDownloader_x.y.z_amd64.deb</code></pre>
+        <p>Fedora, openSUSE and other RPM systems:</p>
+        <pre><code>sudo dnf install ./KuDownloader-x.y.z-1.x86_64.rpm</code></pre>
+        <p>Arch, Manjaro and EndeavourOS:</p>
+        <pre><code>sudo pacman -U kudownloader-x.y.z-1-x86_64.pkg.tar.zst</code></pre>
+        <p>ARM computers (Raspberry Pi 4/5 and others) use the <code>arm64.deb</code> or <code>aarch64.rpm</code> files. KuDownloader appears in your applications menu.</p>
+
+        <h3>Android 7 or later</h3>
+        <p>See <a href="#android">Android</a> below.</p>
+      </section>
+
+      <section id="extension">
+        <h2>Browser extension</h2>
+        <p>The extension hands the downloads you start in your browser to KuDownloader, and puts a download button on videos. It comes with the desktop app.</p>
+        <ol>
+          <li>Open KuDownloader, then <b>Settings › Browser integration</b>.</li>
+          <li>Choose your browser: Chrome, Edge, Brave, Opera, Vivaldi or Firefox.</li>
+          <li>Follow the steps shown. Chromium browsers load it from a folder (turn on <b>Developer mode</b>, choose <b>Load unpacked</b>); Firefox installs the add-on file.</li>
+          <li>Restart the browser. Start any download: the <b>Download File</b> window of KuDownloader opens.</li>
+        </ol>
+        <p class="note">To let the browser keep its downloads for a while, pause the take-over from the extension's pop-up, or turn it off for a single site.</p>
+      </section>
+
+      <section id="first">
+        <h2>Your first download</h2>
+        <ol>
+          <li>Copy a link and click <b>Add URL</b>. KuDownloader notices copied links and offers to download them too.</li>
+          <li>Check the name, size and folder in the <b>Download File</b> window, then click <b>Download Now</b>.</li>
+          <li>A small progress window shows the speed, time left and each connection. <b>Hide</b> it any time; the download keeps going.</li>
+        </ol>
+        <p>Every file is split across several connections, and the number is tuned while it runs. If the network drops or the computer restarts, KuDownloader continues where it stopped. When a link expires, select the download, open the details panel (<kbd>Ctrl</kbd>+<kbd>I</kbd>) and use <b>Refresh download link</b> with a fresh address from the site.</p>
+        <p>For many files at once use <b>Tasks › Batch download</b> (a list or a numbered pattern like <code>file_[001-120].jpg</code>), or <b>Fetch Projects</b> to collect every file linked from a page.</p>
+      </section>
+
+      <section id="queues">
+        <h2>Queues &amp; schedules</h2>
+        <p>Choose <b>Download Later</b> to put a file in a queue. Each queue runs a set number of downloads at a time.</p>
+        <p>In <b>Tasks › Scheduler</b> you can start a queue at night (for example 02:00–07:00 when data is cheaper), limit the speed, and shut down or sleep the computer when everything is done.</p>
+      </section>
+
+      <section id="video">
+        <h2>Videos &amp; music</h2>
+        <ol>
+          <li>Open <b>Video Downloader</b> and paste a link from YouTube, Instagram, TikTok, X, Facebook, Vimeo or 1,000+ other sites.</li>
+          <li>Pick <b>Video</b> or <b>Audio only</b>, the quality, and optionally subtitles and cover art.</li>
+          <li>Playlists: turn on <b>Whole playlist</b> and choose the videos you want.</li>
+        </ol>
+        <p>The video tools (yt-dlp and FFmpeg) install themselves the first time they are needed and keep themselves up to date. KuDownloader does not download DRM-protected media.</p>
+      </section>
+
+      <section id="torrents">
+        <h2>Torrents</h2>
+        <p>Open a <code>.torrent</code> file or paste a magnet link in <b>Add URL</b>. Choose the files you want inside the torrent before it starts. Finished torrents keep seeding until you pause or remove them.</p>
+      </section>
+
+      <section id="airsend">
+        <h2>KuAirSend</h2>
+        <p>Send files, folders, text and links between your devices on the same Wi-Fi or network, encrypted, without the internet.</p>
+        <ol>
+          <li>Open <b>KuAirSend</b> and switch on <b>Send &amp; receive</b> on both devices.</li>
+          <li>Nearby devices appear on the radar, each with its own pixel animal. Click one to send.</li>
+          <li>The other device asks to accept. Mark devices as <b>trusted</b> to skip the question next time, or set a PIN.</li>
+        </ol>
+        <p>Send a link and the other device can download it right away or at a time you pick — handy for letting an always-on PC do the downloading.</p>
+        <p><b>Not seeing a device?</b> Both must be on the same network. On Windows and macOS allow KuDownloader when the system asks about networks. On Linux, if a banner says a firewall is blocking KuAirSend, click <b>Allow</b>; or open the port yourself:</p>
+        <pre><code>sudo firewall-cmd --permanent --add-port=53318/tcp --add-port=53318/udp &amp;&amp; sudo firewall-cmd --reload</code></pre>
+        <pre><code>sudo ufw allow 53318/tcp &amp;&amp; sudo ufw allow 53318/udp</code></pre>
+        <p>You can also add a device by its IP address with <b>Add by IP</b>.</p>
+      </section>
+
+      <section id="android">
+        <h2>Android</h2>
+        <ol>
+          <li>Download the APK: <b>arm64</b> for almost every phone from the last years, <b>Older phones</b> for 32-bit devices, or <b>Universal</b> if you are not sure.</li>
+          <li>Open it. If Android asks, allow your browser or file manager to <b>install unknown apps</b>, then tap <b>Install</b>.</li>
+          <li>On first start KuDownloader prepares its video tools; this takes a few seconds.</li>
+        </ol>
+        <p>The built-in <b>Browser</b> blocks ads and trackers. On a page with a video, tap the round download button in the corner to pick a quality. Share a link to KuDownloader from any app to download it, and set <b>Wi-Fi only</b> in Settings to save mobile data.</p>
+        <p class="note">KuDownloader is not on Google Play, because Play does not allow apps that download from video sites. The app checks for its own updates.</p>
+      </section>
+
+      <section id="settings">
+        <h2>Settings &amp; themes</h2>
+        <p>In <b>Settings › Appearance</b> choose light, dark or system, an accent colour, and a palette for each mode — including Paper, Mist, Nord, Ocean, Pure black (OLED) and the neon Cyberpunk theme. KuDownloader speaks twelve languages.</p>
+        <p>Other useful settings: the download folder and folders per type (videos, music, programs…), how many connections to use, speed limits and profiles, a proxy, and whether to start with the system and stay in the tray.</p>
+      </section>
+
+      <section id="updates">
+        <h2>Updates</h2>
+        <p>KuDownloader checks for updates by itself. On the desktop, <b>Help › About KuDownloader</b> shows your version and installs a new one with one click; updates are signed and verified. After an update a short <b>What's new</b> note shows what changed.</p>
+      </section>
+
+      <section id="faq">
+        <h2>Troubleshooting</h2>
+        <details><summary>A download says the server refused access (403) or the link expired.</summary><p>The site wants your browser session. Start the download from the browser with the extension (it sends the site's cookies), or open the details panel and use <b>Refresh download link</b>.</p></details>
+        <details><summary>Videos fail to download.</summary><p>Sites change often. KuDownloader updates its video tools automatically; you can also update them in <b>Settings › Media</b>. Signed-in content needs the extension or a cookies file.</p></details>
+        <details><summary>The browser does not open KuDownloader.</summary><p>Open <b>Settings › Browser integration</b> and check the browser shows as connected. Restart the browser after installing the extension.</p></details>
+        <details><summary>KuAirSend cannot find my other device.</summary><p>Make sure both are on the same network (not a guest network), KuAirSend is on on both, and the firewall allows it (see <a href="#airsend">KuAirSend</a>). Try <b>Add by IP</b>.</p></details>
+        <details><summary>The Android app closed unexpectedly.</summary><p>Open it again: it offers to share a report of what happened. Please send it with a <a href="https://github.com/kuduyDigital/ku-download-manager/issues">problem report</a> so it can be fixed.</p></details>
+        <p>Still stuck? <a href="https://github.com/kuduyDigital/ku-download-manager/issues">Report a problem</a> on GitHub.</p>
+      </section>
+    </main>
+  </div>
+
+  <footer class="foot">
+    <canvas class="field" data-field aria-hidden="true"></canvas>
+    <div class="foot-inner">
+      <a class="brand" href="./"><img src="icon.svg" width="26" height="26" alt=""> <span>KuDownloader</span></a>
+      <div class="cols">
+        <div><h4>Product</h4><a href="./#download">Download</a><a href="./#features">Features</a><a href="./#airsend">KuAirSend</a><a href="https://github.com/kuduyDigital/ku-download-manager/releases">Changelog</a></div>
+        <div><h4>Help</h4><a href="docs.html">Documentation</a><a href="docs.html#install">Install</a><a href="docs.html#faq">Troubleshooting</a></div>
+        <div><h4>Project</h4><a href="https://github.com/kuduyDigital/ku-download-manager">Source code</a><a href="https://github.com/kuduyDigital/ku-download-manager/issues">Report a problem</a><a href="privacy.html">Privacy</a></div>
+      </div>
+    </div>
+    <p class="copy"><span>KuDownloader · Free and open source</span><span class="made">Made by <a href="https://github.com/kuduyDigital"><b>Kuduy</b></a></span></p>
+  </footer>
+</body>
+</html>

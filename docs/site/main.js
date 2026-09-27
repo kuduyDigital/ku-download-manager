@@ -28,13 +28,14 @@
     io.observe(el);
   });
 
-  // ───────── Dash field: small coloured dashes that swirl around the pointer ─────────
-  const COLORS = ["#2563eb", "#4f8cff", "#d4ff00", "#16a34a", "#f97316", "#ec4899", "#7c3aed", "#06b6d4", "#facc15"];
+  // ───────── Star field: twinkling stars in three depths, drifting with the
+  // pointer, and now and then a shooting star ─────────
   function field(canvas) {
     const ctx = canvas.getContext("2d");
     const dense = canvas.hasAttribute("data-dense");
-    let w = 0, h = 0, dpr = 1, dots = [], raf = 0, visible = true, t0 = performance.now();
-    const pointer = { x: 0, y: 0, tx: 0, ty: 0, active: false };
+    let w = 0, h = 0, dpr = 1, stars = [], meteors = [], raf = 0, visible = true, nextMeteor = 0;
+    const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
+    const palette = () => (dark() ? ["#ffffff", "#dbe7ff", "#a9c4ff", "#fff4d6"] : ["#1e3a8a", "#2563eb", "#475569", "#7c3aed"]);
 
     function build() {
       const r = canvas.getBoundingClientRect();
@@ -44,66 +45,72 @@
       canvas.width = w * dpr;
       canvas.height = h * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const count = Math.round((w * h) / (dense ? 1900 : 2300));
-      dots = Array.from({ length: Math.min(count, 1100) }, () => ({
-        hx: Math.random() * w,
-        hy: Math.random() * h,
-        x: 0,
-        y: 0,
-        len: 3 + Math.random() * 6,
-        phase: Math.random() * Math.PI * 2,
-        speed: 0.15 + Math.random() * 0.35,
-        orbit: 4 + Math.random() * 14,
-        color: COLORS[(Math.random() * COLORS.length) | 0],
-        a: 0,
-      }));
-      if (!pointer.active) {
-        pointer.x = pointer.tx = w / 2;
-        pointer.y = pointer.ty = h * 0.55;
-      }
+      const colors = palette();
+      const count = Math.min(Math.round((w * h) / (dense ? 2600 : 3200)), 700);
+      stars = Array.from({ length: count }, () => {
+        const depth = Math.random(); // 0 far … 1 near
+        return {
+          x: Math.random() * w,
+          y: Math.random() * h,
+          depth,
+          r: 0.4 + depth * depth * 1.8,
+          base: 0.25 + depth * 0.6,
+          tw: 0.6 + Math.random() * 2.2, // twinkle speed
+          phase: Math.random() * Math.PI * 2,
+          color: colors[(Math.random() * colors.length) | 0],
+        };
+      });
+      meteors = [];
     }
 
     function frame(now) {
-      const t = (now - t0) / 1000;
-      // The focus point eases toward the pointer, or wanders on its own.
-      if (!pointer.active) {
-        pointer.tx = w / 2 + Math.cos(t * 0.35) * w * 0.22;
-        pointer.ty = h * 0.55 + Math.sin(t * 0.5) * h * 0.16;
-      }
-      pointer.x += (pointer.tx - pointer.x) * 0.08;
-      pointer.y += (pointer.ty - pointer.y) * 0.08;
+      const t = now / 1000;
+      pointer.x += (pointer.tx - pointer.x) * 0.05;
+      pointer.y += (pointer.ty - pointer.y) * 0.05;
       ctx.clearRect(0, 0, w, h);
-      const reach = Math.max(w, h) * 0.42;
-      for (const d of dots) {
-        const ox = Math.cos(t * d.speed + d.phase) * d.orbit;
-        const oy = Math.sin(t * d.speed * 1.3 + d.phase) * d.orbit;
-        let x = d.hx + ox;
-        let y = d.hy + oy;
-        const dx = x - pointer.x;
-        const dy = y - pointer.y;
-        const dist = Math.hypot(dx, dy) || 1;
-        // Pushed outward near the focus, like a ripple around it.
-        const push = Math.max(0, 1 - dist / 170) * 38;
-        x += (dx / dist) * push;
-        y += (dy / dist) * push;
-        // Brightest in a ring around the focus, fading with distance.
-        const ring = Math.exp(-(((dist - 150) / 120) ** 2));
-        const near = Math.max(0, 1 - dist / reach);
-        const target = 0.08 + ring * 0.85 + near * 0.25;
-        d.a += (Math.min(target, 1) - d.a) * 0.1;
-        // Dashes point along the swirl around the focus.
-        const ang = Math.atan2(dy, dx) + Math.PI / 2 + Math.sin(t + d.phase) * 0.25;
-        const lx = Math.cos(ang) * d.len;
-        const ly = Math.sin(ang) * d.len;
-        ctx.globalAlpha = d.a;
-        ctx.strokeStyle = d.color;
-        ctx.lineWidth = 2;
+      const light = !dark();
+      for (const s of stars) {
+        // Near stars move more with the pointer (parallax) and drift slowly.
+        const px = s.x + pointer.x * s.depth * 18 + t * s.depth * 3;
+        const py = s.y + pointer.y * s.depth * 12;
+        const x = ((px % w) + w) % w;
+        const y = ((py % h) + h) % h;
+        const a = s.base * (0.55 + 0.45 * Math.sin(t * s.tw + s.phase)) * (light ? 0.7 : 1);
+        ctx.globalAlpha = a;
+        ctx.fillStyle = s.color;
+        ctx.beginPath();
+        ctx.arc(x, y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+        // The brightest near stars get a soft cross glint.
+        if (s.r > 1.6 && a > 0.55) {
+          ctx.globalAlpha = a * 0.35;
+          ctx.fillRect(x - s.r * 3, y - 0.5, s.r * 6, 1);
+          ctx.fillRect(x - 0.5, y - s.r * 3, 1, s.r * 6);
+        }
+      }
+      // Shooting stars.
+      if (!reduced && now > nextMeteor) {
+        nextMeteor = now + 2500 + Math.random() * 4500;
+        meteors.push({ x: Math.random() * w * 0.8 + w * 0.1, y: Math.random() * h * 0.35, vx: 7 + Math.random() * 4, vy: 3 + Math.random() * 2, life: 1 });
+      }
+      for (const m of meteors) {
+        m.x += m.vx;
+        m.y += m.vy;
+        m.life -= 0.018;
+        const g = ctx.createLinearGradient(m.x, m.y, m.x - m.vx * 14, m.y - m.vy * 14);
+        const c = light ? "37, 99, 235" : "255, 255, 255";
+        g.addColorStop(0, `rgba(${c}, ${Math.max(m.life, 0)})`);
+        g.addColorStop(1, `rgba(${c}, 0)`);
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = g;
+        ctx.lineWidth = 1.6;
         ctx.lineCap = "round";
         ctx.beginPath();
-        ctx.moveTo(x - lx / 2, y - ly / 2);
-        ctx.lineTo(x + lx / 2, y + ly / 2);
+        ctx.moveTo(m.x, m.y);
+        ctx.lineTo(m.x - m.vx * 14, m.y - m.vy * 14);
         ctx.stroke();
       }
+      meteors = meteors.filter((m) => m.life > 0 && m.x < w + 200 && m.y < h + 200);
       ctx.globalAlpha = 1;
       if (visible && !reduced) raf = requestAnimationFrame(frame);
     }
@@ -111,11 +118,11 @@
     const host = canvas.parentElement;
     host.addEventListener("pointermove", (e) => {
       const r = canvas.getBoundingClientRect();
-      pointer.tx = e.clientX - r.left;
-      pointer.ty = e.clientY - r.top;
-      pointer.active = true;
+      pointer.tx = (e.clientX - r.left) / r.width - 0.5;
+      pointer.ty = (e.clientY - r.top) / r.height - 0.5;
     });
-    host.addEventListener("pointerleave", () => (pointer.active = false));
+    host.addEventListener("pointerleave", () => { pointer.tx = 0; pointer.ty = 0; });
+    matchMedia("(prefers-color-scheme: dark)").addEventListener("change", build);
     new IntersectionObserver(([e]) => {
       visible = e.isIntersecting;
       cancelAnimationFrame(raf);
@@ -130,6 +137,17 @@
   }
   $$("[data-field]").forEach(field);
 
+  // ───────── Docs: highlight the section being read ─────────
+  const tocLinks = $$(".toc a");
+  if (tocLinks.length) {
+    const byId = new Map(tocLinks.map((a) => [a.getAttribute("href").slice(1), a]));
+    const spy = new IntersectionObserver((entries) => entries.forEach((e) => {
+      if (!e.isIntersecting) return;
+      tocLinks.forEach((a) => a.classList.remove("on"));
+      byId.get(e.target.id)?.classList.add("on");
+    }), { rootMargin: "-20% 0px -70% 0px" });
+    $$(".docs-body section[id]").forEach((s) => spy.observe(s));
+  }
   // ───────── The product frame stands up as it scrolls into view ─────────
   const frameEl = $("[data-tilt]");
   if (frameEl && !reduced) {

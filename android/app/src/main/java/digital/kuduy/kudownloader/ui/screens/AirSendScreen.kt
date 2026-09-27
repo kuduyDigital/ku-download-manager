@@ -358,12 +358,26 @@ private fun Radar(alias: String, avatar: String, peers: List<AirPeer>, onPick: (
             var gy = c.y % step
             while (gy < size.height) { drawLine(cyan.copy(alpha = 0.07f), Offset(0f, gy), Offset(size.width, gy), 1f); gy += step }
             // Sweep: a magenta wedge fading behind the scan line.
+            // The leading edge is at 0° (pointing right) and the tail fades out behind it.
             rotate(angle, c) {
                 drawArc(
-                    androidx.compose.ui.graphics.Brush.sweepGradient(0f to Color.Transparent, 0.8f to Color.Transparent, 1f to magenta.copy(alpha = 0.40f), center = c),
+                    androidx.compose.ui.graphics.Brush.sweepGradient(
+                        0f to Color.Transparent, 0.7f to Color.Transparent, 0.78f to magenta.copy(alpha = 0.04f),
+                        0.89f to magenta.copy(alpha = 0.14f), 0.97f to magenta.copy(alpha = 0.32f), 1f to magenta.copy(alpha = 0.55f),
+                        center = c,
+                    ),
                     startAngle = 0f, sweepAngle = 360f, useCenter = true,
                     topLeft = Offset(c.x - r * 0.94f, c.y - r * 0.94f), size = androidx.compose.ui.geometry.Size(r * 1.88f, r * 1.88f),
                 )
+                // The beam: a glowing line with a hot spot where it meets the rim.
+                val tip = Offset(c.x + r * 0.93f, c.y)
+                drawLine(magenta.copy(alpha = 0.25f), c, tip, 10f, cap = androidx.compose.ui.graphics.StrokeCap.Round)
+                drawLine(
+                    androidx.compose.ui.graphics.Brush.linearGradient(listOf(magenta.copy(alpha = 0.1f), Color(0xFFFF6EA0), Color.White), start = c, end = tip),
+                    c, tip, 3f, cap = androidx.compose.ui.graphics.StrokeCap.Round,
+                )
+                drawCircle(magenta.copy(alpha = 0.45f), 9f, tip)
+                drawCircle(Color.White, 4f, tip)
             }
             val j = jolt.dp.toPx()
             listOf(0.3f to cyan, 0.62f to magenta, 0.94f to cyan).forEach { (f, col) ->

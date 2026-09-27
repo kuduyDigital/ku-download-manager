@@ -197,12 +197,12 @@ fun BrowserScreen() {
     Column(Modifier.fillMaxSize().statusBarsPadding()) {
         // Address bar: a Safari-style pill showing the site; tap to type.
         Row(
-            Modifier.fillMaxWidth().padding(start = 8.dp, end = 4.dp, top = 6.dp, bottom = 6.dp),
+            Modifier.fillMaxWidth().height(52.dp).padding(start = 6.dp, end = 2.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             androidx.compose.animation.AnimatedVisibility(!editing && !tab.isStart) {
-                IconButton({ val v = tab.view; if (v != null && v.canGoBack()) v.goBack() else open(tab, "") }) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, t("Back"))
+                IconButton({ val v = tab.view; if (v != null && v.canGoBack()) v.goBack() else open(tab, "") }, Modifier.size(40.dp)) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, t("Back"), Modifier.size(22.dp))
                 }
             }
             AddressPill(
@@ -222,9 +222,9 @@ fun BrowserScreen() {
                 modifier = Modifier.weight(1f),
             )
             if (editing) {
-                androidx.compose.material3.TextButton({ focus.clearFocus() }) { Text(t("Cancel"), fontWeight = FontWeight.SemiBold) }
+                androidx.compose.material3.TextButton({ focus.clearFocus(); editing = false }) { Text(t("Cancel"), fontWeight = FontWeight.SemiBold) }
             } else {
-                IconButton({ tabsOpen = true }) {
+                IconButton({ tabsOpen = true }, Modifier.size(40.dp)) {
                     Box(
                         Modifier.size(22.dp).clip(RoundedCornerShape(7.dp)).border(1.8.dp, MaterialTheme.colorScheme.onSurface, RoundedCornerShape(7.dp)),
                         contentAlignment = Alignment.Center,
@@ -233,7 +233,7 @@ fun BrowserScreen() {
                     }
                 }
                 Box {
-                    IconButton({ menu = true }) { Icon(Icons.Filled.MoreVert, t("More")) }
+                    IconButton({ menu = true }, Modifier.size(40.dp)) { Icon(Icons.Filled.MoreVert, t("More"), Modifier.size(22.dp)) }
                     BrowserMenu(tab, menu, { menu = false }, onHistory = { historyOpen = true })
                 }
             }
@@ -308,6 +308,7 @@ private fun AddressPill(
 ) {
     val scheme = MaterialTheme.colorScheme
     val focusRequester = remember { FocusRequester() }
+    var hadFocus by remember { mutableStateOf(false) }
     var field by remember { mutableStateOf(TextFieldValue(address)) }
     // Select everything when editing starts, so typing replaces the address.
     LaunchedEffect(editing) {
@@ -319,9 +320,9 @@ private fun AddressPill(
     LaunchedEffect(address) { if (address != field.text) field = field.copy(text = address, selection = TextRange(address.length)) }
 
     Surface(
-        shape = RoundedCornerShape(14.dp),
+        shape = RoundedCornerShape(12.dp),
         color = scheme.surfaceContainerHigh,
-        modifier = modifier.height(44.dp),
+        modifier = modifier.height(40.dp),
     ) {
         Row(Modifier.fillMaxSize().padding(start = 12.dp, end = 2.dp), verticalAlignment = Alignment.CenterVertically) {
             if (editing || tab.isStart) {
@@ -338,7 +339,17 @@ private fun AddressPill(
                     cursorBrush = SolidColor(scheme.primary),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Go, autoCorrectEnabled = false),
                     keyboardActions = KeyboardActions(onGo = { onGo() }),
-                    modifier = Modifier.weight(1f).focusRequester(focusRequester).onFocusChanged { if (it.isFocused != editing) onEditing(it.isFocused) },
+                    modifier = Modifier.weight(1f).focusRequester(focusRequester).onFocusChanged {
+                        if (it.isFocused) {
+                            hadFocus = true
+                            if (!editing) onEditing(true)
+                        } else if (hadFocus) {
+                            // Only a real loss of focus ends editing, not the first
+                            // "unfocused" report of a field that was just shown.
+                            hadFocus = false
+                            if (editing) onEditing(false)
+                        }
+                    },
                     decorationBox = { inner ->
                         Box(contentAlignment = Alignment.CenterStart) {
                             if (field.text.isEmpty()) Text(t("Search or type an address"), style = MaterialTheme.typography.bodyLarge, color = scheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)

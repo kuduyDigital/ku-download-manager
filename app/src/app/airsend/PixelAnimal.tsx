@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 
 /**
  * 8-bit animal faces for KuAirSend devices. Each sprite is the left half of a
@@ -131,17 +131,51 @@ export const ANIMAL_NAMES: Record<string, string> = {
   cow: "Cow",
 };
 
-function spriteRects(s: Sprite) {
+/** Cyberpunk theme: neon outline, glowing implant eyes, darker saturated fur. */
+const CYBER_OUTLINE = "#05D9E8";
+const CYBER_EYE = "#FF2A6D";
+function cyber(color: string): string {
+  const m = /^#([0-9a-f]{6})$/i.exec(color);
+  if (!m) return color;
+  const n = parseInt(m[1], 16);
+  let r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  // Darken, then push towards violet so every animal sits in the neon night.
+  r = Math.round(r * 0.55 + 40);
+  g = Math.round(g * 0.45 + 10);
+  b = Math.round(b * 0.6 + 70);
+  return `rgb(${Math.min(r, 255)}, ${Math.min(g, 255)}, ${Math.min(b, 255)})`;
+}
+
+/** True while the dark Cyberpunk palette is active (follows theme changes). */
+export function useCyberpunk(): boolean {
+  const read = () => document.documentElement.dataset.theme === "dark" && document.documentElement.dataset.palette === "cyberpunk";
+  const [on, setOn] = useState(read);
+  useEffect(() => {
+    const mo = new MutationObserver(() => setOn(read()));
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "data-palette"] });
+    return () => mo.disconnect();
+  }, []);
+  return on;
+}
+
+function spriteRects(s: Sprite, neon = false) {
   const px: { x: number; y: number; c: string; eye: boolean }[] = [];
+  const col = (ch: string) => {
+    const c = s.pal[ch] ?? "#ff00ff";
+    if (!neon) return c;
+    if (ch === "o") return CYBER_OUTLINE;
+    if (ch === "k") return CYBER_EYE;
+    return cyber(c);
+  };
   s.half.forEach((row, y) => {
     const full = row + [...row].reverse().join("");
     [...full].forEach((ch, x) => {
       if (ch === ".") return;
       if (ch === "k") {
-        px.push({ x, y, c: s.pal[s.lid], eye: false });
-        px.push({ x, y, c: s.pal.k, eye: true });
+        px.push({ x, y, c: col(s.lid), eye: false });
+        px.push({ x, y, c: col("k"), eye: true });
       } else {
-        px.push({ x, y, c: s.pal[ch] ?? "#ff00ff", eye: false });
+        px.push({ x, y, c: col(ch), eye: false });
       }
     });
   });
@@ -153,13 +187,15 @@ const CACHE = new Map<string, ReturnType<typeof spriteRects>>();
 /** A round avatar with an animated 8-bit animal. */
 export const PixelAnimal = memo(function PixelAnimal({ animal, size = 64, seed = 0, still }: { animal: string; size?: number; seed?: number; still?: boolean }) {
   const s = SPRITES[animal] ?? SPRITES.cat;
-  let rects = CACHE.get(animal);
-  if (!rects) CACHE.set(animal, (rects = spriteRects(s)));
+  const neon = useCyberpunk();
+  const key = neon ? `${animal}:neon` : animal;
+  let rects = CACHE.get(key);
+  if (!rects) CACHE.set(key, (rects = spriteRects(s, neon)));
   const rows = s.half.length;
   // Different devices bob and blink out of step.
   const delay = { animationDelay: `${-(seed % 17) * 0.23}s` };
   return (
-    <span className="px-avatar" style={{ width: size, height: size, ["--px-bg-light" as string]: s.bg[0], ["--px-bg-dark" as string]: s.bg[1] }} data-still={still || undefined}>
+    <span className="px-avatar" style={{ width: size, height: size, ["--px-bg-light" as string]: s.bg[0], ["--px-bg-dark" as string]: s.bg[1], ...delay }} data-still={still || undefined} data-neon={neon || undefined}>
       <svg viewBox={`-1.75 ${-(15 - rows) / 2} 15.5 15`} shapeRendering="crispEdges" aria-hidden="true">
         <g className="px-sprite" style={delay}>
           {rects.map((r, i) => (

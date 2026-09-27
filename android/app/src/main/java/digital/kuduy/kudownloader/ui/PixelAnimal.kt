@@ -9,6 +9,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -43,6 +44,17 @@ fun hashPick(fingerprint: String, n: Int): Int {
 
 fun avatarOf(avatar: String, fingerprint: String) = avatar.takeIf { it in SPRITES } ?: AVATARS[hashPick(fingerprint, AVATARS.size)]
 
+private val CYBER_CYAN = Color(0xFF05D9E8)
+private val CYBER_MAGENTA = Color(0xFFFF2A6D)
+private val CYBER_YELLOW = Color(0xFFF9F002)
+
+/** Cyberpunk theme: fur darkened and pushed towards violet (same formula as the desktop). */
+private fun cyberFur(c: Color): Color = Color(
+    red = ((c.red * 255 * 0.55f + 40) / 255).coerceIn(0f, 1f),
+    green = ((c.green * 255 * 0.45f + 10) / 255).coerceIn(0f, 1f),
+    blue = ((c.blue * 255 * 0.6f + 70) / 255).coerceIn(0f, 1f),
+)
+
 /** A round avatar with an 8-bit animal that bobs and blinks. */
 @Composable
 fun PixelAnimal(animal: String, size: Dp = 64.dp, seed: Int = 0, still: Boolean = false) {
@@ -70,7 +82,35 @@ fun PixelAnimal(animal: String, size: Dp = 64.dp, seed: Int = 0, still: Boolean 
         ),
         label = "blink",
     )
-    Box(Modifier.size(size).clip(CircleShape).background(if (dark) s.bgDark else s.bgLight)) {
+    val cyber = LocalKuColors.current.cyber
+    // Cyberpunk: a visor line sweeping down, and now and then a glitch (the
+    // face jumps sideways and splits into magenta and cyan).
+    val visor by anim.animateFloat(
+        -0.05f, 1.05f,
+        infiniteRepeatable(tween(2600, easing = LinearEasing), initialStartOffset = androidx.compose.animation.core.StartOffset(phase * 2)),
+        label = "visor",
+    )
+    val glitch by anim.animateFloat(
+        0f, 0f,
+        infiniteRepeatable(
+            keyframes {
+                durationMillis = 5000
+                0f at 0
+                0f at 4500
+                0.6f at 4520
+                -0.8f at 4600
+                0.4f at 4680
+                0f at 4760
+            },
+            initialStartOffset = androidx.compose.animation.core.StartOffset(phase * 4),
+        ),
+        label = "glitch",
+    )
+    val bg = if (cyber) Color(0xFF120A26) else if (dark) s.bgDark else s.bgLight
+    Box(
+        Modifier.size(size).clip(CircleShape).background(bg)
+            .then(if (cyber) Modifier.border(1.dp, CYBER_CYAN.copy(alpha = 0.6f), CircleShape) else Modifier),
+    ) {
         Canvas(Modifier.size(size)) {
             val rows = s.half.size
             // 12 wide, `rows` tall, inside a 15.5 × 15 box like the desktop's viewBox.
@@ -78,16 +118,37 @@ fun PixelAnimal(animal: String, size: Dp = 64.dp, seed: Int = 0, still: Boolean 
             val left = 1.75f * unit
             val top = ((15 - rows) / 2f) * unit + if (still) 0f else (bob - 0.5f) * unit * 0.5f
             val eyesShut = !still && blink > 0.5f
-            s.half.forEachIndexed { y, row ->
-                val full = row + row.reversed()
-                full.forEachIndexed { x, ch ->
-                    if (ch == '.') return@forEachIndexed
-                    val c = when {
-                        ch == 'k' && eyesShut -> s.pal[s.lid]
-                        else -> s.pal[ch]
-                    } ?: Color.Magenta
-                    drawRect(c, Offset(left + x * unit, top + y * unit), Size(unit * 1.02f, unit * 1.02f))
+            val jolt = if (cyber && !still) glitch * unit else 0f
+            fun colour(ch: Char): Color {
+                val raw = s.pal[if (ch == 'k' && eyesShut) s.lid else ch] ?: return Color.Magenta
+                if (!cyber) return raw
+                return when {
+                    ch == 'o' -> CYBER_CYAN
+                    ch == 'k' && !eyesShut -> CYBER_MAGENTA
+                    else -> cyberFur(raw)
                 }
+            }
+            fun face(dx: Float, tint: Color?) {
+                s.half.forEachIndexed { y, row ->
+                    val full = row + row.reversed()
+                    full.forEachIndexed { x, ch ->
+                        if (ch == '.') return@forEachIndexed
+                        drawRect(tint ?: colour(ch), Offset(left + x * unit + dx, top + y * unit), Size(unit * 1.02f, unit * 1.02f))
+                    }
+                }
+            }
+            if (jolt != 0f) {
+                face(jolt - unit * 0.6f, CYBER_MAGENTA.copy(alpha = 0.55f))
+                face(jolt + unit * 0.6f, CYBER_CYAN.copy(alpha = 0.55f))
+            }
+            face(jolt, null)
+            if (cyber && !still) {
+                val y = this.size.height * visor
+                drawRect(
+                    androidx.compose.ui.graphics.Brush.horizontalGradient(listOf(Color.Transparent, CYBER_YELLOW.copy(alpha = 0.9f), Color.Transparent)),
+                    Offset(this.size.width * 0.08f, y),
+                    Size(this.size.width * 0.84f, 1.5.dp.toPx()),
+                )
             }
         }
     }

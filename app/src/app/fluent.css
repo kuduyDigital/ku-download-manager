@@ -1517,6 +1517,135 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .px-sprite, .px-eye, .air-rings > i { animation: none !important; }
 }
+.air-rings > b {
+  display: none;
+}
+
+/* ───────── KuAirSend, Cyberpunk theme ─────────
+   Neon cyber-animals with a visor scan and glitch bursts; the radar becomes a
+   HUD scanner: grid, neon rings, rotating sweep, square target pings. */
+.px-avatar[data-neon] {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(255, 42, 109, 0.22), transparent 65%),
+    #120a26;
+  box-shadow: inset 0 0 0 1px rgba(5, 217, 232, 0.55), 0 0 12px rgba(5, 217, 232, 0.28);
+}
+.px-avatar[data-neon] svg {
+  filter: drop-shadow(0 0 1.5px rgba(5, 217, 232, 0.8));
+  animation: cp-avatar-glitch 5s steps(1, end) infinite;
+  animation-delay: inherit;
+}
+.px-avatar[data-neon] .px-eye {
+  filter: drop-shadow(0 0 1px #FF2A6D);
+}
+/* Visor scan: a thin neon line sweeping down the face. */
+.px-avatar[data-neon]::after {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  height: 2px;
+  top: 0;
+  background: linear-gradient(90deg, transparent, rgba(249, 240, 2, 0.9), transparent);
+  box-shadow: 0 0 6px rgba(249, 240, 2, 0.7);
+  animation: cp-visor 2.6s linear infinite;
+  animation-delay: inherit;
+  pointer-events: none;
+}
+.px-avatar[data-neon][data-still] svg,
+.px-avatar[data-neon][data-still]::after {
+  animation: none;
+}
+.px-avatar[data-neon][data-still]::after {
+  display: none;
+}
+@keyframes cp-visor {
+  0% { top: -4%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 104%; opacity: 0; }
+}
+@keyframes cp-avatar-glitch {
+  0%, 90%, 100% { transform: none; filter: drop-shadow(0 0 1.5px rgba(5, 217, 232, 0.8)); clip-path: none; }
+  91% { transform: translateX(3%); filter: drop-shadow(-2px 0 #FF2A6D) drop-shadow(2px 0 #05D9E8); clip-path: inset(0 0 60% 0); }
+  93% { transform: translateX(-4%); filter: drop-shadow(2px 0 #FF2A6D) drop-shadow(-2px 0 #05D9E8); clip-path: inset(40% 0 0 0); }
+  95% { transform: translateX(2%); clip-path: none; }
+}
+:root[data-palette="cyberpunk"] .air-me .px-avatar {
+  box-shadow: 0 0 0 3px var(--bg-content), 0 0 0 5px #FF2A6D, 0 0 18px rgba(255, 42, 109, 0.55);
+}
+:root[data-theme="dark"][data-palette="cyberpunk"] .air-radar {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 42, 109, 0.10), transparent 55%),
+    linear-gradient(rgba(5, 217, 232, 0.06) 1px, transparent 1px) 0 0 / 28px 28px,
+    linear-gradient(90deg, rgba(5, 217, 232, 0.06) 1px, transparent 1px) 0 0 / 28px 28px,
+    #0a0616;
+  border-color: rgba(5, 217, 232, 0.28);
+  box-shadow: inset 0 0 40px rgba(5, 217, 232, 0.08);
+}
+:root[data-theme="dark"][data-palette="cyberpunk"] .air-rings > span {
+  border: 1px solid rgba(5, 217, 232, 0.45);
+  box-shadow: 0 0 10px rgba(5, 217, 232, 0.18), inset 0 0 10px rgba(5, 217, 232, 0.12);
+  animation: cp-ring-glitch 4.4s steps(1, end) infinite;
+}
+:root[data-theme="dark"][data-palette="cyberpunk"] .air-rings > span:nth-child(2) {
+  border-style: dashed;
+  border-color: rgba(255, 42, 109, 0.45);
+  animation-delay: -1.5s;
+}
+:root[data-theme="dark"][data-palette="cyberpunk"] .air-rings > span:nth-child(3) {
+  animation-delay: -2.9s;
+}
+@keyframes cp-ring-glitch {
+  0%, 91%, 100% { transform: none; filter: none; }
+  92% { transform: translateX(4px) scale(1.01); filter: drop-shadow(-3px 0 #FF2A6D) drop-shadow(3px 0 #05D9E8); }
+  94% { transform: translateX(-3px); filter: drop-shadow(3px 0 #FF2A6D); }
+}
+/* Target ping: a square that grows out instead of a circle. */
+:root[data-theme="dark"][data-palette="cyberpunk"] .air-rings > i {
+  border-radius: 4px;
+  border: 2px solid #05D9E8;
+  box-shadow: 0 0 12px rgba(5, 217, 232, 0.6);
+  animation: cp-ping 2.8s ease-out infinite;
+}
+@keyframes cp-ping {
+  0% { transform: scale(0.5) rotate(45deg); opacity: 0.8; }
+  100% { transform: scale(4.4) rotate(45deg); opacity: 0; }
+}
+/* Rotating scanner sweep. */
+:root[data-theme="dark"][data-palette="cyberpunk"] .air-rings > b {
+  display: block;
+  position: absolute;
+  height: 90%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(255, 42, 109, 0.38), rgba(255, 42, 109, 0.08) 45deg, transparent 70deg);
+  mask: radial-gradient(circle, #000 69%, transparent 70%);
+  animation: cp-sweep 3.6s linear infinite;
+}
+@keyframes cp-sweep {
+  to { transform: rotate(360deg); }
+}
+:root[data-theme="dark"][data-palette="cyberpunk"] .air-peer:hover,
+:root[data-theme="dark"][data-palette="cyberpunk"] .air-peer:focus-visible {
+  background: rgba(5, 217, 232, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(5, 217, 232, 0.35);
+}
+:root[data-theme="dark"][data-palette="cyberpunk"] .air-sub {
+  color: #05D9E8;
+  opacity: 0.8;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+@media (prefers-reduced-motion: reduce) {
+  .px-avatar[data-neon] svg,
+  .px-avatar[data-neon]::after,
+  :root[data-palette="cyberpunk"] .air-rings > * {
+    animation: none !important;
+  }
+}
 
 .air-page {
   display: flex;

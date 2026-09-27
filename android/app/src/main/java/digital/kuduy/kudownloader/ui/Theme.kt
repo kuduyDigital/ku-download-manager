@@ -40,7 +40,8 @@ val ACCENTS = listOf(
 val Danger = Color(0xFFD13438)
 val UploadColor = Color(0xFF16A34A)
 
-data class KuColors(val success: Color, val warning: Color, val danger: Color, val upload: Color, val dark: Boolean)
+/** `cyber`: the dark Cyberpunk palette is on (neon animals, HUD radar, glitching bars). */
+data class KuColors(val success: Color, val warning: Color, val danger: Color, val upload: Color, val dark: Boolean, val cyber: Boolean = false)
 
 val LocalKuColors = staticCompositionLocalOf { KuColors(Color(0xFF16A34A), Color(0xFFD97706), Danger, UploadColor, false) }
 
@@ -156,6 +157,7 @@ fun KuTheme(content: @Composable () -> Unit) {
         danger = Danger,
         upload = if (dark) Color(0xFF4ADE80) else UploadColor,
         dark = dark,
+        cyber = dark && palette == "cyberpunk" && !(dynamic && Build.VERSION.SDK_INT >= 31),
     )
     CompositionLocalProvider(
         LocalKuColors provides ku,

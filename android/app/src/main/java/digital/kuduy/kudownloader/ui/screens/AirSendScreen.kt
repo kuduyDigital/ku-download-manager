@@ -73,7 +73,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -330,13 +332,52 @@ private fun Radar(alias: String, avatar: String, peers: List<AirPeer>, onPick: (
     val ring = MaterialTheme.colorScheme.primary
     val sweep = rememberInfiniteTransition(label = "radar")
     val pulse by sweep.animateFloat(0f, 1f, infiniteRepeatable(tween(2600, easing = LinearEasing)), label = "pulse")
+    val cyber = digital.kuduy.kudownloader.ui.LocalKuColors.current.cyber
+    val angle by sweep.animateFloat(0f, 360f, infiniteRepeatable(tween(3600, easing = LinearEasing)), label = "sweep")
+    val jolt by sweep.animateFloat(
+        0f, 0f,
+        infiniteRepeatable(androidx.compose.animation.core.keyframes { durationMillis = 4400; 0f at 0; 0f at 4000; 5f at 4030; -4f at 4110; 0f at 4180 }),
+        label = "jolt",
+    )
     BoxWithConstraints(Modifier.fillMaxWidth().padding(horizontal = 12.dp).aspectRatio(1f).widthIn(max = 480.dp), contentAlignment = Alignment.Center) {
         val side = minOf(maxWidth, maxHeight)
         Canvas(Modifier.size(side)) {
             val c = Offset(size.width / 2, size.height / 2)
             val r = size.minDimension / 2
-            for (f in listOf(0.3f, 0.62f, 0.94f)) drawCircle(ring.copy(alpha = 0.10f), r * f, c, style = Stroke(1.5f))
-            drawCircle(ring.copy(alpha = (1f - pulse) * 0.35f), r * (0.18f + pulse * 0.8f), c, style = Stroke(3f))
+            if (!cyber) {
+                for (f in listOf(0.3f, 0.62f, 0.94f)) drawCircle(ring.copy(alpha = 0.10f), r * f, c, style = Stroke(1.5f))
+                drawCircle(ring.copy(alpha = (1f - pulse) * 0.35f), r * (0.18f + pulse * 0.8f), c, style = Stroke(3f))
+                return@Canvas
+            }
+            // Cyberpunk HUD scanner.
+            val cyan = Color(0xFF05D9E8)
+            val magenta = Color(0xFFFF2A6D)
+            val step = 28.dp.toPx()
+            var gx = c.x % step
+            while (gx < size.width) { drawLine(cyan.copy(alpha = 0.07f), Offset(gx, 0f), Offset(gx, size.height), 1f); gx += step }
+            var gy = c.y % step
+            while (gy < size.height) { drawLine(cyan.copy(alpha = 0.07f), Offset(0f, gy), Offset(size.width, gy), 1f); gy += step }
+            // Sweep: a magenta wedge fading behind the scan line.
+            rotate(angle, c) {
+                drawArc(
+                    androidx.compose.ui.graphics.Brush.sweepGradient(0f to Color.Transparent, 0.8f to Color.Transparent, 1f to magenta.copy(alpha = 0.40f), center = c),
+                    startAngle = 0f, sweepAngle = 360f, useCenter = true,
+                    topLeft = Offset(c.x - r * 0.94f, c.y - r * 0.94f), size = androidx.compose.ui.geometry.Size(r * 1.88f, r * 1.88f),
+                )
+            }
+            val j = jolt.dp.toPx()
+            listOf(0.3f to cyan, 0.62f to magenta, 0.94f to cyan).forEach { (f, col) ->
+                if (j != 0f) {
+                    drawCircle(magenta.copy(alpha = 0.35f), r * f, c + Offset(-j, 0f), style = Stroke(1.5f))
+                    drawCircle(cyan.copy(alpha = 0.35f), r * f, c + Offset(j, 0f), style = Stroke(1.5f))
+                }
+                drawCircle(col.copy(alpha = 0.45f), r * f, c + Offset(j * 0.4f, 0f), style = Stroke(1.5f))
+            }
+            // Target ping: a diamond growing out of the centre.
+            val half = r * (0.12f + pulse * 0.75f)
+            rotate(45f, c) {
+                drawRect(cyan.copy(alpha = (1f - pulse) * 0.8f), Offset(c.x - half, c.y - half), androidx.compose.ui.geometry.Size(half * 2, half * 2), style = Stroke(2.5f))
+            }
         }
         // This device, in the exact centre.
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.align(Alignment.Center)) {

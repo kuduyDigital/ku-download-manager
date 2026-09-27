@@ -372,8 +372,7 @@ private fun LoadingBar(progress: Int) {
     val sheen = androidx.compose.animation.core.rememberInfiniteTransition(label = "sheen")
     val x by sheen.animateFloat(-0.3f, 1.3f, androidx.compose.animation.core.infiniteRepeatable(androidx.compose.animation.core.tween(1100, easing = androidx.compose.animation.core.LinearEasing)), label = "x")
     val accent = MaterialTheme.colorScheme.primary
-    val palette = Ku.settings.collectAsStateWithLifecycle().value["darkPalette"]?.let { (it as? kotlinx.serialization.json.JsonPrimitive)?.content }
-    if (palette == "cyberpunk" && digital.kuduy.kudownloader.ui.LocalKuColors.current.dark) {
+    if (digital.kuduy.kudownloader.ui.LocalKuColors.current.cyber) {
         CyberLoadingBar(p, alpha, loading)
         return
     }

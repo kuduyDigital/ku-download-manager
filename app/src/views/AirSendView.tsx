@@ -254,6 +254,8 @@ function Radar({ status, peers, transfers, onPeer }: { status: AirStatus; peers:
         <span />
         <span />
         <i />
+        {/* Scanner sweep (shown by the Cyberpunk theme). */}
+        <b />
       </div>
       <div className="air-me">
         <PixelAnimal animal={status.avatar} size={76} seed={hashPick(status.fingerprint, 97)} />

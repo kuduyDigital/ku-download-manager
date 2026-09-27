@@ -228,11 +228,10 @@ fun VideoScreen() {
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
-                    itemVerticalAlignment = Alignment.CenterVertically,
                 ) {
                     if (url.contains("list=") || playlist) {
                         Row(
-                            Modifier.weight(1f, fill = false).clip(RoundedCornerShape(12.dp)).clickable { playlist = !playlist }.padding(vertical = 4.dp),
+                            Modifier.weight(1f, fill = false).align(Alignment.CenterVertically).clip(RoundedCornerShape(12.dp)).clickable { playlist = !playlist }.padding(vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Switch(playlist, { playlist = it })
@@ -240,7 +239,7 @@ fun VideoScreen() {
                             Text(t("Whole playlist"), maxLines = 2)
                         }
                     }
-                    Button({ analyze() }, enabled = url.isNotBlank() && !loading) {
+                    Button({ analyze() }, Modifier.align(Alignment.CenterVertically), enabled = url.isNotBlank() && !loading) {
                         Icon(Icons.Filled.Search, null, Modifier.size(18.dp))
                         Spacer(Modifier.width(6.dp))
                         Text(t("Find formats"), maxLines = 1)

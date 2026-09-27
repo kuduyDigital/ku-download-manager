@@ -212,11 +212,12 @@ fun BrowserScreen() {
     Column(Modifier.fillMaxSize().statusBarsPadding()) {
         // Address bar: a Safari-style pill showing the site; tap to type.
         Row(
-            Modifier.fillMaxWidth().height(52.dp).padding(start = 6.dp, end = 2.dp),
+            Modifier.fillMaxWidth().height(50.dp).padding(start = 6.dp, end = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             androidx.compose.animation.AnimatedVisibility(!editing && !tab.isStart) {
-                IconButton({ val v = tab.view; if (v != null && v.canGoBack()) v.goBack() else open(tab, "") }, Modifier.size(40.dp)) {
+                IconButton({ val v = tab.view; if (v != null && v.canGoBack()) v.goBack() else open(tab, "") }, Modifier.size(38.dp)) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, t("Back"), Modifier.size(22.dp))
                 }
             }
@@ -239,7 +240,7 @@ fun BrowserScreen() {
             if (editing) {
                 androidx.compose.material3.TextButton({ focus.clearFocus(); editing = false }) { Text(t("Cancel"), fontWeight = FontWeight.SemiBold) }
             } else {
-                IconButton({ tabsOpen = true }, Modifier.size(40.dp)) {
+                IconButton({ tabsOpen = true }, Modifier.size(38.dp)) {
                     Box(
                         Modifier.size(22.dp).clip(RoundedCornerShape(7.dp)).border(1.8.dp, MaterialTheme.colorScheme.onSurface, RoundedCornerShape(7.dp)),
                         contentAlignment = Alignment.Center,
@@ -248,7 +249,7 @@ fun BrowserScreen() {
                     }
                 }
                 Box {
-                    IconButton({ menu = true }, Modifier.size(40.dp)) { Icon(Icons.Filled.MoreVert, t("More"), Modifier.size(22.dp)) }
+                    IconButton({ menu = true }, Modifier.size(38.dp)) { Icon(Icons.Filled.MoreVert, t("More"), Modifier.size(22.dp)) }
                     BrowserMenu(tab, menu, { menu = false }, onHistory = { historyOpen = true })
                 }
             }
@@ -277,21 +278,15 @@ fun BrowserScreen() {
                 // a player on the page, or a stream it loaded.
                 androidx.compose.animation.AnimatedVisibility(
                     tab.canDownload,
-                    Modifier.align(Alignment.BottomCenter).padding(bottom = 18.dp),
-                    enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.slideInVertically { it },
-                    exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.slideOutVertically { it },
+                    Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 20.dp),
+                    enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.scaleIn(initialScale = 0.4f),
+                    exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.scaleOut(targetScale = 0.4f),
                 ) {
-                    ExtendedFloatingActionButton(
-                        // A video page: its qualities straight away; otherwise the streams it loaded.
-                        onClick = {
-                            if (tab.media.isEmpty() || isVideoPage(tab.url)) UiState.quality = MediaPrefill(tab.url, BrowserState.cookies(tab.url), tab.url, tab.title)
-                            else mediaOpen = true
-                        },
-                        icon = { Icon(Icons.Filled.Download, null) },
-                        text = { Text(if (tab.media.size > 1) tf("Download video ({count})", "count" to tab.media.size) else t("Download video"), fontWeight = FontWeight.SemiBold) },
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                    )
+                    // A video page: its qualities straight away; otherwise the streams it loaded.
+                    DownloadOrb(count = tab.media.size) {
+                        if (tab.media.isEmpty() || isVideoPage(tab.url)) UiState.quality = MediaPrefill(tab.url, BrowserState.cookies(tab.url), tab.url, tab.title)
+                        else mediaOpen = true
+                    }
                 }
             }
         }
@@ -305,6 +300,46 @@ fun BrowserScreen() {
 }
 
 private fun host(url: String) = runCatching { java.net.URI(url).host?.removePrefix("www.") }.getOrNull() ?: url
+
+/**
+ * The browser's download button: a small circle in the corner with a soft
+ * pulsing ring, so it is noticed without covering the page. A badge counts
+ * the videos found when there is more than one.
+ */
+@Composable
+private fun DownloadOrb(count: Int, onClick: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    val pulse = androidx.compose.animation.core.rememberInfiniteTransition(label = "orb")
+    val p by pulse.animateFloat(0f, 1f, androidx.compose.animation.core.infiniteRepeatable(androidx.compose.animation.core.tween(1800, easing = androidx.compose.animation.core.LinearEasing)), label = "ring")
+    Box(Modifier.size(72.dp), contentAlignment = Alignment.Center) {
+        // Two rings growing out and fading, half a beat apart.
+        androidx.compose.foundation.Canvas(Modifier.matchParentSize()) {
+            val r = 26.dp.toPx()
+            for (phase in listOf(p, (p + 0.5f) % 1f)) {
+                drawCircle(scheme.primary.copy(alpha = (1f - phase) * 0.35f), radius = r + phase * 10.dp.toPx())
+            }
+        }
+        Surface(
+            onClick = onClick,
+            shape = androidx.compose.foundation.shape.CircleShape,
+            color = scheme.primary,
+            contentColor = scheme.onPrimary,
+            shadowElevation = 6.dp,
+            modifier = Modifier.size(52.dp),
+        ) {
+            Box(contentAlignment = Alignment.Center) { Icon(Icons.Filled.Download, t("Download video"), Modifier.size(24.dp)) }
+        }
+        if (count > 1) {
+            Box(
+                Modifier.align(Alignment.TopEnd).padding(top = 8.dp, end = 6.dp).size(20.dp).clip(androidx.compose.foundation.shape.CircleShape)
+                    .background(scheme.error).border(2.dp, scheme.surface, androidx.compose.foundation.shape.CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(if (count > 9) "9+" else "$count", color = Color.White, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+            }
+        }
+    }
+}
 
 /**
  * Cyberpunk theme: a segmented neon bar (Cyberpunk 2077 style). Now and then
@@ -436,11 +471,11 @@ private fun AddressPill(
     LaunchedEffect(address) { if (address != field.text) field = field.copy(text = address, selection = TextRange(address.length)) }
 
     Surface(
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(11.dp),
         color = scheme.surfaceContainerHigh,
-        modifier = modifier.height(40.dp),
+        modifier = modifier.height(38.dp),
     ) {
-        Row(Modifier.fillMaxSize().padding(start = 12.dp, end = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxSize().padding(start = 10.dp, end = 1.dp), verticalAlignment = Alignment.CenterVertically) {
             if (editing || tab.isStart) {
                 Icon(Icons.Filled.Search, null, Modifier.size(18.dp), tint = scheme.onSurfaceVariant)
                 Spacer(Modifier.width(8.dp))
@@ -481,20 +516,22 @@ private fun AddressPill(
                     Spacer(Modifier.width(10.dp))
                 }
             } else {
-                // Idle: the site, centred, like Safari. Tapping anywhere starts editing.
+                // Idle: ad-block shield, lock and site, from the left. Tapping
+                // anywhere starts editing.
                 Row(
                     Modifier.weight(1f).fillMaxHeight().clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { onEditing(true) },
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
                 ) {
-                    if (adblock && tab.blocked > 0) {
+                    if (adblock) {
                         Row(
-                            Modifier.clip(RoundedCornerShape(8.dp)).background(scheme.primary.copy(alpha = 0.14f)).padding(horizontal = 6.dp, vertical = 2.dp),
+                            Modifier.clip(RoundedCornerShape(8.dp)).background(scheme.primary.copy(alpha = 0.14f)).padding(horizontal = 5.dp, vertical = 2.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Icon(Icons.Filled.Shield, t("Ads blocked"), Modifier.size(12.dp), tint = scheme.primary)
-                            Spacer(Modifier.width(3.dp))
-                            Text(if (tab.blocked > 99) "99+" else "${tab.blocked}", style = MaterialTheme.typography.labelSmall, color = scheme.primary, fontWeight = FontWeight.Bold)
+                            Icon(Icons.Filled.Shield, t("Ads blocked"), Modifier.size(13.dp), tint = scheme.primary)
+                            if (tab.blocked > 0) {
+                                Spacer(Modifier.width(3.dp))
+                                Text(if (tab.blocked > 99) "99+" else "${tab.blocked}", style = MaterialTheme.typography.labelSmall, color = scheme.primary, fontWeight = FontWeight.Bold)
+                            }
                         }
                         Spacer(Modifier.width(8.dp))
                     }
@@ -502,11 +539,11 @@ private fun AddressPill(
                         Icon(Icons.Filled.Lock, null, Modifier.size(13.dp), tint = scheme.onSurfaceVariant)
                         Spacer(Modifier.width(5.dp))
                     }
-                    Text(host(tab.url), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(host(tab.url), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
                 }
                 val loading = tab.progress in 1..99
-                IconButton({ if (loading) tab.view?.stopLoading() else tab.view?.reload() }, Modifier.size(40.dp)) {
-                    Icon(if (loading) Icons.Filled.Close else Icons.Filled.Refresh, if (loading) t("Stop") else t("Reload"), Modifier.size(19.dp))
+                IconButton({ if (loading) tab.view?.stopLoading() else tab.view?.reload() }, Modifier.size(36.dp)) {
+                    Icon(if (loading) Icons.Filled.Close else Icons.Filled.Refresh, if (loading) t("Stop") else t("Reload"), Modifier.size(18.dp))
                 }
             }
         }

@@ -378,18 +378,16 @@
 :root[data-palette="cyberpunk"] .btn-primary:not(:disabled) {
   box-shadow: 0 0 14px -2px rgba(255, 42, 109, 0.65);
 }
-/* Cyberpunk 2077-style HUD: segmented neon bars that glitch now and then,
-   a colour-split flicker on titles, faint scanlines. */
-:root[data-theme="dark"][data-palette="cyberpunk"] .progress > span {
+/* Cyberpunk 2077-style HUD, only on live numbers and meters: progress bars
+   (segmented neon), the network card and percentages glitch now and then. */
+:root[data-theme="dark"][data-palette="cyberpunk"] :is(.progress, .status-bar) > span {
   background:
-    linear-gradient(90deg, transparent calc(100% - 5px), #F9F002 calc(100% - 5px)),
+    linear-gradient(90deg, transparent calc(100% - 4px), #F9F002 calc(100% - 4px)),
     repeating-linear-gradient(90deg, var(--progress) 0 9px, transparent 9px 11px);
   box-shadow: 0 0 8px rgba(5, 217, 232, 0.55);
   animation: cp-bar-glitch 3.4s steps(1, end) infinite;
 }
-:root[data-theme="dark"][data-palette="cyberpunk"] .progress[data-state="completed"] > span,
-:root[data-theme="dark"][data-palette="cyberpunk"] .progress[data-state="paused"] > span,
-:root[data-theme="dark"][data-palette="cyberpunk"] .progress[data-state="error"] > span {
+:root[data-theme="dark"][data-palette="cyberpunk"] .progress:is([data-state="completed"], [data-state="paused"], [data-state="error"]) > span {
   animation: none;
 }
 @keyframes cp-bar-glitch {
@@ -399,32 +397,42 @@
   93% { transform: translateX(2px); filter: drop-shadow(-2px 0 #05D9E8); }
   95% { transform: none; filter: drop-shadow(2px 0 #FF2A6D) drop-shadow(-2px 0 #05D9E8); }
 }
-:root[data-theme="dark"][data-palette="cyberpunk"] :is(.dialog-title, .pw-title, .brand-name, .about-name) {
-  text-shadow: -1px 0 rgba(255, 42, 109, 0.55), 1px 0 rgba(5, 217, 232, 0.55);
-  animation: cp-text-glitch 5.2s steps(1, end) infinite;
+/* Numbers: a steady cyan/magenta fringe, and short slice-and-shift bursts. */
+:root[data-theme="dark"][data-palette="cyberpunk"] :is(.pw-pct, .cell-status[data-tone="accent"] > span:first-child, .speed-monitor-value) {
+  display: inline-block;
+  text-shadow: -1px 0 rgba(255, 42, 109, 0.6), 1px 0 rgba(5, 217, 232, 0.6);
+  animation: cp-num-glitch 4.6s steps(1, end) infinite;
 }
-@keyframes cp-text-glitch {
-  0%, 94%, 100% { transform: none; text-shadow: -1px 0 rgba(255, 42, 109, 0.55), 1px 0 rgba(5, 217, 232, 0.55); clip-path: none; }
-  95% { transform: translateX(2px); text-shadow: -3px 0 #FF2A6D, 3px 0 #05D9E8; clip-path: inset(10% 0 55% 0); }
-  96% { transform: translateX(-2px); text-shadow: 3px 0 #FF2A6D, -3px 0 #05D9E8; clip-path: inset(50% 0 15% 0); }
-  97% { transform: translateX(1px); clip-path: none; }
+:root[data-theme="dark"][data-palette="cyberpunk"] .speed-monitor-value {
+  animation-duration: 3.8s;
+  animation-delay: -1.3s;
 }
-:root[data-theme="dark"][data-palette="cyberpunk"] body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 200;
-  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.14) 0 1px, transparent 1px 3px);
-  mix-blend-mode: multiply;
+:root[data-theme="dark"][data-palette="cyberpunk"] .cell-status[data-tone="accent"] > span:first-child {
+  animation-duration: 5.4s;
+}
+@keyframes cp-num-glitch {
+  0%, 92%, 100% { transform: none; clip-path: none; text-shadow: -1px 0 rgba(255, 42, 109, 0.6), 1px 0 rgba(5, 217, 232, 0.6); }
+  93% { transform: translateX(2px); clip-path: inset(0 0 55% 0); text-shadow: -3px 0 #FF2A6D, 3px 0 #05D9E8; }
+  94.5% { transform: translateX(-3px); clip-path: inset(45% 0 0 0); text-shadow: 3px 0 #FF2A6D, -3px 0 #05D9E8; }
+  96% { transform: translateX(1px); clip-path: none; text-shadow: -2px 0 #FF2A6D, 2px 0 #05D9E8; }
+}
+/* Network graph: the lines jolt with a colour split. */
+:root[data-theme="dark"][data-palette="cyberpunk"] .speed-monitor-graph {
+  filter: drop-shadow(0 0 3px rgba(5, 217, 232, 0.5));
+  animation: cp-graph-glitch 4.2s steps(1, end) infinite;
+}
+@keyframes cp-graph-glitch {
+  0%, 90%, 100% { transform: none; filter: drop-shadow(0 0 3px rgba(5, 217, 232, 0.5)); }
+  91% { transform: translateX(3px) skewX(-6deg); filter: drop-shadow(-3px 0 #FF2A6D) drop-shadow(3px 0 #05D9E8); }
+  93% { transform: translateX(-2px); filter: drop-shadow(2px 0 #FF2A6D); }
+  95% { transform: none; filter: drop-shadow(-2px 0 #05D9E8) drop-shadow(2px 0 #FF2A6D); }
 }
 @media (prefers-reduced-motion: reduce) {
-  :root[data-palette="cyberpunk"] .progress > span,
-  :root[data-palette="cyberpunk"] :is(.dialog-title, .pw-title, .brand-name, .about-name) {
+  :root[data-palette="cyberpunk"] :is(.progress, .status-bar) > span,
+  :root[data-palette="cyberpunk"] :is(.pw-pct, .cell-status > span:first-child, .speed-monitor-value, .speed-monitor-graph) {
     animation: none !important;
   }
 }
-
 /* ───────── Light palettes ───────── */
 :root[data-theme="light"][data-palette="paper"] {
   --bg-window: #F4F1EA;

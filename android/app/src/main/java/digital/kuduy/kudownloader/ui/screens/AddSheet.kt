@@ -287,13 +287,9 @@ fun AddSheet(prefill: AddPrefill, onClose: () -> Unit) {
                     Slider(connections, { connections = it }, valueRange = 0f..16f, steps = 15)
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(t("Queue for “Add to queue”"), Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
-                        Box {
-                            var open by remember { mutableStateOf(false) }
-                            TextButton({ open = true }) { Text(queues.firstOrNull { it.id == queueId }?.let { queueName(it.id, it.name) } ?: t("Main queue")) }
-                            DropdownMenu(open, { open = false }) {
-                                queues.forEach { q -> DropdownMenuItem({ Text(queueName(q.id, q.name)) }, { queueId = q.id; open = false }) }
-                            }
-                        }
+                        var open by remember { mutableStateOf(false) }
+                        TextButton({ open = true }) { Text(queues.firstOrNull { it.id == queueId }?.let { queueName(it.id, it.name) } ?: t("Main queue")) }
+                        if (open) digital.kuduy.kudownloader.ui.ChoiceSheet(t("Queue for “Add to queue”"), queueId, queues.map { it.id to queueName(it.id, it.name) }, { open = false }) { queueId = it }
                     }
                     OutlinedTextField(referer, { referer = it }, label = { Text(t("Referer")) }, singleLine = true, modifier = Modifier.fillMaxWidth())
                     OutlinedTextField(userAgent, { userAgent = it }, label = { Text(t("User agent")) }, singleLine = true, modifier = Modifier.fillMaxWidth())

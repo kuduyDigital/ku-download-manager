@@ -7,6 +7,21 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.Computer
+import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,7 +41,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -46,11 +60,7 @@ import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledTonalButton
@@ -63,8 +73,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -125,6 +133,8 @@ fun BrowserScreen() {
     val ctx = LocalContext.current
     LaunchedEffect(Unit) { BrowserState.load() }
     val tab = BrowserState.current ?: return
+    // Switching tabs: let go of the WebViews of tabs not used for a while.
+    LaunchedEffect(tab.id) { BrowserState.trim() }
     val focus = LocalFocusManager.current
     var address by remember(tab.id) { mutableStateOf(tab.url) }
     var editing by remember { mutableStateOf(false) }
@@ -185,66 +195,55 @@ fun BrowserScreen() {
     }
 
     Column(Modifier.fillMaxSize().statusBarsPadding()) {
-        // Address bar
-        Row(Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            if (!editing && !tab.isStart) {
+        // Address bar: a Safari-style pill showing the site; tap to type.
+        Row(
+            Modifier.fillMaxWidth().padding(start = 8.dp, end = 4.dp, top = 6.dp, bottom = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            androidx.compose.animation.AnimatedVisibility(!editing && !tab.isStart) {
                 IconButton({ val v = tab.view; if (v != null && v.canGoBack()) v.goBack() else open(tab, "") }) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, t("Back"))
                 }
             }
-            TextField(
-                if (editing) address else if (tab.isStart) "" else host(tab.url),
-                { address = it },
-                placeholder = { Text(t("Search or type an address")) },
-                singleLine = true,
-                leadingIcon = {
-                    if (!editing && tab.url.startsWith("https://")) Icon(Icons.Filled.Lock, null, Modifier.size(16.dp))
-                    else if (editing || tab.isStart) Icon(Icons.Filled.Search, null, Modifier.size(18.dp))
+            AddressPill(
+                tab = tab,
+                adblock = adblock,
+                editing = editing,
+                address = address,
+                onAddress = { address = it },
+                onEditing = { on ->
+                    editing = on
+                    if (on) address = tab.url
                 },
-                trailingIcon = {
-                    if (editing && address.isNotEmpty()) IconButton({ address = "" }) { Icon(Icons.Filled.Close, t("Clear")) }
-                    else if (!editing && !tab.isStart) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            if (adblock && tab.blocked > 0) {
-                                BadgedBox(badge = { Badge { Text(if (tab.blocked > 99) "99+" else "${tab.blocked}") } }, modifier = Modifier.padding(end = 6.dp)) {
-                                    Icon(Icons.Filled.Shield, t("Ads blocked"), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-                                }
-                            }
-                            val loading = tab.progress in 1..99
-                            IconButton({ if (loading) tab.view?.stopLoading() else tab.view?.reload() }) {
-                                Icon(if (loading) Icons.Filled.Close else Icons.Filled.Refresh, if (loading) t("Stop") else t("Reload"), Modifier.size(20.dp))
-                            }
-                        }
-                    }
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Go),
-                keyboardActions = KeyboardActions(onGo = {
+                onGo = {
                     open(tab, BrowserState.resolve(address))
                     focus.clearFocus()
-                }),
-                shape = RoundedCornerShape(24.dp),
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                ),
-                modifier = Modifier.weight(1f).height(52.dp).onFocusChanged {
-                    editing = it.isFocused
-                    if (it.isFocused) address = tab.url
                 },
+                modifier = Modifier.weight(1f),
             )
-            IconButton({ tabsOpen = true }) {
-                Box(Modifier.size(24.dp).clip(RoundedCornerShape(6.dp)).background(MaterialTheme.colorScheme.surfaceContainerHighest), contentAlignment = Alignment.Center) {
-                    Text("${BrowserState.tabs.size}", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+            if (editing) {
+                androidx.compose.material3.TextButton({ focus.clearFocus() }) { Text(t("Cancel"), fontWeight = FontWeight.SemiBold) }
+            } else {
+                IconButton({ tabsOpen = true }) {
+                    Box(
+                        Modifier.size(22.dp).clip(RoundedCornerShape(7.dp)).border(1.8.dp, MaterialTheme.colorScheme.onSurface, RoundedCornerShape(7.dp)),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(if (BrowserState.tabs.size > 99) "∞" else "${BrowserState.tabs.size}", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+                    }
+                }
+                Box {
+                    IconButton({ menu = true }) { Icon(Icons.Filled.MoreVert, t("More")) }
+                    BrowserMenu(tab, menu, { menu = false }, onHistory = { historyOpen = true })
                 }
             }
-            Box {
-                IconButton({ menu = true }) { Icon(Icons.Filled.MoreVert, t("More")) }
-                BrowserMenu(tab, menu, { menu = false }, onHistory = { historyOpen = true })
+        }
+        Box(Modifier.fillMaxWidth().height(2.dp)) {
+            if (tab.progress in 1..99) {
+                val p by androidx.compose.animation.core.animateFloatAsState(tab.progress / 100f, label = "load")
+                LinearProgressIndicator(progress = { p }, modifier = Modifier.fillMaxSize(), trackColor = Color.Transparent, drawStopIndicator = {})
             }
         }
-        if (tab.progress in 1..99) LinearProgressIndicator(progress = { tab.progress / 100f }, modifier = Modifier.fillMaxWidth().height(2.dp))
 
         Box(Modifier.weight(1f).fillMaxWidth()) {
             if (tab.isStart) {
@@ -292,6 +291,101 @@ fun BrowserScreen() {
 
 private fun host(url: String) = runCatching { java.net.URI(url).host?.removePrefix("www.") }.getOrNull() ?: url
 
+/**
+ * The address field. Idle it shows the site's name centred (with a lock on
+ * https); tapped, it becomes a plain text field with the whole address selected.
+ */
+@Composable
+private fun AddressPill(
+    tab: Tab,
+    adblock: Boolean,
+    editing: Boolean,
+    address: String,
+    onAddress: (String) -> Unit,
+    onEditing: (Boolean) -> Unit,
+    onGo: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val scheme = MaterialTheme.colorScheme
+    val focusRequester = remember { FocusRequester() }
+    var field by remember { mutableStateOf(TextFieldValue(address)) }
+    // Select everything when editing starts, so typing replaces the address.
+    LaunchedEffect(editing) {
+        if (editing) {
+            field = TextFieldValue(address, TextRange(0, address.length))
+            focusRequester.requestFocus()
+        }
+    }
+    LaunchedEffect(address) { if (address != field.text) field = field.copy(text = address, selection = TextRange(address.length)) }
+
+    Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = scheme.surfaceContainerHigh,
+        modifier = modifier.height(44.dp),
+    ) {
+        Row(Modifier.fillMaxSize().padding(start = 12.dp, end = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (editing || tab.isStart) {
+                Icon(Icons.Filled.Search, null, Modifier.size(18.dp), tint = scheme.onSurfaceVariant)
+                Spacer(Modifier.width(8.dp))
+                BasicTextField(
+                    value = field,
+                    onValueChange = {
+                        field = it
+                        onAddress(it.text)
+                    },
+                    singleLine = true,
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = scheme.onSurface),
+                    cursorBrush = SolidColor(scheme.primary),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Go, autoCorrectEnabled = false),
+                    keyboardActions = KeyboardActions(onGo = { onGo() }),
+                    modifier = Modifier.weight(1f).focusRequester(focusRequester).onFocusChanged { if (it.isFocused != editing) onEditing(it.isFocused) },
+                    decorationBox = { inner ->
+                        Box(contentAlignment = Alignment.CenterStart) {
+                            if (field.text.isEmpty()) Text(t("Search or type an address"), style = MaterialTheme.typography.bodyLarge, color = scheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            inner()
+                        }
+                    },
+                )
+                if (editing && field.text.isNotEmpty()) {
+                    IconButton({ field = TextFieldValue(""); onAddress("") }, Modifier.size(36.dp)) {
+                        Icon(Icons.Filled.Cancel, t("Clear"), Modifier.size(18.dp), tint = scheme.onSurfaceVariant)
+                    }
+                } else {
+                    Spacer(Modifier.width(10.dp))
+                }
+            } else {
+                // Idle: the site, centred, like Safari. Tapping anywhere starts editing.
+                Row(
+                    Modifier.weight(1f).fillMaxHeight().clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { onEditing(true) },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    if (adblock && tab.blocked > 0) {
+                        Row(
+                            Modifier.clip(RoundedCornerShape(8.dp)).background(scheme.primary.copy(alpha = 0.14f)).padding(horizontal = 6.dp, vertical = 2.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(Icons.Filled.Shield, t("Ads blocked"), Modifier.size(12.dp), tint = scheme.primary)
+                            Spacer(Modifier.width(3.dp))
+                            Text(if (tab.blocked > 99) "99+" else "${tab.blocked}", style = MaterialTheme.typography.labelSmall, color = scheme.primary, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(Modifier.width(8.dp))
+                    }
+                    if (tab.url.startsWith("https://")) {
+                        Icon(Icons.Filled.Lock, null, Modifier.size(13.dp), tint = scheme.onSurfaceVariant)
+                        Spacer(Modifier.width(5.dp))
+                    }
+                    Text(host(tab.url), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+                val loading = tab.progress in 1..99
+                IconButton({ if (loading) tab.view?.stopLoading() else tab.view?.reload() }, Modifier.size(40.dp)) {
+                    Icon(if (loading) Icons.Filled.Close else Icons.Filled.Refresh, if (loading) t("Stop") else t("Reload"), Modifier.size(19.dp))
+                }
+            }
+        }
+    }
+}
+
 private fun open(tab: Tab, url: String) {
     tab.url = url
     tab.started = url.isNotBlank()
@@ -304,73 +398,187 @@ private fun open(tab: Tab, url: String) {
     tab.view?.loadUrl(url)
 }
 
+/** Page actions: big tiles for the everyday ones, then a grouped list (like Safari's sheet). */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BrowserMenu(tab: Tab, expanded: Boolean, onDismiss: () -> Unit, onHistory: () -> Unit) {
+    if (!expanded) return
     val ctx = LocalContext.current
+    val scheme = MaterialTheme.colorScheme
     val desktop by Prefs.desktopMode.state.collectAsStateWithLifecycle()
     val adblock by Prefs.adblock.state.collectAsStateWithLifecycle()
-    DropdownMenu(expanded, onDismiss) {
-        Row {
-            IconButton({ onDismiss(); tab.view?.goBack() }, enabled = tab.canBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, t("Back")) }
-            IconButton({ onDismiss(); tab.view?.goForward() }, enabled = tab.canForward) { Icon(Icons.AutoMirrored.Filled.ArrowForward, t("Forward")) }
-            IconButton({ onDismiss(); tab.view?.reload() }, enabled = !tab.isStart) { Icon(Icons.Filled.Refresh, t("Reload")) }
-            val marked = BrowserState.bookmarks.any { it.url == tab.url }
-            IconButton({ onDismiss(); BrowserState.toggleBookmark(tab.url, tab.title) }, enabled = !tab.isStart) {
-                Icon(if (marked) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder, t("Bookmark"))
+    val marked = BrowserState.bookmarks.any { it.url == tab.url }
+    val page = !tab.isStart
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = scheme.surfaceContainerLow) {
+        Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 28.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            if (page) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 4.dp)) {
+                    SiteTile(tab.title.ifBlank { host(tab.url) }, tab.url, 40)
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(tab.title.ifBlank { host(tab.url) }, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(host(tab.url), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                ActionTile(Icons.AutoMirrored.Filled.ArrowBack, t("Back"), tab.canBack, Modifier.weight(1f)) { onDismiss(); tab.view?.goBack() }
+                ActionTile(Icons.AutoMirrored.Filled.ArrowForward, t("Forward"), tab.canForward, Modifier.weight(1f)) { onDismiss(); tab.view?.goForward() }
+                ActionTile(if (marked) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder, t("Bookmark"), page, Modifier.weight(1f)) { onDismiss(); BrowserState.toggleBookmark(tab.url, tab.title) }
+                ActionTile(Icons.Filled.Share, t("Share page"), page, Modifier.weight(1f)) { onDismiss(); Files.shareText(ctx, tab.url) }
+            }
+            if (page) {
+                MenuGroup {
+                    MenuRow(Icons.Filled.Movie, t("Download video on this page")) {
+                        onDismiss()
+                        UiState.media = MediaPrefill(tab.url, BrowserState.cookies(tab.url), tab.url, tab.title)
+                        UiState.go(Screen.Video)
+                    }
+                    MenuRow(Icons.Filled.Link, t("Download all links…")) { onDismiss(); tab.view?.evaluateJavascript("window.__kuLinks&&window.__kuLinks()", null) }
+                }
+            }
+            MenuGroup {
+                MenuRow(Icons.Filled.Add, t("New tab")) { onDismiss(); BrowserState.newTab() }
+                MenuRow(Icons.Filled.Home, t("Start page")) { onDismiss(); open(tab, "") }
+                MenuRow(Icons.Filled.History, t("History")) { onDismiss(); onHistory() }
+            }
+            MenuGroup {
+                MenuRow(Icons.Filled.Computer, t("Desktop site"), checked = desktop) { Prefs.desktopMode.value = !desktop; BrowserState.applyDesktopMode() }
+                MenuRow(Icons.Filled.Shield, t("Block ads"), checked = adblock) { Prefs.adblock.value = !adblock; tab.view?.reload() }
+                MenuRow(Icons.Filled.Settings, t("Browser settings")) {
+                    onDismiss()
+                    UiState.settingsSection = "browser"
+                    UiState.go(Screen.Settings)
+                }
             }
         }
-        HorizontalDivider()
-        DropdownMenuItem({ Text(t("Start page")) }, { onDismiss(); open(tab, "") }, leadingIcon = { Icon(Icons.Filled.Home, null) })
-        DropdownMenuItem({ Text(t("New tab")) }, { onDismiss(); BrowserState.newTab() }, leadingIcon = { Icon(Icons.Filled.Add, null) })
-        if (!tab.isStart) {
-            DropdownMenuItem({ Text(t("Download video on this page")) }, {
-                onDismiss()
-                UiState.media = MediaPrefill(tab.url, BrowserState.cookies(tab.url), tab.url, tab.title)
-                UiState.go(Screen.Video)
-            }, leadingIcon = { Icon(Icons.Filled.Download, null) })
-            DropdownMenuItem({ Text(t("Download all links…")) }, { onDismiss(); tab.view?.evaluateJavascript("window.__kuLinks&&window.__kuLinks()", null) })
-            DropdownMenuItem({ Text(t("Share page")) }, { onDismiss(); Files.shareText(ctx, tab.url) })
+    }
+}
+
+@Composable
+private fun ActionTile(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, enabled: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    val alpha = if (enabled) 1f else 0.38f
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = scheme.surfaceContainerHighest,
+        modifier = modifier.height(76.dp).clip(RoundedCornerShape(16.dp)).clickable(enabled = enabled, onClick = onClick),
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.padding(horizontal = 4.dp)) {
+            Icon(icon, null, Modifier.size(22.dp), tint = scheme.onSurface.copy(alpha = alpha))
+            Spacer(Modifier.height(6.dp))
+            Text(label, style = MaterialTheme.typography.labelSmall, color = scheme.onSurface.copy(alpha = alpha), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
-        DropdownMenuItem({ Text(t("History")) }, { onDismiss(); onHistory() }, leadingIcon = { Icon(Icons.Filled.History, null) })
-        DropdownMenuItem(
-            { Text(t("Desktop site")) },
-            { onDismiss(); Prefs.desktopMode.value = !desktop; BrowserState.applyDesktopMode() },
-            trailingIcon = { androidx.compose.material3.Checkbox(desktop, null) },
-        )
-        DropdownMenuItem(
-            { Text(t("Block ads")) },
-            { onDismiss(); Prefs.adblock.value = !adblock; tab.view?.reload() },
-            trailingIcon = { androidx.compose.material3.Checkbox(adblock, null) },
-        )
-        DropdownMenuItem({ Text(t("Browser settings")) }, {
-            onDismiss()
-            UiState.settingsSection = "browser"
-            UiState.go(Screen.Settings)
-        })
+    }
+}
+
+@Composable
+private fun MenuGroup(content: @Composable () -> Unit) {
+    Surface(shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.surfaceContainerHighest, modifier = Modifier.fillMaxWidth()) {
+        Column { content() }
+    }
+}
+
+@Composable
+private fun MenuRow(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, checked: Boolean? = null, onClick: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    Row(
+        Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = if (checked != null) 6.dp else 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(icon, null, Modifier.size(20.dp), tint = scheme.primary)
+        Spacer(Modifier.width(14.dp))
+        Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+        if (checked != null) androidx.compose.material3.Switch(checked, { onClick() })
     }
 }
 
 @Composable
 private fun StartPage(onOpen: (String) -> Unit) {
     val blocked by Prefs.adsBlocked.state.collectAsStateWithLifecycle()
-    LazyVerticalGrid(GridCells.Adaptive(88.dp), contentPadding = PaddingValues(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxSize()) {
-        item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
-            Column(Modifier.padding(vertical = 12.dp)) {
-                Text(t("KuDownloader browser"), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
-                Text(t("Tap the KuDownload button on any video to save it. Ads and trackers are blocked."), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (blocked > 0) Text(tf("{count} ads and trackers blocked so far", "count" to blocked), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 6.dp))
-            }
+    val adblock by Prefs.adblock.state.collectAsStateWithLifecycle()
+    val scheme = MaterialTheme.colorScheme
+    val full: androidx.compose.foundation.lazy.grid.LazyGridItemSpanScope.() -> androidx.compose.foundation.lazy.grid.GridItemSpan = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }
+    LazyVerticalGrid(
+        GridCells.Adaptive(76.dp),
+        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 32.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        item(span = full) {
+            Text(t("Favorites"), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
         }
         val sites = BrowserState.bookmarks.map { it.title to it.url } + QUICK.filter { q -> BrowserState.bookmarks.none { it.url == q.second } }
         items(sites, key = { it.second }) { (name, url) ->
-            Column(Modifier.clip(RoundedCornerShape(12.dp)).clickable { onOpen(url) }.padding(6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Box(Modifier.size(52.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) {
-                    Text(name.take(1).uppercase(), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
-                }
+            Column(Modifier.clip(RoundedCornerShape(14.dp)).clickable { onOpen(url) }.padding(vertical = 4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                SiteTile(name, url, 60)
                 Spacer(Modifier.height(6.dp))
-                Text(name, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.labelMedium)
+                Text(name, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.labelMedium, color = scheme.onSurface)
             }
         }
+        item(span = full) {
+            Surface(shape = RoundedCornerShape(18.dp), color = scheme.surfaceContainer, modifier = Modifier.fillMaxWidth().padding(top = 10.dp)) {
+                Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(scheme.primary.copy(alpha = 0.14f)), contentAlignment = Alignment.Center) {
+                        Icon(Icons.Filled.Shield, null, tint = scheme.primary)
+                    }
+                    Spacer(Modifier.width(14.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(t("Privacy report"), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            if (!adblock) t("Ad and tracker blocking is off.") else if (blocked > 0) tf("{count} ads and trackers blocked so far", "count" to blocked) else t("Tap the KuDownload button on any video to save it. Ads and trackers are blocked."),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = scheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+        }
+        val recent = BrowserState.history.take(6)
+        if (recent.isNotEmpty()) {
+            item(span = full) {
+                Text(t("Recently visited"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 10.dp))
+            }
+            items(recent, key = { "h:" + it.url }, span = { full() }) { h ->
+                Row(
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable { onOpen(h.url) }.padding(vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    SiteTile(h.title.ifBlank { host(h.url) }, h.url, 36)
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(h.title.ifBlank { host(h.url) }, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+                        Text(host(h.url), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** Tile colours for sites (picked by host, so a site keeps its colour). */
+private val TILE_COLORS = listOf(
+    Color(0xFFE5484D), Color(0xFFF76B15), Color(0xFFFFB224), Color(0xFF30A46C),
+    Color(0xFF12A594), Color(0xFF0090FF), Color(0xFF3E63DD), Color(0xFF8E4EC6),
+    Color(0xFFD6409F), Color(0xFF6F6E77),
+)
+
+/** A rounded-square tile with the site's initial (a stand-in for its icon). */
+@Composable
+private fun SiteTile(name: String, url: String, size: Int) {
+    val key = host(url).ifBlank { name }
+    val c = TILE_COLORS[(key.hashCode() and Int.MAX_VALUE) % TILE_COLORS.size]
+    Box(
+        Modifier.size(size.dp).clip(RoundedCornerShape((size * 0.26f).dp)).background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(c, lerp(c, Color.Black, 0.18f)))),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            name.trim().firstOrNull { it.isLetterOrDigit() }?.uppercase() ?: "•",
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            style = if (size >= 48) MaterialTheme.typography.headlineSmall else MaterialTheme.typography.titleMedium,
+        )
     }
 }
 
@@ -468,29 +676,47 @@ private fun MediaRow(m: FoundMedia, onClose: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TabsSheet(onClose: () -> Unit) {
-    ModalBottomSheet(onDismissRequest = onClose) {
-        LazyColumn(contentPadding = PaddingValues(bottom = 28.dp)) {
-            item {
-                Row(Modifier.padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(tf("{count} tabs", "count" to BrowserState.tabs.size), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                    FilledTonalButton({ BrowserState.newTab(); onClose() }, colors = ButtonDefaults.filledTonalButtonColors()) {
-                        Icon(Icons.Filled.Add, null)
-                        Spacer(Modifier.width(6.dp))
-                        Text(t("New tab"))
-                    }
-                }
+    val scheme = MaterialTheme.colorScheme
+    ModalBottomSheet(onDismissRequest = onClose, containerColor = scheme.surfaceContainerLow) {
+        Row(Modifier.fillMaxWidth().padding(start = 20.dp, end = 12.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(tf("{count} tabs", "count" to BrowserState.tabs.size), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+            FilledTonalButton({ BrowserState.newTab(); onClose() }, colors = ButtonDefaults.filledTonalButtonColors()) {
+                Icon(Icons.Filled.Add, null, Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(t("New tab"))
             }
+        }
+        LazyVerticalGrid(
+            GridCells.Adaptive(150.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 32.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
             items(BrowserState.tabs.toList(), key = { it.id }) { t0 ->
+                val selected = t0 == BrowserState.current
+                val name = t0.title.ifBlank { if (t0.isStart) t("Start page") else host(t0.url) }
                 Surface(
-                    color = if (t0 == BrowserState.current) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
-                    modifier = Modifier.fillMaxWidth().clickable { BrowserState.current = t0; onClose() },
+                    shape = RoundedCornerShape(16.dp),
+                    color = scheme.surfaceContainerHighest,
+                    border = if (selected) androidx.compose.foundation.BorderStroke(2.dp, scheme.primary) else null,
+                    modifier = Modifier.fillMaxWidth().height(150.dp).clickable { BrowserState.current = t0; onClose() },
                 ) {
-                    Row(Modifier.padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1f)) {
-                            Text(t0.title.ifBlank { if (t0.isStart) t("Start page") else t0.url }, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            if (!t0.isStart) Text(host(t0.url), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Column {
+                        Row(Modifier.fillMaxWidth().padding(start = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Text(name, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                            IconButton({ BrowserState.close(t0) }, Modifier.size(36.dp)) { Icon(Icons.Filled.Close, t("Close tab"), Modifier.size(16.dp)) }
                         }
-                        IconButton({ BrowserState.close(t0) }) { Icon(Icons.Filled.Close, t("Close tab")) }
+                        Box(Modifier.fillMaxWidth().weight(1f).background(scheme.surfaceContainer), contentAlignment = Alignment.Center) {
+                            if (t0.isStart) {
+                                Icon(Icons.Filled.Home, null, Modifier.size(32.dp), tint = scheme.onSurfaceVariant)
+                            } else {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    SiteTile(name, t0.url, 44)
+                                    Spacer(Modifier.height(8.dp))
+                                    Text(host(t0.url), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(horizontal = 8.dp))
+                                }
+                            }
+                        }
                     }
                 }
             }

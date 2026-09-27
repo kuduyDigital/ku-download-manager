@@ -7,7 +7,7 @@ import { api, errorText } from "../lib/api";
 import { settingsStore, queuesStore, updateSettings } from "../lib/store";
 import * as fmt from "../lib/format";
 import type { AddRequest, ProbeInfo, Settings, TorrentInfo } from "../lib/types";
-import { Button, Checkbox, Icon, IconButton, Input, Notice, Select, Switch } from "../ui/primitives";
+import { Button, Checkbox, Icon, IconButton, Input, Notice, Select } from "../ui/primitives";
 import { Dialog, toast } from "../ui/overlays";
 import { CATEGORY_ICON } from "./downloads/FileGlyph";
 import { DuplicateNotice } from "./DuplicateNotice";
@@ -246,8 +246,56 @@ export function AddDownloadDialog({ prefill, onClose }: { prefill?: Partial<AddR
       onClose={onClose}
       width={580}
       onSubmit={() => void go(false)}
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose}>
+            {t("Cancel")}
+          </Button>
+          <span className="spacer" />
+          <Button disabled={!canSubmit} onClick={() => void go(true)} title={t("Add to the queue without starting")}>
+            {t("Download Later")}
+          </Button>
+          <Button type="submit" variant="primary" disabled={!canSubmit} busy={busy}>
+            {t("Download Now")}
+          </Button>
+        </>
+      }
     >
-      {fromBrowser && (
+      {single && !torrent && (
+        <div className="dl-hero">
+          <span className="dl-hero-glyph">
+            <Icon icon={media ? Clapperboard : CatIcon} size={22} />
+          </span>
+          <div className="dl-hero-id">
+            <b className="truncate" title={filename || probe?.filename || single}>
+              {filename || probe?.filename || (probing ? t("Checking the link…") : fmt.host(single) || single)}
+            </b>
+            <span className="dl-hero-meta">
+              {probing ? (
+                <>
+                  <span className="spinner" /> {t("Checking the link…")}
+                </>
+              ) : probe?.error ? (
+                <span style={{ color: "var(--warning)" }}>
+                  {probe.error} {t("You can still try to download it.")}
+                </span>
+              ) : (
+                <>
+                  <span className="num">{probe?.size ? fmt.bytes(probe.size) : prefill?.sizeHint ? fmt.bytes(prefill.sizeHint) : t("Size unknown")}</span>
+                  <span className="truncate">{fmt.host(single)}</span>
+                  {probe && !media && <span className="dl-chip" data-ok={probe.resumable === true}>{probe.resumable ? t("Resumable") : probe.resumable === false ? t("Not resumable") : t("Resume unknown")}</span>}
+                </>
+              )}
+            </span>
+            {fromBrowser && (
+              <span className="dl-hero-src faint">
+                <Icon icon={Globe} size={12} /> {prefill?.options?.cookies?.length ? t("Sent from your browser with your session cookies") : t("Sent from your browser")}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+      {fromBrowser && (!single || torrent) && (
         <div className="faint" style={{ fontSize: "var(--text-xs)", display: "flex", gap: 6, alignItems: "center" }}>
           <Icon icon={Globe} size={13} /> {prefill?.options?.cookies?.length ? t("Sent from your browser with your session cookies") : t("Sent from your browser")}
         </div>
@@ -329,7 +377,6 @@ export function AddDownloadDialog({ prefill, onClose }: { prefill?: Partial<AddR
           <div className="dl-row">
             <label htmlFor="add-cat">{t("Category")}</label>
             <div className="dl-control">
-              <Icon icon={CatIcon} size={18} />
               <Select
                 id="add-cat"
                 value={category}
@@ -338,57 +385,37 @@ export function AddDownloadDialog({ prefill, onClose }: { prefill?: Partial<AddR
                   setDirTouched(false);
                 }}
                 options={[{ value: "", label: t("Automatic") }, ...(settings?.categories ?? []).map((c) => ({ value: c.id, label: c.name }))]}
-                style={{ width: 180 }}
               />
             </div>
           </div>
         )}
-        <div className="dl-row">
-          <label htmlFor="add-dir">{t("Save As")}</label>
-          <div className="dl-control">
-            <Input
-              id="add-dir"
-              value={dir}
-              onChange={(e) => {
-                setDir(e.target.value);
-                setDirTouched(true);
-              }}
-            />
-            <IconButton icon={Folder} label={t("Choose folder")} onClick={() => void browse()} />
-          </div>
-        </div>
-        {!media && (
-          <div className="dl-row">
-            <label>{t("Remember path for this category")}</label>
+        <div className="dl-row" style={{ alignItems: "start" }}>
+          <label htmlFor="add-dir" style={{ paddingTop: 7 }}>
+            {t("Save As")}
+          </label>
+          <div className="dl-stack">
             <div className="dl-control">
-              <span className="muted" style={{ fontSize: "var(--text-sm)" }}>
-                {remember ? t("Yes") : t("No")}
-              </span>
-              <Switch label={t("Remember path for this category")} checked={remember} disabled={!category} onChange={setRemember} />
+              <Input
+                id="add-dir"
+                value={dir}
+                title={dir}
+                onChange={(e) => {
+                  setDir(e.target.value);
+                  setDirTouched(true);
+                }}
+              />
+              <IconButton icon={Folder} label={t("Choose folder")} onClick={() => void browse()} />
             </div>
+            {!media && (
+              <Checkbox checked={remember} disabled={!category} onChange={setRemember}>
+                <span className="muted" style={{ fontSize: "var(--text-xs)" }}>
+                  {t("Remember path for this category")}
+                </span>
+              </Checkbox>
+            )}
           </div>
-        )}
-      </div>
-
-      {single && (
-        <div className="faint" style={{ fontSize: "var(--text-xs)", display: "flex", gap: 8, alignItems: "center", minHeight: 18 }}>
-          {probing ? (
-            <>
-              <span className="spinner" /> {t("Checking the link…")}
-            </>
-          ) : probe?.error ? (
-            <span style={{ color: "var(--warning)" }}>{probe.error} {t("You can still try to download it.")}</span>
-          ) : probe && !media ? (
-            <>
-              <span className="num">
-                {filename ? `${filename} · ` : ""}
-                {probe.size ? fmt.bytes(probe.size) : t("Size unknown")}
-              </span>
-              <span>· {probe.resumable ? t("Resumable") : probe.resumable === false ? t("Not resumable") : t("Resume unknown")}</span>
-            </>
-          ) : null}
         </div>
-      )}
+      </div>
       {!torrent && !media && <DuplicateNotice url={single} dir={dir} filename={filename || probe?.filename || ""} onHandled={onClose} />}
       {lines.length > 0 && validLines.length < lines.length && (
         <div style={{ color: "var(--danger)", fontSize: "var(--text-xs)" }}>
@@ -468,16 +495,6 @@ export function AddDownloadDialog({ prefill, onClose }: { prefill?: Partial<AddR
           {error}
         </Notice>
       )}
-
-      <div className="dl-actions" style={{ padding: "var(--space-2) 0 0" }}>
-        <Button disabled={!canSubmit} onClick={() => void go(true)} title={t("Add to the queue without starting")}>
-          {t("Download Later")}
-        </Button>
-        <Button type="submit" variant="primary" disabled={!canSubmit} busy={busy}>
-          {t("Download Now")}
-        </Button>
-        <Button onClick={onClose}>{t("Cancel")}</Button>
-      </div>
     </Dialog>
   );
 }

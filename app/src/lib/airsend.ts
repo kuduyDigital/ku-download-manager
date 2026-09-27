@@ -100,6 +100,8 @@ export interface AirStatus {
   addresses: string[];
   folder: string;
   discoveryError?: string | null;
+  /** Linux: "firewalld" or "ufw" still blocks KuAirSend. */
+  firewall?: string | null;
 }
 
 export const AVATARS = ["cat", "fox", "frog", "panda", "bunny", "penguin", "pig", "chick", "dog", "bear", "koala", "owl", "monkey", "tiger", "mouse", "cow"] as const;
@@ -116,6 +118,7 @@ export const airApi = {
   cancel: (id: string) => invoke<void>("airsend_cancel", { id }),
   decide: (id: string, accept: boolean, trust: boolean) => invoke<void>("airsend_decide", { id, accept, trust }),
   refresh: () => invoke<void>("airsend_refresh"),
+  openFirewall: () => invoke<AirStatus>("airsend_open_firewall"),
   add: (address: string) => invoke<AirPeer>("airsend_add", { address }),
   trust: (fingerprint: string, trusted: boolean) => invoke<void>("airsend_trust", { fingerprint, trusted }),
   clearHistory: () => invoke<void>("airsend_clear_history"),

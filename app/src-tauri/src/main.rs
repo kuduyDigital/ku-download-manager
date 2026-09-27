@@ -48,7 +48,32 @@ pub fn show_main(app: &AppHandle) {
         let _ = w.unminimize();
         let _ = w.show();
         let _ = w.set_focus();
+        return;
     }
+    // Released while in the tray: build it again from the config.
+    let Some(cfg) = app.config().app.windows.iter().find(|w| w.label == "main").cloned() else { return };
+    match WebviewWindowBuilder::from_config(app, &cfg).and_then(|b| b.build()) {
+        Ok(w) => {
+            let _ = w.show();
+            let _ = w.set_focus();
+        }
+        Err(e) => tracing::warn!("main window: {e}"),
+    }
+}
+
+/// Hidden in the tray, the interface still holds a web view (100–250 MB).
+/// After a while unseen it is closed; downloads, KuAirSend and the browser
+/// extension keep working, and `show_main` brings the window back.
+fn release_main_when_idle(app: AppHandle) {
+    tauri::async_runtime::spawn(async move {
+        tokio::time::sleep(std::time::Duration::from_secs(30)).await;
+        let Some(w) = app.get_webview_window("main") else { return };
+        if w.is_visible().unwrap_or(true) {
+            return;
+        }
+        app.state::<AppState>().ui_ready.store(false, Ordering::SeqCst);
+        let _ = w.destroy();
+    });
 }
 
 /// IDM-style "Download File" window for a download caught in the browser:
@@ -307,6 +332,9 @@ fn main() {
             }
             commands::sync_autostart(&handle, core.settings().start_with_os);
             handle_args(&handle, &launch_args);
+            if hidden {
+                release_main_when_idle(handle.clone());
+            }
             if let Some(air) = setup_air.clone().filter(|_| core.settings().airsend_enabled) {
                 tauri::async_runtime::spawn(async move {
                     if let Err(e) = air.start().await {
@@ -331,6 +359,7 @@ fn main() {
                 if state.core.settings().minimize_to_tray {
                     api.prevent_close();
                     let _ = window.hide();
+                    release_main_when_idle(window.app_handle().clone());
                 } else {
                     window.app_handle().exit(0);
                 }
@@ -340,6 +369,12 @@ fn main() {
         .expect("building KuDownloader");
 
     app.run(move |_app, event| {
+        // The last window went away (the main one was released to the tray):
+        // keep running. Quitting from the tray or the menu passes an exit code.
+        if let RunEvent::ExitRequested { code: None, api, .. } = &event {
+            api.prevent_exit();
+            return;
+        }
         if let RunEvent::Exit = event {
             let core = exit_core.clone();
             tauri::async_runtime::block_on(async move { core.shutdown().await });

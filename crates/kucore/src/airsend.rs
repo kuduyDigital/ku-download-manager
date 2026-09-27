@@ -253,6 +253,8 @@ pub struct AirStatus {
     pub folder: String,
     /// Multicast discovery could not start; devices can still be added by IP.
     pub discovery_error: Option<String>,
+    /// Linux: the host firewall ("firewalld" / "ufw") blocks KuAirSend.
+    pub firewall: Option<String>,
 }
 
 // ───────────────────────── state ─────────────────────────
@@ -307,6 +309,7 @@ struct Running {
     tasks: Vec<JoinHandle<()>>,
     udp: Option<Arc<UdpSocket>>,
     discovery_error: Option<String>,
+    firewall: Option<String>,
 }
 
 pub struct AirSend {
@@ -649,6 +652,7 @@ impl AirSend {
             addresses: local_ipv4().iter().map(|a| a.to_string()).collect(),
             folder: self.folder().display().to_string(),
             discovery_error: run.as_ref().and_then(|r| r.discovery_error.clone()),
+            firewall: run.as_ref().and_then(|r| r.firewall.clone()),
         }
     }
 
@@ -701,13 +705,31 @@ impl AirSend {
                 (None, Some("Nearby devices can't be found automatically on this network. Add them by IP address.".to_string()))
             }
         };
+        let port = self.port.load(Ordering::Relaxed);
+        let dir = self.dir.clone();
+        let firewall = tokio::task::spawn_blocking(move || crate::firewall::blocking(port, &dir)).await.ok().flatten().map(String::from);
         let mut tasks = vec![tokio::spawn(self.clone().serve(listener, tls))];
         if let Some(u) = &udp {
             tasks.push(tokio::spawn(self.clone().listen(u.clone())));
         }
         tasks.push(tokio::spawn(self.clone().housekeeping(udp.clone())));
-        *self.running.lock().unwrap() = Some(Running { tasks, udp, discovery_error });
+        *self.running.lock().unwrap() = Some(Running { tasks, udp, discovery_error, firewall });
         tracing::info!("KuAirSend listening on port {}", self.port.load(Ordering::Relaxed));
+        Ok(self.status())
+    }
+
+    /// Linux: allow KuAirSend through the host firewall (asks for the password).
+    pub async fn open_firewall(self: &Arc<Self>) -> Result<AirStatus> {
+        let port = self.port.load(Ordering::Relaxed);
+        let dir = self.dir.clone();
+        tokio::task::spawn_blocking(move || crate::firewall::open(port, &dir)).await??;
+        let dir = self.dir.clone();
+        let still = tokio::task::spawn_blocking(move || crate::firewall::blocking(port, &dir)).await.ok().flatten().map(String::from);
+        if let Some(r) = self.running.lock().unwrap().as_mut() {
+            r.firewall = still;
+        }
+        let me = self.clone();
+        tokio::spawn(async move { me.refresh().await });
         Ok(self.status())
     }
 
@@ -914,7 +936,7 @@ impl AirSend {
             .map_err(|e| anyhow!("No KuDownloader with KuAirSend on at {a} ({e})"))
     }
 
-    async fn housekeeping(self: Arc<Self>, udp: Option<Arc<UdpSocket>>) {
+    async fn housekeeping(self: Arc<Self>, mut udp: Option<Arc<UdpSocket>>) {
         if let Some(u) = &udp {
             for d in [100, 600, 2000] {
                 tokio::time::sleep(Duration::from_millis(d)).await;
@@ -922,8 +944,35 @@ impl AirSend {
             }
         }
         let mut last = Instant::now();
+        let mut joined: HashSet<Ipv4Addr> = local_ipv4().into_iter().collect();
         loop {
             tokio::time::sleep(Duration::from_secs(5)).await;
+            // Started before the network was up (autostart at login), or the
+            // network changed: open discovery now / join the group on the new one.
+            if udp.is_none() {
+                if let Ok(u) = bind_multicast() {
+                    let u = Arc::new(u);
+                    let listen = tokio::spawn(self.clone().listen(u.clone()));
+                    if let Some(r) = self.running.lock().unwrap().as_mut() {
+                        r.udp = Some(u.clone());
+                        r.discovery_error = None;
+                        r.tasks.push(listen);
+                    }
+                    joined = local_ipv4().into_iter().collect();
+                    udp = Some(u);
+                    last = Instant::now().checked_sub(ANNOUNCE_EVERY).unwrap_or(last);
+                }
+            } else if let Some(u) = &udp {
+                let now: HashSet<Ipv4Addr> = local_ipv4().into_iter().collect();
+                let fresh: Vec<Ipv4Addr> = now.difference(&joined).copied().collect();
+                for ip in &fresh {
+                    let _ = socket2::SockRef::from(&**u).join_multicast_v4(&GROUP, ip);
+                }
+                if !fresh.is_empty() {
+                    last = Instant::now().checked_sub(ANNOUNCE_EVERY).unwrap_or(last);
+                }
+                joined = now;
+            }
             if let Some(u) = &udp {
                 if last.elapsed() >= ANNOUNCE_EVERY {
                     self.announce(u, true).await;

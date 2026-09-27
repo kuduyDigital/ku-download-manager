@@ -341,5 +341,9 @@
  "App updates": "অ্যাপ আপডেট",
  "Tap to update.": "আপডেট করতে ট্যাপ করুন।",
  "Downloading the update…": "আপডেট ডাউনলোড হচ্ছে…",
- "Update now": "এখনই আপডেট করুন"
+ "Update now": "এখনই আপডেট করুন",
+ "Favorites": "প্রিয় সাইট",
+ "Privacy report": "প্রাইভেসি রিপোর্ট",
+ "Ad and tracker blocking is off.": "বিজ্ঞাপন ও ট্র্যাকার ব্লক করা বন্ধ আছে।",
+ "Recently visited": "সম্প্রতি দেখা"
 }

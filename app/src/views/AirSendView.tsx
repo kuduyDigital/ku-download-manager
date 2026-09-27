@@ -468,6 +468,27 @@ export function AirSendView() {
                 {s?.airsendPin ? ` · ${t("PIN on")}` : ""}
               </div>
               {status.discoveryError && <div className="air-error">{status.discoveryError}</div>}
+              {status.firewall && (
+                <div className="air-error air-firewall">
+                  <Icon icon={ShieldCheck} size={16} />
+                  <span>{tf("The firewall ({name}) is blocking KuAirSend, so other devices can't find or reach this computer.", { name: status.firewall })}</span>
+                  <Button
+                    size="sm"
+                    variant="primary"
+                    onClick={() =>
+                      void airApi
+                        .openFirewall()
+                        .then((s) => {
+                          setStatus(s);
+                          if (!s.firewall) toast({ level: "success", title: t("KuAirSend is allowed through the firewall") });
+                        })
+                        .catch((e) => toast({ level: "error", title: t("Could not change the firewall"), message: errorText(e) }))
+                    }
+                  >
+                    {t("Allow")}
+                  </Button>
+                </div>
+              )}
               <div className="air-section">
                 <span className="section-title">{t("Transfers")}</span>
                 {history.some(isFinished) && (

@@ -43,6 +43,9 @@ class Tab(val id: String = UUID.randomUUID().toString()) {
     /** Something was opened in this tab (a popup gets content before any address). */
     var started by mutableStateOf(false)
     var view: WebView? = null
+    /** Back/forward list of a tab whose WebView was let go to save memory. */
+    var saved: android.os.Bundle? = null
+    var lastUsed: Long = System.currentTimeMillis()
     /** Secret the page script must pass back, so other scripts can't drive the bridge. */
     val token: String = UUID.randomUUID().toString().replace("-", "")
     val isStart get() = !started && url.isBlank()
@@ -123,8 +126,30 @@ object BrowserState {
         v.webChromeClient = KuChromeClient(t)
         v.setDownloadListener(KuDownloads(t))
         t.view = v
-        if (t.url.isNotBlank()) v.loadUrl(t.url)
+        val restored = t.saved?.let { v.restoreState(it) } != null
+        t.saved = null
+        if (!restored && t.url.isNotBlank()) v.loadUrl(t.url)
         return v
+    }
+
+    /**
+     * Each WebView holds tens of MB. Keep the current tab and the [keep] most
+     * recently used ones alive; the others remember their history and load
+     * again when shown.
+     */
+    fun trim(keep: Int = 2) {
+        current?.lastUsed = System.currentTimeMillis()
+        tabs.filter { it != current && it.view != null }
+            .sortedByDescending { it.lastUsed }
+            .drop(keep)
+            .forEach { t ->
+                val v = t.view ?: return@forEach
+                t.saved = android.os.Bundle().also { b -> runCatching { v.saveState(b) } }
+                (v.parent as? android.view.ViewGroup)?.removeView(v)
+                v.stopLoading()
+                v.destroy()
+                t.view = null
+            }
     }
 
     private var baseUa: String? = null

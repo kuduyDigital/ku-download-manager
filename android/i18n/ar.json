@@ -341,5 +341,9 @@
  "App updates": "تحديثات التطبيق",
  "Tap to update.": "انقر للتحديث.",
  "Downloading the update…": "جارٍ تنزيل التحديث…",
- "Update now": "حدّث الآن"
+ "Update now": "حدّث الآن",
+ "Favorites": "المفضلة",
+ "Privacy report": "تقرير الخصوصية",
+ "Ad and tracker blocking is off.": "حظر الإعلانات وأدوات التتبع متوقف.",
+ "Recently visited": "زرتها مؤخرًا"
 }

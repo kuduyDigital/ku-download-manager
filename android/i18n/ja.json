@@ -341,5 +341,9 @@
  "App updates": "アプリのアップデート",
  "Tap to update.": "タップしてアップデート。",
  "Downloading the update…": "アップデートをダウンロード中…",
- "Update now": "今すぐアップデート"
+ "Update now": "今すぐアップデート",
+ "Favorites": "お気に入り",
+ "Privacy report": "プライバシーレポート",
+ "Ad and tracker blocking is off.": "広告とトラッカーのブロックはオフです。",
+ "Recently visited": "最近アクセスしたサイト"
 }

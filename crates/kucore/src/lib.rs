@@ -12,6 +12,7 @@ pub mod browsers;
 pub mod classify;
 pub mod core;
 pub mod db;
+pub mod firewall;
 pub mod grab;
 pub mod hash;
 pub mod kuhttp;

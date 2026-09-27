@@ -9,6 +9,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -42,6 +46,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -113,6 +118,7 @@ private fun StartFailed() {
 
 private data class Tab(val screen: Screen, val label: String, val icon: ImageVector)
 
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 private fun Main() {
     val snack = remember { SnackbarHostState() }
@@ -168,10 +174,13 @@ private fun Main() {
         Tab(Screen.More, t("More"), Icons.Filled.MoreHoriz),
     )
     val topScreen = UiState.stack.first()
+    // Typing (an address, a page's form): the keyboard takes the tab bar's place
+    // and the screen ends above it, so the focused field stays visible.
+    val imeVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
     Scaffold(
         snackbarHost = { SnackbarHost(snack) },
         bottomBar = {
-            if (screen.top) {
+            if (screen.top && !imeVisible) {
                 NavigationBar {
                     tabs.forEach { tab ->
                         NavigationBarItem(
@@ -191,7 +200,7 @@ private fun Main() {
             }
         },
     ) { pad ->
-        Box(Modifier.fillMaxSize().padding(bottom = pad.calculateBottomPadding())) {
+        Box(Modifier.fillMaxSize().padding(bottom = pad.calculateBottomPadding()).consumeWindowInsets(pad).imePadding()) {
             AnimatedContent(screen, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "screen") { s ->
                 when (s) {
                     Screen.Downloads -> DownloadsScreen()

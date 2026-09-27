@@ -341,5 +341,9 @@
  "App updates": "Обновления приложения",
  "Tap to update.": "Нажмите, чтобы обновить.",
  "Downloading the update…": "Загрузка обновления…",
- "Update now": "Обновить сейчас"
+ "Update now": "Обновить сейчас",
+ "Favorites": "Избранное",
+ "Privacy report": "Отчёт о конфиденциальности",
+ "Ad and tracker blocking is off.": "Блокировка рекламы и трекеров выключена.",
+ "Recently visited": "Недавно посещённые"
 }

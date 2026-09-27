@@ -4,7 +4,8 @@ import { t } from "../lib/i18n";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
-import { ArrowDownToLine, ChevronDown, ChevronRight, Minus, X } from "lucide-react";
+import { ArrowDownToLine, Check, ChevronDown, ChevronRight, Minus, X } from "lucide-react";
+import { glyphFor } from "./downloads/FileGlyph";
 import { api, errorText } from "../lib/api";
 import { settingsStore } from "../lib/store";
 import { applyAppearance } from "../lib/appearance";
@@ -119,51 +120,66 @@ export function ProgressWindow({ id }: { id: string }) {
     : (details?.connections ?? []).map((c) => ({ label: c.currentUri || c.uri, speed: c.speed, pct: -1 }));
   const maxSpeed = Math.max(1, ...conns.map((c) => c.speed));
   const act = (p: Promise<unknown>) => void p.catch((e) => setError(errorText(e)));
-  const status = complete ? "Download complete" : d.status === "error" ? "Failed" : d.status === "paused" ? "Paused" : d.status === "queued" ? "Queued" : d.status === "processing" ? "Merging…" : "Receiving data…";
+  const state = complete ? "completed" : d.status === "error" ? "error" : d.status === "paused" ? "paused" : d.status === "queued" ? "queued" : "downloading";
+  const status = complete ?"Download complete" : d.status === "error" ? "Failed" : d.status === "paused" ? "Paused" : d.status === "queued" ? "Queued" : d.status === "processing" ? "Merging…" : "Receiving data…";
 
   return (
     <div className="pw">
       <header className="pw-head" data-tauri-drag-region>
         <Icon icon={ArrowDownToLine} />
         <span className="pw-title truncate" data-tauri-drag-region>
-          {complete ? t("Download complete") : `${d.done > 0 && d.total > 0 ? `${Math.floor(pct)}% ` : ""}${d.name}`}
+          {complete ? t("Download complete") : live && d.done > 0 && d.total > 0 ? `${Math.floor(pct)}% · ${d.name}` : d.name}
         </span>
         <IconButton icon={Minus} label={t("Minimize")} size="sm" onClick={() => void win.minimize()} />
         <IconButton icon={X} label={t("Close")} size="sm" onClick={() => void win.close()} />
       </header>
 
       <div className="pw-body">
-        <div className="pw-facts">
-          <span>{t("File")}</span>
-          <b className="truncate" title={d.name}>
-            {d.name}
-          </b>
-          <span>{t("Address")}</span>
-          <span className="truncate faint" title={d.url}>
-            {d.url}
+        <div className="pw-hero">
+          <span className="pw-glyph" data-state={state}>
+            <Icon icon={complete ? Check : glyphFor(d)} size={22} />
           </span>
-          <span>{t("Status")}</span>
-          <span style={{ color: d.status === "error" ? "var(--danger)" : undefined }}>{d.status === "error" ? te(d.error) || t(status) : t(status)}</span>
-          <span>{t("File size")}</span>
-          <span className="num">{d.total > 0 ? fmt.bytes(d.total) : t("Unknown")}</span>
-          <span>{t("Downloaded")}</span>
-          <span className="num">
-            {fmt.bytes(d.done)}
-            {d.total > 0 ? ` (${pct.toFixed(2)} %)` : ""}
-          </span>
+          <div className="pw-id">
+            <b className="truncate" title={d.name}>
+              {d.name}
+            </b>
+            <span className="truncate faint" title={d.url}>
+              {fmt.host(d.url) || d.url}
+            </span>
+          </div>
+          <span className="pw-pct num">{d.total > 0 || complete ? `${Math.floor(complete ? 100 : pct)}%` : ""}</span>
+        </div>
+
+        <div className="pw-bar">
+          <Progress value={complete ? 100 : pct} state={state} indeterminate={live && d.total <= 0} />
+        </div>
+
+        <div className="pw-status" data-state={state}>
+          <span className="pw-dot" />
+          <span className="pw-status-text">{d.status === "error" ? te(d.error) || t(status) : t(status)}</span>
+        </div>
+
+        <div className="pw-stats">
+          <div>
+            <span>{t("Downloaded")}</span>
+            <b className="num">
+              {fmt.bytes(d.done)}
+              {d.total > 0 && <small> / {fmt.bytes(d.total)}</small>}
+            </b>
+          </div>
           {!complete && (
             <>
-              <span>{t("Transfer rate")}</span>
-              <span className="num">{live ? fmt.speed(d.speed) : "—"}</span>
-              <span>{t("Time left")}</span>
-              <span className="num">{eta != null ? fmt.duration(eta) : "—"}</span>
-              <span>{t("Resume")}</span>
-              <span>{d.meta.resumable === false ? t("No — pausing restarts the file") : d.meta.resumable ? t("Yes") : t("Unknown")}</span>
+              <div>
+                <span>{t("Transfer rate")}</span>
+                <b className="num">{live ? fmt.speed(d.speed) : "—"}</b>
+              </div>
+              <div>
+                <span>{t("Time left")}</span>
+                <b className="num">{eta != null ? fmt.duration(eta) : "—"}</b>
+              </div>
             </>
           )}
         </div>
-
-        <Progress value={complete ? 100 : pct} state={complete ? "completed" : d.status === "error" ? "error" : d.status === "paused" ? "paused" : "downloading"} indeterminate={live && d.total <= 0} />
 
         {!complete && (
           <>
@@ -171,7 +187,7 @@ export function ProgressWindow({ id }: { id: string }) {
               <Icon icon={more ? ChevronDown : ChevronRight} size={14} /> {more ? t("Hide details") : t("Show details")}
             </button>
             {more && (
-              <>
+              <div className="pw-details">
                 <div className="pw-map" aria-label={t("Downloaded parts of the file")} style={{ gridTemplateColumns: `repeat(${cells.length}, 1fr)` }}>
                   {cells.map((v, i) => (
                     <span key={i} style={{ opacity: v > 0 ? 0.35 + v * 0.65 : 1 }} data-have={v > 0} />
@@ -190,36 +206,50 @@ export function ProgressWindow({ id }: { id: string }) {
                     ))}
                   </div>
                 )}
-              </>
+                <div className="pw-facts">
+                  <span>{t("Address")}</span>
+                  <span className="truncate" title={d.url}>
+                    {d.url}
+                  </span>
+                  <span>{t("Resume")}</span>
+                  <span>{d.meta.resumable === false ? t("No — pausing restarts the file") : d.meta.resumable ? t("Yes") : t("Unknown")}</span>
+                </div>
+              </div>
             )}
           </>
         )}
         {error && <div style={{ color: "var(--danger)", fontSize: "var(--text-xs)" }}>{error}</div>}
       </div>
 
-      <footer className="dl-actions pw-actions">
+      <footer className="pw-actions">
         {complete ? (
           <>
+            <Button variant="ghost" onClick={() => void win.close()}>
+              {t("Close")}
+            </Button>
+            <Button onClick={() => act(api.openFolder(d.id))}>{t("Open folder")}</Button>
             <Button variant="primary" onClick={() => act(api.openFile(d.id).then(() => win.close()))}>
               {t("Open")}
             </Button>
-            <Button onClick={() => act(api.openFolder(d.id))}>{t("Open folder")}</Button>
-            <Button onClick={() => void win.close()}>{t("Close")}</Button>
           </>
         ) : (
           <>
+            <Button variant="ghost" onClick={() => void win.close()}>
+              {t("Hide")}
+            </Button>
+            {/* Like IDM: Cancel stops the download and keeps it in the list (resumable); deleting is done from the list. */}
+            <Button className="is-danger" title={t("Stops the download and keeps it in your list, so you can resume it later.")} onClick={() => act((live || d.status === "queued" ? api.pause([d.id]) : Promise.resolve()).then(() => win.close()))}>
+              {t("Cancel download")}
+            </Button>
             {live || d.status === "queued" ? (
-              <Button onClick={() => act(api.pause([d.id]))}>{t("Pause")}</Button>
+              <Button variant="primary" onClick={() => act(api.pause([d.id]))}>
+                {t("Pause")}
+              </Button>
             ) : (
               <Button variant="primary" onClick={() => act(api.resume([d.id]))}>
                 {d.status === "error" ? t("Retry") : t("Resume")}
               </Button>
             )}
-            {/* Like IDM: Cancel stops the download and keeps it in the list (resumable); deleting is done from the list. */}
-            <Button className="is-danger" title={t("Stops the download and keeps it in your list, so you can resume it later.")} onClick={() => act((live || d.status === "queued" ? api.pause([d.id]) : Promise.resolve()).then(() => win.close()))}>
-              {t("Cancel download")}
-            </Button>
-            <Button onClick={() => void win.close()}>{t("Hide")}</Button>
           </>
         )}
       </footer>

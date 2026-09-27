@@ -22,4 +22,13 @@ class KuApp : Application() {
         NetworkWatch.start(this)
         ScheduleAlarm.watch(this)
     }
+
+    /** In the background (downloads keep running): free the browser's idle pages. */
+    @Suppress("DEPRECATION")
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        if (level >= TRIM_MEMORY_UI_HIDDEN) {
+            android.os.Handler(mainLooper).post { runCatching { digital.kuduy.kudownloader.browser.BrowserState.trim(keep = 0) } }
+        }
+    }
 }

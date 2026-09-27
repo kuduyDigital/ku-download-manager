@@ -31,6 +31,7 @@ pub fn handler() -> impl Fn(tauri::ipc::Invoke) -> bool + Send + Sync + 'static 
         airsend_cancel,
         airsend_decide,
         airsend_refresh,
+        airsend_open_firewall,
         airsend_add,
         airsend_trust,
         airsend_clear_history,
@@ -806,6 +807,12 @@ async fn airsend_cancel(state: State<'_, AppState>, id: String) -> R<()> {
 #[tauri::command]
 async fn airsend_decide(state: State<'_, AppState>, id: String, accept: bool, trust: bool) -> R<()> {
     air(&state)?.decide(&id, accept, trust).await.map_err(|err| format!("{err:#}"))
+}
+
+/// Linux: let KuAirSend through firewalld / ufw (polkit asks for the password).
+#[tauri::command]
+async fn airsend_open_firewall(state: State<'_, AppState>) -> R<kucore::airsend::AirStatus> {
+    air(&state)?.open_firewall().await.map_err(|err| format!("{err:#}"))
 }
 
 #[tauri::command]

@@ -341,5 +341,9 @@
  "App updates": "Actualizaciones de la app",
  "Tap to update.": "Toca para actualizar.",
  "Downloading the update…": "Descargando la actualización…",
- "Update now": "Actualizar ahora"
+ "Update now": "Actualizar ahora",
+ "Favorites": "Favoritos",
+ "Privacy report": "Informe de privacidad",
+ "Ad and tracker blocking is off.": "El bloqueo de anuncios y rastreadores está desactivado.",
+ "Recently visited": "Visitados recientemente"
 }

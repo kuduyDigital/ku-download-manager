@@ -341,5 +341,9 @@
  "App updates": "应用更新",
  "Tap to update.": "点按即可更新。",
  "Downloading the update…": "正在下载更新…",
- "Update now": "立即更新"
+ "Update now": "立即更新",
+ "Favorites": "收藏",
+ "Privacy report": "隐私报告",
+ "Ad and tracker blocking is off.": "广告和跟踪器拦截已关闭。",
+ "Recently visited": "最近访问"
 }

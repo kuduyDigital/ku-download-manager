@@ -254,7 +254,8 @@ fun BrowserScreen() {
             if (tab.isStart) {
                 StartPage { open(tab, it) }
             } else {
-                androidx.compose.runtime.key(tab.id) {
+                // Rebuilt after a renderer crash (the tab then loads its page again).
+                androidx.compose.runtime.key(tab.id, BrowserSignals.renderResets) {
                     AndroidView(
                         factory = { c ->
                             FrameLayout(c).apply {
@@ -423,7 +424,8 @@ private fun AddressPill(
     LaunchedEffect(editing) {
         if (editing) {
             field = TextFieldValue(address, TextRange(0, address.length))
-            focusRequester.requestFocus()
+            // Never crash if the field is not attached yet (fast tab switches).
+            runCatching { focusRequester.requestFocus() }
         }
     }
     LaunchedEffect(address) { if (address != field.text) field = field.copy(text = address, selection = TextRange(address.length)) }

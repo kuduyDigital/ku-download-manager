@@ -57,6 +57,8 @@ object BrowserSignals {
     var pill by mutableStateOf<PillPick?>(null)
     var fullscreen by mutableStateOf<Pair<View, WebChromeClient.CustomViewCallback>?>(null)
     var chooser by mutableStateOf<Pair<ValueCallback<Array<Uri>>, WebChromeClient.FileChooserParams>?>(null)
+    /** Bumped when a page's renderer died: the browser rebuilds the page view. */
+    var renderResets by androidx.compose.runtime.mutableIntStateOf(0)
 }
 
 object PageScript {
@@ -118,6 +120,26 @@ class KuWebClient(private val tab: Tab) : WebViewClient() {
         tab.canForward = view.canGoForward()
         PageScript.inject(view, tab)
         BrowserState.addHistory(url, tab.title)
+    }
+
+    /**
+     * The page's renderer crashed or was killed for memory (heavy sites like
+     * YouTube, many tabs). Without this the whole app is closed; instead the
+     * tab lets go of its WebView and loads again when shown.
+     */
+    override fun onRenderProcessGone(view: WebView, detail: android.webkit.RenderProcessGoneDetail?): Boolean {
+        if (tab.view === view) {
+            (view.parent as? android.view.ViewGroup)?.removeView(view)
+            runCatching { view.destroy() }
+            tab.view = null
+            tab.saved = null
+            tab.progress = 100
+            BrowserSignals.renderResets++
+        } else {
+            (view.parent as? android.view.ViewGroup)?.removeView(view)
+            runCatching { view.destroy() }
+        }
+        return true
     }
 
     override fun doUpdateVisitedHistory(view: WebView, url: String, isReload: Boolean) {

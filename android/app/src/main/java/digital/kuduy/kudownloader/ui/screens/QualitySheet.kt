@@ -200,7 +200,8 @@ fun QualitySheet(req: MediaPrefill, onClose: () -> Unit) {
                     }
                     if (mode == "video") {
                         LazyColumn(Modifier.heightIn(max = 300.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            items(i.video, key = { it.height }) { v ->
+                            items(i.video.size) { idx ->
+                                val v = i.video[idx]
                                 val label = buildString {
                                     append(v.label.ifBlank { "${v.height}p" })
                                     v.fps?.takeIf { it > 30 }?.let { append(" ${it.toInt()}fps") }

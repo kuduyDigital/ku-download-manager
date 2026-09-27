@@ -1,0 +1,73 @@
+name: Android smoke test
+
+# Runs the real app on an Android emulator and drives the built-in browser
+# (YouTube search, a video page, the quality sheet, many tabs). A crash fails
+# the run; the device log is attached either way. Run it by hand
+# (Actions › Android smoke test › Run workflow) or on a pull request.
+on:
+  workflow_dispatch:
+  push:
+    branches: ["crash-fix", "smoke/**"]
+  pull_request:
+    paths: ["android/**", "crates/ku-android/**"]
+
+jobs:
+  emulator:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    env:
+      NDK_VERSION: 27.2.12479018
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - name: Android NDK
+        run: |
+          sdk="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          echo "ANDROID_HOME=$sdk" >> "$GITHUB_ENV"
+          sdkmanager=$(ls "$sdk"/cmdline-tools/*/bin/sdkmanager | sort -V | tail -1)
+          yes | "$sdkmanager" --licenses > /dev/null || true
+          "$sdkmanager" --install "ndk;${NDK_VERSION}" "platforms;android-35" "build-tools;35.0.0" > /dev/null
+          echo "ANDROID_NDK_HOME=$sdk/ndk/${NDK_VERSION}" >> "$GITHUB_ENV"
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-linux-android
+      - uses: Swatinem/rust-cache@v2
+        with: { key: android-smoke }
+      - name: cargo-ndk
+        run: cargo install cargo-ndk --locked
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: KuCore for the emulator (x86_64)
+        run: |
+          cargo ndk -t x86_64 --platform 24 -o android/app/src/main/jniLibs build -p ku-android --release
+          node android/scripts/locales.mjs
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: "8.11.1" }
+      - name: Build the app and the test
+        working-directory: android
+        run: gradle --no-daemon assembleDebug assembleDebugAndroidTest
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Run on an emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          ram-size: 4096M
+          disk-size: 6000M
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          disable-animations: true
+          script: sh android/scripts/smoke.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-smoke
+          path: |
+            logcat.txt
+            android/app/build/reports/androidTests/
+          if-no-files-found: ignore

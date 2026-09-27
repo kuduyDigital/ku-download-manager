@@ -141,8 +141,13 @@ fun BrowserScreen() {
     // moment, so pages flicked through are skipped): "Download" is then instant.
     LaunchedEffect(tab.url) {
         if (isVideoPage(tab.url)) {
-            kotlinx.coroutines.delay(1500)
-            Ku.prefetchMedia(tab.url, BrowserState.cookies(tab.url), tab.url)
+            kotlinx.coroutines.delay(2000)
+            // yt-dlp is heavy: skip it when the phone is short of memory, so the
+            // page (YouTube especially) is not squeezed out.
+            val am = ctx.getSystemService(android.app.ActivityManager::class.java)
+            val mem = android.app.ActivityManager.MemoryInfo().also { am?.getMemoryInfo(it) }
+            val roomy = am != null && !am.isLowRamDevice && !mem.lowMemory && mem.availMem > 1_000L * 1024 * 1024
+            if (roomy) Ku.prefetchMedia(tab.url, BrowserState.cookies(tab.url), tab.url)
         }
     }
     val focus = LocalFocusManager.current

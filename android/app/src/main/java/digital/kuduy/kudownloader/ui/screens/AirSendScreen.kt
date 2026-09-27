@@ -373,11 +373,10 @@ private fun Radar(alias: String, avatar: String, peers: List<AirPeer>, onPick: (
                 }
                 drawCircle(col.copy(alpha = 0.45f), r * f, c + Offset(j * 0.4f, 0f), style = Stroke(1.5f))
             }
-            // Target ping: a diamond growing out of the centre.
-            val half = r * (0.12f + pulse * 0.75f)
-            rotate(45f, c) {
-                drawRect(cyan.copy(alpha = (1f - pulse) * 0.8f), Offset(c.x - half, c.y - half), androidx.compose.ui.geometry.Size(half * 2, half * 2), style = Stroke(2.5f))
-            }
+            // Ping: a neon circle growing out of the centre, with a soft glow.
+            val pr = r * (0.18f + pulse * 0.8f)
+            drawCircle(cyan.copy(alpha = (1f - pulse) * 0.25f), pr, c, style = Stroke(8f))
+            drawCircle(cyan.copy(alpha = (1f - pulse) * 0.8f), pr, c, style = Stroke(2.5f))
         }
         // This device, in the exact centre.
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.align(Alignment.Center)) {

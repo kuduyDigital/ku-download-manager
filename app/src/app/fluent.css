@@ -1603,16 +1603,15 @@ body {
   92% { transform: translateX(4px) scale(1.01); filter: drop-shadow(-3px 0 #FF2A6D) drop-shadow(3px 0 #05D9E8); }
   94% { transform: translateX(-3px); filter: drop-shadow(3px 0 #FF2A6D); }
 }
-/* Target ping: a square that grows out instead of a circle. */
+/* Ping: a neon circle growing out from the centre. */
 :root[data-theme="dark"][data-palette="cyberpunk"] .air-rings > i {
-  border-radius: 4px;
   border: 2px solid #05D9E8;
-  box-shadow: 0 0 12px rgba(5, 217, 232, 0.6);
+  box-shadow: 0 0 12px rgba(5, 217, 232, 0.6), inset 0 0 8px rgba(5, 217, 232, 0.35);
   animation: cp-ping 2.8s ease-out infinite;
 }
 @keyframes cp-ping {
-  0% { transform: scale(0.5) rotate(45deg); opacity: 0.8; }
-  100% { transform: scale(4.4) rotate(45deg); opacity: 0; }
+  0% { transform: scale(0.5); opacity: 0.8; }
+  100% { transform: scale(4.4); opacity: 0; }
 }
 /* Rotating scanner sweep. */
 :root[data-theme="dark"][data-palette="cyberpunk"] .air-rings > b {

@@ -137,19 +137,6 @@ fun BrowserScreen() {
     val tab = BrowserState.current ?: return
     // Switching tabs: let go of the WebViews of tabs not used for a while.
     LaunchedEffect(tab.id) { BrowserState.trim() }
-    // On a video page, start reading its formats in the background (after a
-    // moment, so pages flicked through are skipped): "Download" is then instant.
-    LaunchedEffect(tab.url) {
-        if (isVideoPage(tab.url)) {
-            kotlinx.coroutines.delay(2000)
-            // yt-dlp is heavy: skip it when the phone is short of memory, so the
-            // page (YouTube especially) is not squeezed out.
-            val am = ctx.getSystemService(android.app.ActivityManager::class.java)
-            val mem = android.app.ActivityManager.MemoryInfo().also { am?.getMemoryInfo(it) }
-            val roomy = am != null && !am.isLowRamDevice && !mem.lowMemory && mem.availMem > 1_000L * 1024 * 1024
-            if (roomy) Ku.prefetchMedia(tab.url, BrowserState.cookies(tab.url), tab.url)
-        }
-    }
     val focus = LocalFocusManager.current
     var address by remember(tab.id) { mutableStateOf(tab.url) }
     var editing by remember { mutableStateOf(false) }
@@ -309,14 +296,24 @@ private fun host(url: String) = runCatching { java.net.URI(url).host?.removePref
 @Composable
 private fun DownloadOrb(count: Int, onClick: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
-    val pulse = androidx.compose.animation.core.rememberInfiniteTransition(label = "orb")
-    val p by pulse.animateFloat(0f, 1f, androidx.compose.animation.core.infiniteRepeatable(androidx.compose.animation.core.tween(1800, easing = androidx.compose.animation.core.LinearEasing)), label = "ring")
+    // Pulses three times when it appears, then rests (no animation running
+    // while you read or scroll the page).
+    val pulse = remember { androidx.compose.animation.core.Animatable(1f) }
+    LaunchedEffect(Unit) {
+        repeat(3) {
+            pulse.snapTo(0f)
+            pulse.animateTo(1f, androidx.compose.animation.core.tween(1800, easing = androidx.compose.animation.core.LinearEasing))
+        }
+    }
     Box(Modifier.size(72.dp), contentAlignment = Alignment.Center) {
         // Two rings growing out and fading, half a beat apart.
         androidx.compose.foundation.Canvas(Modifier.matchParentSize()) {
             val r = 26.dp.toPx()
-            for (phase in listOf(p, (p + 0.5f) % 1f)) {
-                drawCircle(scheme.primary.copy(alpha = (1f - phase) * 0.35f), radius = r + phase * 10.dp.toPx())
+            val p = pulse.value
+            if (p < 1f) {
+                for (phase in listOf(p, (p + 0.5f) % 1f)) {
+                    drawCircle(scheme.primary.copy(alpha = (1f - phase) * 0.35f), radius = r + phase * 10.dp.toPx())
+                }
             }
         }
         Surface(
@@ -346,7 +343,7 @@ private fun DownloadOrb(count: Int, onClick: () -> Unit) {
  * it glitches: slices jump sideways and split into magenta and cyan.
  */
 @Composable
-private fun CyberLoadingBar(p: Float, alpha: Float, loading: Boolean) {
+private fun CyberLoadingBar(p: () -> Float, alpha: () -> Float, loading: Boolean) {
     val cyan = Color(0xFF05D9E8)
     val magenta = Color(0xFFFF2A6D)
     val yellow = Color(0xFFF9F002)
@@ -367,9 +364,10 @@ private fun CyberLoadingBar(p: Float, alpha: Float, loading: Boolean) {
         }
     }
     Box(Modifier.fillMaxWidth().height(4.dp)) {
-        if (alpha > 0.01f) {
+        if (loading || alpha() > 0.01f) {
             androidx.compose.foundation.Canvas(Modifier.fillMaxSize()) {
-                val w = size.width * p
+                val alpha = alpha()
+                val w = size.width * p()
                 val h = size.height
                 drawRect(cyan.copy(alpha = 0.10f * alpha), size = size)
                 // Segments: 14 px blocks with 3 px gaps, like a HUD meter.
@@ -409,30 +407,34 @@ private fun LoadingBar(progress: Int) {
         if (loading && anim.value >= 0.999f) anim.snapTo(0f)
         anim.animateTo(target, androidx.compose.animation.core.tween(if (loading) 350 else 200))
     }
-    val p = anim.value
-    val alpha by androidx.compose.animation.core.animateFloatAsState(if (loading) 1f else 0f, androidx.compose.animation.core.tween(if (loading) 120 else 450, delayMillis = if (loading) 0 else 150), label = "fade")
-    val sheen = androidx.compose.animation.core.rememberInfiniteTransition(label = "sheen")
-    val x by sheen.animateFloat(-0.3f, 1.3f, androidx.compose.animation.core.infiniteRepeatable(androidx.compose.animation.core.tween(1100, easing = androidx.compose.animation.core.LinearEasing)), label = "x")
-    val accent = MaterialTheme.colorScheme.primary
+    val alpha = androidx.compose.animation.core.animateFloatAsState(if (loading) 1f else 0f, androidx.compose.animation.core.tween(if (loading) 120 else 450, delayMillis = if (loading) 0 else 150), label = "fade")
     if (digital.kuduy.kudownloader.ui.LocalKuColors.current.cyber) {
-        CyberLoadingBar(p, alpha, loading)
+        CyberLoadingBar({ anim.value }, { alpha.value }, loading)
         return
     }
+    val accent = MaterialTheme.colorScheme.primary
+    // The sheen only exists while loading: an idle browser runs no animation
+    // at all. Values are read in the draw phase (a redraw, not a re-layout).
+    val sheen: androidx.compose.runtime.State<Float> = if (loading) {
+        androidx.compose.animation.core.rememberInfiniteTransition(label = "sheen")
+            .animateFloat(-0.3f, 1.3f, androidx.compose.animation.core.infiniteRepeatable(androidx.compose.animation.core.tween(1100, easing = androidx.compose.animation.core.LinearEasing)), label = "x")
+    } else {
+        remember { androidx.compose.runtime.mutableFloatStateOf(2f) }
+    }
     Box(Modifier.fillMaxWidth().height(3.dp)) {
-        if (alpha > 0.01f) {
+        if (loading || alpha.value > 0.01f) {
             androidx.compose.foundation.Canvas(Modifier.fillMaxSize()) {
-                val w = size.width * p
-                drawRect(accent.copy(alpha = 0.18f * alpha), size = size)
+                val a = alpha.value
+                val w = size.width * anim.value
+                drawRect(accent.copy(alpha = 0.18f * a), size = size)
                 drawRect(
-                    androidx.compose.ui.graphics.Brush.horizontalGradient(listOf(accent.copy(alpha = 0.75f * alpha), accent.copy(alpha = alpha))),
+                    androidx.compose.ui.graphics.Brush.horizontalGradient(listOf(accent.copy(alpha = 0.75f * a), accent.copy(alpha = a))),
                     size = androidx.compose.ui.geometry.Size(w, size.height),
                 )
-                // A light sweep across the filled part while loading.
-                val cx = size.width * x
+                val cx = size.width * sheen.value
                 if (cx < w) {
                     drawRect(
-                        androidx.compose.ui.graphics.Brush.horizontalGradient(listOf(Color.Transparent, Color.White.copy(alpha = 0.45f * alpha), Color.Transparent), startX = cx - 60f, endX = cx + 60f),
-                        topLeft = androidx.compose.ui.geometry.Offset(0f, 0f),
+                        androidx.compose.ui.graphics.Brush.horizontalGradient(listOf(Color.Transparent, Color.White.copy(alpha = 0.45f * a), Color.Transparent), startX = cx - 60f, endX = cx + 60f),
                         size = androidx.compose.ui.geometry.Size(w, size.height),
                     )
                 }
@@ -440,7 +442,6 @@ private fun LoadingBar(progress: Int) {
         }
     }
 }
-
 /**
  * The address field. Idle it shows the site's name centred (with a lock on
  * https); tapped, it becomes a plain text field with the whole address selected.

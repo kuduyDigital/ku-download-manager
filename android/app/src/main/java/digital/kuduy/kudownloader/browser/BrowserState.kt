@@ -18,6 +18,7 @@ import androidx.webkit.WebViewFeature
 import digital.kuduy.kudownloader.core.BrowserCookie
 import digital.kuduy.kudownloader.core.Ku
 import digital.kuduy.kudownloader.core.Prefs
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -46,6 +47,8 @@ class Tab(val id: String = UUID.randomUUID().toString()) {
     /** Back/forward list of a tab whose WebView was let go to save memory. */
     var saved: android.os.Bundle? = null
     var lastUsed: Long = System.currentTimeMillis()
+    /** The address whose element-hiding rules were applied (once per page). */
+    @Volatile var cosmeticFor: String? = null
     /** Secret the page script must pass back, so other scripts can't drive the bridge. */
     val token: String = UUID.randomUUID().toString().replace("-", "")
     val isStart get() = !started && url.isBlank()
@@ -121,6 +124,8 @@ object BrowserState {
             WebSettingsCompat.setAlgorithmicDarkeningAllowed(v.settings, true)
         }
         CookieManager.getInstance().setAcceptThirdPartyCookies(v, true)
+        // A page you are not looking at gives way first when memory runs low.
+        if (Build.VERSION.SDK_INT >= 26) v.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_IMPORTANT, true)
         v.addJavascriptInterface(PageBridge(t), "KuBridge")
         v.webViewClient = KuWebClient(t)
         v.webChromeClient = KuChromeClient(t)
@@ -176,7 +181,19 @@ object BrowserState {
         history.removeAll { it.url == url }
         history.add(0, Bookmark(url, title))
         while (history.size > 500) history.removeAt(history.lastIndex)
-        Prefs.history.value = Ku.json.encodeToString(history.toList())
+        saveHistorySoon()
+    }
+
+    private var historyJob: kotlinx.coroutines.Job? = null
+
+    /** History is written once browsing pauses for a moment, off the main thread. */
+    private fun saveHistorySoon() {
+        val snapshot = history.toList()
+        historyJob?.cancel()
+        historyJob = Ku.scope.launch {
+            kotlinx.coroutines.delay(2000)
+            Prefs.history.value = Ku.json.encodeToString(snapshot)
+        }
     }
 
     fun toggleBookmark(url: String, title: String) {

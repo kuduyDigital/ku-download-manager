@@ -35,12 +35,15 @@
   var seenId = {};
   var genericCss = "";
 
+  // Runs when the page is idle, never more than every 5 s, and only looks at a
+  // bounded number of elements: the native lookup is synchronous.
+  var idle = window.requestIdleCallback || function (f) { return setTimeout(f, 200); };
   function scanGeneric() {
     if (!generic) return;
     var classes = [];
     var ids = [];
     var all = document.querySelectorAll("[class],[id]");
-    for (var i = 0; i < all.length && i < 6000; i++) {
+    for (var i = 0; i < all.length && i < 2500; i++) {
       var el = all[i];
       if (el.id && !seenId[el.id]) {
         seenId[el.id] = 1;
@@ -57,6 +60,7 @@
       }
     }
     if (!classes.length && !ids.length) return;
+    if (classes.length > 800) classes.length = 800;
     var css = bridge.hidden(TOKEN, JSON.stringify({ classes: classes, ids: ids, exceptions: JSON.parse(exceptions) }));
     if (css) {
       genericCss += css + "\n";
@@ -68,7 +72,7 @@
     style("__ku_hide", css);
     generic = isGeneric;
     exceptions = ex || "[]";
-    scanGeneric();
+    idle(scanGeneric);
   };
 
   // ───────── links (Fetch Projects) ─────────
@@ -165,10 +169,10 @@
     return best;
   }
 
-  var queued = false;
   var reported = null;
+  var timer = 0;
   function place() {
-    queued = false;
+    timer = 0;
     var v = pick();
     var has = !!v || document.getElementsByTagName("video").length > 0;
     if (has !== reported) {
@@ -191,25 +195,37 @@
     btn.style.top = Math.max(8, Math.min(innerHeight - 44, r.top + 10)) + "px";
     btn.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.right - w - 10)) + "px";
   }
-  function schedule() {
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(place);
+  // Coalesced: at most one placement per `wait` ms, after things settle.
+  function schedule(wait) {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(function () { requestAnimationFrame(place); }, typeof wait === "number" ? wait : 150);
+  }
+  // While scrolling the button hides (no layout work per frame), and comes
+  // back where the video is once the page stops.
+  function onScroll() {
+    if (btn && btn.style.display !== "none") btn.style.display = "none";
+    schedule(180);
   }
 
-  addEventListener("scroll", schedule, { passive: true, capture: true });
+  addEventListener("scroll", onScroll, { passive: true, capture: true });
   addEventListener("resize", schedule, { passive: true });
   document.addEventListener("fullscreenchange", schedule);
   document.addEventListener("loadedmetadata", schedule, true);
   document.addEventListener("play", schedule, true);
 
+  // Busy sites (YouTube) change the page all the time: react at most every
+  // 1 s for the button and every 5 s for element hiding.
+  var lastMut = 0;
   var lastScan = 0;
   var mo = new MutationObserver(function () {
-    schedule();
     var now = Date.now();
-    if (generic && now - lastScan > 1500) {
+    if (now - lastMut > 1000) {
+      lastMut = now;
+      schedule(400);
+    }
+    if (generic && now - lastScan > 5000) {
       lastScan = now;
-      setTimeout(scanGeneric, 300);
+      idle(scanGeneric);
     }
   });
   mo.observe(document.documentElement, { childList: true, subtree: true });

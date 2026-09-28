@@ -44,6 +44,35 @@ import java.util.Locale
 private val main = Handler(Looper.getMainLooper())
 private fun ui(block: () -> Unit) = main.post(block)
 
+/**
+ * Blocked requests are counted off the main thread and shown at most twice a
+ * second (a page can block hundreds; one screen update and disk write each
+ * made scrolling stutter). The lifetime total is saved when a page finishes.
+ */
+private object BlockCounter {
+    private val pending = java.util.concurrent.ConcurrentHashMap<Tab, java.util.concurrent.atomic.AtomicInteger>()
+    private val total = java.util.concurrent.atomic.AtomicLong(0)
+    @Volatile private var posted = false
+
+    fun add(tab: Tab) {
+        pending.getOrPut(tab) { java.util.concurrent.atomic.AtomicInteger() }.incrementAndGet()
+        total.incrementAndGet()
+        if (posted) return
+        posted = true
+        main.postDelayed({
+            posted = false
+            for ((t, n) in pending) t.blocked += n.getAndSet(0)
+            pending.entries.removeIf { it.value.get() == 0 }
+        }, 500)
+    }
+
+    /** Save the lifetime count (called when a page finishes). */
+    fun save() {
+        val n = total.getAndSet(0)
+        if (n > 0) Prefs.adsBlocked.value = Prefs.adsBlocked.value + n
+    }
+}
+
 private val MEDIA = Regex("""\.(m3u8|mpd|mp4|webm|m4v|mov|mkv|flv|m4a|mp3|aac|ogg|opus|flac|wav)(?:$|[?#])""", RegexOption.IGNORE_CASE)
 private val SEGMENT = Regex("""\.(ts|m4s|aac|cmfv|cmfa)(?:$|[?#])|/seg[-_]?\d+|[?&](range|bytestart)=""", RegexOption.IGNORE_CASE)
 private val IMAGE = Regex("""\.(png|jpe?g|gif|webp|svg|ico|bmp|avif)(?:$|[?#])""", RegexOption.IGNORE_CASE)
@@ -72,7 +101,11 @@ object PageScript {
             .replace("__KU_PILL__", Prefs.pill.value.toString())
             .replace("__KU_LABEL__", org.json.JSONObject.quote(t("Download")))
         view.evaluateJavascript(js, null)
-        if (Prefs.adblock.value) cosmetic(view, tab)
+        val url = view.url
+        if (Prefs.adblock.value && url != null && url != tab.cosmeticFor) {
+            tab.cosmeticFor = url
+            cosmetic(view, tab)
+        }
     }
 
     /** Element hiding for this page (the generic part is asked for by the page script). */
@@ -118,8 +151,11 @@ class KuWebClient(private val tab: Tab) : WebViewClient() {
         tab.progress = 100
         tab.canBack = view.canGoBack()
         tab.canForward = view.canGoForward()
+        // The script is usually in already (onPageCommitVisible); this covers
+        // pages that never commit visibly. It guards itself against running twice.
         PageScript.inject(view, tab)
         BrowserState.addHistory(url, tab.title)
+        BlockCounter.save()
     }
 
     /**
@@ -179,10 +215,7 @@ class KuWebClient(private val tab: Tab) : WebViewClient() {
         if (Prefs.adblock.value && !request.isForMainFrame) {
             val kind = kindOf(request, url)
             if (Native.shouldBlock(url, page.ifBlank { url }, kind)) {
-                ui {
-                    tab.blocked++
-                    Prefs.adsBlocked.value = Prefs.adsBlocked.value + 1
-                }
+                BlockCounter.add(tab)
                 return WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(ByteArray(0)))
             }
         }

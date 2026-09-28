@@ -4,6 +4,13 @@
  */
 export const WHATS_NEW: { version: string; items: string[] }[] = [
   {
+    version: "0.2.13",
+    items: [
+      "The browser extension is now on Firefox Add-ons: Settings › Browser integration installs it in one click, and it stays installed.",
+      "New documentation on the website: install, the browser extension, videos, torrents, KuAirSend and troubleshooting.",
+    ],
+  },
+  {
     version: "0.2.11",
     items: [
       "Cyberpunk theme: glitching neon progress bars, network card and percentages.",

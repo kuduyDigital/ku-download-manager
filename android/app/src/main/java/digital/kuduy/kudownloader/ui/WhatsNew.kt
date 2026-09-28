@@ -31,6 +31,11 @@ import digital.kuduy.kudownloader.i18n.t
 
 /** What changed in each version (newest first), shown once after an update. */
 private val NOTES = listOf(
+    "0.2.13" to listOf(
+        "A lighter, smoother browser: less work while you scroll, and ad blocking that no longer slows pages down over time.",
+        "Video qualities are read when you tap Download, not in the background on every video page (easier on the battery).",
+        "The download button pulses a few times, then rests.",
+    ),
     "0.2.12" to listOf(
         "The browser no longer closes the app when a heavy page (like YouTube) runs out of memory: the page reloads instead.",
         "A smaller download button: a pulsing circle in the corner.",

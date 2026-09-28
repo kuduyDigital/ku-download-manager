@@ -41,6 +41,58 @@ class BrowserSmokeTest {
     private fun alive(scenario: ActivityScenario<MainActivity>, step: String) {
         assertEquals("app closed after: $step", Lifecycle.State.RESUMED, scenario.state)
         println("KU-SMOKE ok: $step")
+        println("KU-LAG $step: main thread max ${lagMax.getAndSet(0)} ms, stalls over 200 ms: ${lagStalls.getAndSet(0)}")
+    }
+
+    // ── App freezes: how late a tick posted to the main thread every 50 ms runs.
+    private val lagMax = java.util.concurrent.atomic.AtomicLong(0)
+    private val lagStalls = java.util.concurrent.atomic.AtomicInteger(0)
+
+    private fun watchMainThread(): Thread = Thread {
+        val handler = android.os.Handler(android.os.Looper.getMainLooper())
+        while (!Thread.currentThread().isInterrupted) {
+            val posted = android.os.SystemClock.uptimeMillis()
+            val done = java.util.concurrent.CountDownLatch(1)
+            handler.post {
+                val late = android.os.SystemClock.uptimeMillis() - posted
+                lagMax.accumulateAndGet(late) { a, b -> maxOf(a, b) }
+                if (late > 200) lagStalls.incrementAndGet()
+                done.countDown()
+            }
+            try {
+                done.await()
+                Thread.sleep(50)
+            } catch (_: InterruptedException) { break }
+        }
+    }.apply { isDaemon = true; start() }
+
+    // ── Page freezes: the page's own long tasks (JavaScript/layout over 50 ms).
+    private val longTaskProbe = """
+        (function(){ if (window.__kuLT) return; window.__kuLT = {n:0, total:0, max:0};
+          try { new PerformanceObserver(function(l){ l.getEntries().forEach(function(e){ var t=window.__kuLT; t.n++; t.total+=e.duration; if(e.duration>t.max) t.max=e.duration; }); }).observe({type:'longtask', buffered:true}); } catch(e) {} })();
+    """.trimIndent()
+
+    private fun pageLongTasks(step: String) {
+        val latch = java.util.concurrent.CountDownLatch(1)
+        var result = "?"
+        main { BrowserState.current?.view?.evaluateJavascript("JSON.stringify(window.__kuLT||null)") { r -> result = r; latch.countDown() } ?: latch.countDown() }
+        latch.await(5, java.util.concurrent.TimeUnit.SECONDS)
+        println("KU-PAGE $step: long tasks $result")
+    }
+
+    /** Load a page, let it settle, scroll through it like a reader, report. */
+    private fun browse(scenario: ActivityScenario<MainActivity>, url: String) {
+        open(url)
+        waitFor(60, "$url to load") { (BrowserState.current?.progress ?: 0) >= 100 && BrowserState.current?.url?.isNotBlank() == true }
+        js(longTaskProbe)
+        Thread.sleep(3000)
+        repeat(12) { i ->
+            js("window.scrollBy({top: ${if (i % 4 == 3) -700 else 600}, behavior: 'smooth'})")
+            Thread.sleep(400)
+        }
+        Thread.sleep(1500)
+        pageLongTasks(url)
+        alive(scenario, "browse $url")
     }
 
     private fun open(url: String) = main {
@@ -68,6 +120,7 @@ class BrowserSmokeTest {
     @Test
     fun youtubeSearchVideoAndTabs() {
         val sampler = sampleMemory()
+        val watchdog = watchMainThread()
         val ctx = inst.targetContext
         Prefs.init(ctx)
         Prefs.welcomed.value = true
@@ -76,6 +129,11 @@ class BrowserSmokeTest {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             waitFor(180, "KuCore to start") { Ku.phase.value == Ku.Phase.Ready }
             alive(scenario, "start")
+
+            // 0. Ordinary heavy sites (news, articles): lag is not only YouTube.
+            for (site in listOf("https://www.bbc.com/news", "https://edition.cnn.com/", "https://www.theverge.com/", "https://en.wikipedia.org/wiki/Android_(operating_system)")) {
+                browse(scenario, site)
+            }
 
             // 1. YouTube search results.
             open("https://m.youtube.com/results?search_query=lofi+hip+hop")
@@ -154,5 +212,6 @@ class BrowserSmokeTest {
             assertTrue(tabs >= 5)
         }
         sampler.interrupt()
+        watchdog.interrupt()
     }
 }

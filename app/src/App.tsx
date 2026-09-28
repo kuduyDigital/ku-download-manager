@@ -331,16 +331,6 @@ export default function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, [openAdd, navigate, showList, view, selection]);
 
-  // Block the webview's default context menu outside text fields.
-  useEffect(() => {
-    const onCtx = (e: MouseEvent) => {
-      const t = e.target as HTMLElement;
-      if (!(t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.closest(".selectable"))) e.preventDefault();
-    };
-    window.addEventListener("contextmenu", onCtx);
-    return () => window.removeEventListener("contextmenu", onCtx);
-  }, []);
-
   const collapsed = sidebarPref ?? narrow;
   const removeList = (removeIds ?? []).map(getDownload).filter(Boolean);
   const anyUnfinished = removeList.some((d) => d!.status !== "completed" && d!.status !== "seeding");

@@ -742,22 +742,48 @@ private val BRAND_COLORS = mapOf(
     "soundcloud.com" to listOf(Color(0xFFFF8800), Color(0xFFFF3300)),
 )
 
-/** A rounded-square tile with the site's initial (a stand-in for its icon). */
+/**
+ * A rounded-square tile with the site's real icon (from DuckDuckGo's icon
+ * service, cached after the first load). Until it loads, or when there is
+ * none, the site's initial on its colour.
+ */
 @Composable
 private fun SiteTile(name: String, url: String, size: Int) {
     val key = host(url).ifBlank { name }
     val brand = BRAND_COLORS.entries.firstOrNull { (k, _) -> key == k || key.endsWith(".$k") }?.value
     val colors = brand ?: TILE_COLORS[(key.hashCode() and Int.MAX_VALUE) % TILE_COLORS.size].let { listOf(it, lerp(it, Color.Black, 0.18f)) }
+    var loaded by remember(key) { mutableStateOf(false) }
+    var failed by remember(key) { mutableStateOf(key.isBlank() || '.' !in key) }
+    val shape = RoundedCornerShape((size * 0.26f).dp)
     Box(
-        Modifier.size(size.dp).clip(RoundedCornerShape((size * 0.26f).dp)).background(androidx.compose.ui.graphics.Brush.linearGradient(colors)),
+        Modifier.size(size.dp).clip(shape)
+            .background(if (loaded) androidx.compose.ui.graphics.SolidColor(Color.White) else androidx.compose.ui.graphics.Brush.linearGradient(colors))
+            .then(if (loaded) Modifier.border(1.dp, Color.Black.copy(alpha = 0.08f), shape) else Modifier),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            name.trim().firstOrNull { it.isLetterOrDigit() }?.uppercase() ?: "•",
-            color = Color.White,
-            fontWeight = FontWeight.Bold,
-            style = if (size >= 48) MaterialTheme.typography.headlineSmall else MaterialTheme.typography.titleMedium,
-        )
+        if (!loaded) {
+            Text(
+                name.trim().firstOrNull { it.isLetterOrDigit() }?.uppercase() ?: "•",
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                style = if (size >= 48) MaterialTheme.typography.headlineSmall else MaterialTheme.typography.titleMedium,
+            )
+        }
+        if (!failed) {
+            val ctx = LocalContext.current
+            coil.compose.AsyncImage(
+                model = remember(key) {
+                    coil.request.ImageRequest.Builder(ctx)
+                        .data("https://icons.duckduckgo.com/ip3/${key.removePrefix("m.")}.ico")
+                        .crossfade(true)
+                        .build()
+                },
+                contentDescription = null,
+                onSuccess = { loaded = true },
+                onError = { failed = true },
+                modifier = Modifier.size((size * 0.58f).dp).clip(RoundedCornerShape((size * 0.12f).dp)),
+            )
+        }
     }
 }
 

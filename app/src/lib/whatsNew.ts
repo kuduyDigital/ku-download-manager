@@ -4,6 +4,12 @@
  */
 export const WHATS_NEW: { version: string; items: string[] }[] = [
   {
+    version: "0.2.15",
+    items: [
+      "Right-clicking a window no longer shows a web page menu (Back, Refresh, Print), and Refresh can no longer reset a progress window by accident.",
+    ],
+  },
+  {
     version: "0.2.13",
     items: [
       "The browser extension is now on Firefox Add-ons: Settings › Browser integration installs it in one click, and it stays installed.",

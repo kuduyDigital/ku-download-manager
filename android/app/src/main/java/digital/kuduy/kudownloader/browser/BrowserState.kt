@@ -237,10 +237,42 @@ object BrowserState {
     }
 }
 
-private val VIDEO_PAGE = Regex(
-    """^https?://(?:[a-z0-9-]+.)*(?:youtube.com/(?:watch|shorts/|live/|embed/)|youtu.be/|tiktok.com/@[^/]+/video/|instagram.com/(?:reel|reels|p|tv)/|facebook.com/.*(?:/videos/|/reel/|watch)|fb.watch/|(?:x|twitter).com/[^/]+/status/|vimeo.com/d|dailymotion.com/video/|twitch.tv/(?:videos/|[^/]+/clip/)|reddit.com/r/[^/]+/comments/|soundcloud.com/[^/]+/[^/?#]+|bilibili.com/video/|pinterest.[a-z.]+/pin/)""",
-    RegexOption.IGNORE_CASE,
+/**
+ * Video pages by site: the address is split into host and path first, then a
+ * short anchored pattern checks the path. (The old single pattern had an
+ * unescaped `.` inside a repeated group; on long addresses it backtracked for
+ * seconds, and it ran on the main thread on every redraw — the browser froze.)
+ */
+private val VIDEO_PATHS: List<Pair<String, Regex>> = listOf(
+    "youtube.com" to Regex("^/(?:watch|shorts/|live/|embed/)"),
+    "youtu.be" to Regex("^/[^/]"),
+    "tiktok.com" to Regex("^/@[^/]+/video/"),
+    "instagram.com" to Regex("^/(?:reel|reels|p|tv)/"),
+    "facebook.com" to Regex("/videos/|/reel/|/watch"),
+    "fb.watch" to Regex("^/[^/]"),
+    "x.com" to Regex("^/[^/]+/status/"),
+    "twitter.com" to Regex("^/[^/]+/status/"),
+    "vimeo.com" to Regex("^/\\d"),
+    "dailymotion.com" to Regex("^/video/"),
+    "twitch.tv" to Regex("^/(?:videos/|[^/]+/clip/)"),
+    "reddit.com" to Regex("^/r/[^/]+/comments/"),
+    "soundcloud.com" to Regex("^/[^/]+/[^/]+"),
+    "bilibili.com" to Regex("^/video/"),
 )
 
-/** Pages yt-dlp knows as a single video or track. */
-fun isVideoPage(url: String) = VIDEO_PAGE.containsMatchIn(url)
+@Volatile private var lastVideoCheck: Pair<String, Boolean> = "" to false
+
+/** Pages yt-dlp knows as a single video or track (cached for the last address). */
+fun isVideoPage(url: String): Boolean {
+    lastVideoCheck.let { (u, r) -> if (u == url) return r }
+    val result = runCatching {
+        if (!url.startsWith("http://", true) && !url.startsWith("https://", true)) return@runCatching false
+        val uri = URI(url)
+        val host = uri.host?.lowercase() ?: return@runCatching false
+        val path = uri.rawPath ?: ""
+        if ((host.startsWith("pinterest.") || host.contains(".pinterest.")) && path.startsWith("/pin/")) return@runCatching true
+        VIDEO_PATHS.any { (domain, pattern) -> (host == domain || host.endsWith(".$domain")) && pattern.containsMatchIn(path) }
+    }.getOrDefault(false)
+    lastVideoCheck = url to result
+    return result
+}

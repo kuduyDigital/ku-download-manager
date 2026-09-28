@@ -31,6 +31,11 @@ import digital.kuduy.kudownloader.i18n.t
 
 /** What changed in each version (newest first), shown once after an update. */
 private val NOTES = listOf(
+    "0.2.14" to listOf(
+        "Fixed the browser freezing: pages with long addresses (search results, shared links) no longer lock the app for seconds.",
+        "Ad blocking is lighter: each site gets only its own hiding rules, so pages stay fast.",
+        "Favourites, recent sites and tabs show each site's real icon.",
+    ),
     "0.2.13" to listOf(
         "A lighter, smoother browser: less work while you scroll, and ad blocking that no longer slows pages down over time.",
         "Video qualities are read when you tap Download, not in the background on every video page (easier on the battery).",

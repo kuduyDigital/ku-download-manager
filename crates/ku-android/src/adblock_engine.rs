@@ -136,14 +136,34 @@ pub fn should_block(url: &str, source: &str, kind: &str) -> bool {
     l.engine.check_network_request(&req).should_block()
 }
 
+/// The ~1,000 generic element-hiding selectors that apply to every site
+/// (complex ones like `[href*="…"]`). Injecting them into every page made the
+/// browser re-match them on each change, which slows every site on a phone;
+/// network blocking already removes the ads they target. Computed once per
+/// filter set.
+static GENERIC_MISC: RwLock<Option<(usize, HashSet<String>)>> = RwLock::new(None);
+
+fn generic_misc(l: &Loaded) -> HashSet<String> {
+    let key = l.updated as usize ^ l.rules;
+    if let Some((k, set)) = GENERIC_MISC.read().unwrap_or_else(|p| p.into_inner()).as_ref() {
+        if *k == key {
+            return set.clone();
+        }
+    }
+    let set: HashSet<String> = l.engine.url_cosmetic_resources("https://ku-generic.invalid/").hide_selectors;
+    *GENERIC_MISC.write().unwrap_or_else(|p| p.into_inner()) = Some((key, set.clone()));
+    set
+}
+
 /// Page-specific element hiding: CSS selectors, scriptlets, and whether
-/// generic (class/id) rules apply.
+/// generic (class/id) rules apply. Only the site's own selectors are returned.
 pub fn cosmetic(url: &str) -> Value {
     let guard = ENGINE.read().unwrap_or_else(|p| p.into_inner());
     let Some(l) = guard.as_ref() else { return json!({"hide": [], "script": "", "generic": false, "exceptions": []}) };
     let r = l.engine.url_cosmetic_resources(url);
+    let generic = generic_misc(l);
     json!({
-        "hide": r.hide_selectors.into_iter().collect::<Vec<_>>(),
+        "hide": r.hide_selectors.into_iter().filter(|s| !generic.contains(s)).collect::<Vec<_>>(),
         "script": r.injected_script,
         "generic": !r.generichide,
         "exceptions": r.exceptions.into_iter().collect::<Vec<_>>(),
@@ -174,5 +194,26 @@ mod tests {
         let c = cosmetic("https://example.org/page");
         assert!(c["hide"].as_array().unwrap().iter().any(|s| s == ".banner"));
         assert_eq!(hidden(&["ad-box".into()], &[], &[]), vec![".ad-box".to_string()]);
+    }
+
+    /// How much element hiding the real default lists inject into a page
+    /// (`cargo test -p ku-android --release -- --ignored --nocapture cosmetic_size`).
+    #[test]
+    #[ignore = "downloads the filter lists"]
+    fn cosmetic_size() {
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        let mut set = FilterSet::new(false);
+        for url in DEFAULT_LISTS {
+            let text = rt.block_on(async { reqwest::get(*url).await?.text().await }).expect(url);
+            println!("{url}: {} lines", text.lines().count());
+            set.add_filter_list(text, ParseOptions::default());
+        }
+        let engine = Engine::new_with_filter_set(set);
+        *ENGINE.write().unwrap() = Some(Loaded { engine, rules: 3, updated: 1 });
+        for page in ["https://www.youtube.com/", "https://m.facebook.com/", "https://www.bbc.com/news", "https://www.reddit.com/", "https://example.com/"] {
+            let all = ENGINE.read().unwrap().as_ref().unwrap().engine.url_cosmetic_resources(page).hide_selectors.len();
+            let sent = cosmetic(page)["hide"].as_array().unwrap().len();
+            println!("{page}: {all} hide selectors in the lists, {sent} injected (site-specific)");
+        }
     }
 }

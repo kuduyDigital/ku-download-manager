@@ -50,6 +50,11 @@ class BrowserSmokeTest {
 
     private fun js(code: String) = main { BrowserState.current?.view?.evaluateJavascript(code, null) }
 
+    private fun shell(cmd: String): String {
+        val pfd = inst.uiAutomation.executeShellCommand(cmd)
+        return android.os.ParcelFileDescriptor.AutoCloseInputStream(pfd).bufferedReader().use { it.readText() }
+    }
+
     /** Memory of this (the app's) process every second, to see what grows. */
     private fun sampleMemory(): Thread = Thread {
         while (!Thread.currentThread().isInterrupted) {
@@ -96,6 +101,19 @@ class BrowserSmokeTest {
             )
             Thread.sleep(12000)
             alive(scenario, "typing in youtube search")
+
+            // 2b. Scroll the results like a person would, and report how smooth
+            // it was (Android's own frame statistics for this app).
+            shell("dumpsys gfxinfo ${ctx.packageName} reset")
+            repeat(24) { i ->
+                js("window.scrollBy({top: ${if (i % 6 == 5) -900 else 450}, behavior: 'smooth'})")
+                Thread.sleep(350)
+            }
+            Thread.sleep(1500)
+            shell("dumpsys gfxinfo ${ctx.packageName}").lines()
+                .filter { it.contains("Total frames rendered") || it.contains("Janky frames") || it.contains("50th percentile") || it.contains("90th percentile") || it.contains("99th percentile") }
+                .forEach { println("KU-FRAMES ${it.trim()}") }
+            alive(scenario, "scrolling youtube")
 
             // 3. A video page: the background format check starts after 2 s.
             open("https://m.youtube.com/watch?v=jNQXAC9IVRw")

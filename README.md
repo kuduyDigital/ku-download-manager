@@ -105,9 +105,10 @@ under the current user, at startup and before each install.
 
 Chromium browsers on Windows refuse `.crx` files that don't come from their
 web store (`CRX_REQUIRED_PROOF_MISSING`), so `kudmx.crx` is for store upload or
-policy deployment; *Load unpacked* is the direct path. Release Firefox installs
-only Mozilla-signed add-ons permanently (`npm run sign:firefox` in `extension/`
-with AMO API keys); otherwise use *Load Temporary Add-on*. The Chromium
+policy deployment; *Load unpacked* is the direct path. Firefox users install the
+listed add-on from [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/kudownloader/)
+(Browser Integration opens that page); `npm run sign:firefox` in `extension/`
+still produces a signed self-hosted `.xpi` with AMO API keys. The Chromium
 extension id is fixed by the manifest key (`bmbpbbaapbbelemahbmnjhppdlpdgkdi`).
 
 Downloads caught in the browser open a small always-on-top **Download File**

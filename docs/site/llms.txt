@@ -1,0 +1,34 @@
+# KuDownloader
+
+> KuDownloader is a free, open-source download manager for Windows, macOS, Linux and Android, made by Kuduy (https://kuduy.com/). It downloads files over many connections at once, resumes after any interruption, saves videos and music from 1,000+ sites, handles torrents, and sends files between your own devices with KuAirSend. No ads, no accounts, no tracking.
+
+## Key facts
+
+- Price: free. License: MIT (open source).
+- Platforms: Windows 10/11 (64-bit), macOS 11 or later (Apple silicon and Intel), Linux (.deb, .rpm, Arch package; x86_64 and ARM64), Android 7 or later (APK).
+- Browser extension: Firefox (listed on Firefox Add-ons), Chrome, Edge, Brave, Opera and Vivaldi (installed from the desktop app).
+- Not on Google Play: Google Play does not allow apps that download from video sites; the APK is published on GitHub.
+- Privacy: downloads, history and settings stay on the user's devices; nothing is sent to the developer.
+- Does not bypass DRM.
+
+## Features
+
+- Multi-connection downloads that tune themselves while running; resume after lost connections, restarts and expired links.
+- Videos and music from YouTube, Instagram, TikTok, X, Facebook, Vimeo and 1,000+ sites (quality choice, subtitles, playlists, audio-only as M4A, MP3, Opus or FLAC).
+- Torrents and magnet links, with file selection.
+- Queues, schedules (for example overnight), speed limits and profiles.
+- Batch downloads, numbered patterns and "fetch every file on a page".
+- Browser integration: downloads started in the browser open KuDownloader with the site's cookies.
+- KuAirSend: send files, folders, text and links between phones and computers on the same network, encrypted, without the internet.
+- Android: a private browser with an ad and tracker blocker and a download button on videos; Wi-Fi-only downloads.
+- Themes: light and dark palettes, accent colours, twelve languages; signed automatic updates.
+
+## Links
+
+- [Website](https://kuduydigital.github.io/ku-download-manager/): overview and downloads
+- [Documentation](https://kuduydigital.github.io/ku-download-manager/docs.html): install, browser extension, downloads, videos, torrents, KuAirSend, Android, settings, updates, troubleshooting
+- [Latest release](https://github.com/kuduyDigital/ku-download-manager/releases/latest): installers for every platform
+- [Firefox add-on](https://addons.mozilla.org/firefox/addon/kudownloader/)
+- [Source code](https://github.com/kuduyDigital/ku-download-manager)
+- [Privacy policy](https://kuduydigital.github.io/ku-download-manager/privacy.html)
+- [Kuduy](https://kuduy.com/): the maker

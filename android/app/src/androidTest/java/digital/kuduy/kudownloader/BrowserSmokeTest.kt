@@ -60,7 +60,16 @@ class BrowserSmokeTest {
                 done.countDown()
             }
             try {
-                done.await()
+                // Stuck for more than 250 ms: record what the main thread is
+                // doing, every 250 ms while it stays stuck (a sampling profile).
+                var samples = 0
+                while (!done.await(250, java.util.concurrent.TimeUnit.MILLISECONDS)) {
+                    if (samples++ < 12) {
+                        val stack = android.os.Looper.getMainLooper().thread.stackTrace
+                        val top = stack.take(18).joinToString(" <- ") { "${it.className.substringAfterLast('.')}.${it.methodName}:${it.lineNumber}" }
+                        println("KU-STALL +${android.os.SystemClock.uptimeMillis() - posted}ms $top")
+                    }
+                }
                 Thread.sleep(50)
             } catch (_: InterruptedException) { break }
         }

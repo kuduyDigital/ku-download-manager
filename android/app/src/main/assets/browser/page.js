@@ -33,7 +33,6 @@
   var exceptions = "[]";
   var seenClass = {};
   var seenId = {};
-  var genericCss = "";
 
   // Runs when the page is idle, never more than every 5 s, and only looks at a
   // bounded number of elements: the native lookup is synchronous.
@@ -62,9 +61,13 @@
     if (!classes.length && !ids.length) return;
     if (classes.length > 800) classes.length = 800;
     var css = bridge.hidden(TOKEN, JSON.stringify({ classes: classes, ids: ids, exceptions: JSON.parse(exceptions) }));
+    // Only the new rules are added (a small extra <style>): rewriting one
+    // ever-growing sheet made the whole page restyle each time.
     if (css) {
-      genericCss += css + "\n";
-      style("__ku_generic", genericCss);
+      var el = document.createElement("style");
+      el.className = "__ku_generic";
+      el.textContent = css;
+      (document.head || document.documentElement).appendChild(el);
     }
   }
 

@@ -4,6 +4,13 @@
  */
 export const WHATS_NEW: { version: string; items: string[] }[] = [
   {
+    version: "0.2.17",
+    items: [
+      "Fixed \"File name too long\" for videos with long titles (Facebook, Bengali, Hindi and more): files get a short, clean name.",
+      "Choosing a light or dark palette switches to it right away.",
+    ],
+  },
+  {
     version: "0.2.16",
     items: [
       "Copy a video's title or caption from the details panel with one click.",

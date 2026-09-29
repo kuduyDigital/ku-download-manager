@@ -173,7 +173,11 @@ private fun Appearance() {
         t("Light palette"),
         s.str("lightPalette", "default"),
         listOf("default" to t("Default"), "paper" to t("Paper"), "mist" to t("Mist"), "mint" to t("Mint"), "rose" to t("Rose"), "lavender" to t("Lavender"), "sakura" to t("Sakura"), "sora" to t("Sora (sky)")),
-    ) { save(mapOf("lightPalette" to it)) }
+    ) {
+        // Picking a palette shows it right away: switch to that mode.
+        Prefs.dynamicColor.value = false
+        save(mapOf("lightPalette" to it, "theme" to "light"))
+    }
     ChoiceRow(
         t("Dark palette"),
         s.str("darkPalette", "default"),
@@ -181,7 +185,10 @@ private fun Appearance() {
             "default" to t("Default"), "midnight" to t("Midnight"), "black" to t("Black (OLED)"), "forest" to t("Forest"),
             "plum" to t("Plum"), "mocha" to t("Mocha"), "nord" to t("Nord"), "ocean" to t("Ocean"), "cyberpunk" to t("Cyberpunk"),
         ),
-    ) { save(mapOf("darkPalette" to it)) }
+    ) {
+        Prefs.dynamicColor.value = false
+        save(mapOf("darkPalette" to it, "theme" to "dark"))
+    }
     SectionTitle(t("Language"))
     ChoiceRow(
         t("Language"),

@@ -31,6 +31,11 @@ import digital.kuduy.kudownloader.i18n.t
 
 /** What changed in each version (newest first), shown once after an update. */
 private val NOTES = listOf(
+    "0.2.17" to listOf(
+        "Fixed \"File name too long\" for videos with long titles (Facebook, Bengali, Hindi and more): files get a short, clean name.",
+        "App updates now install over the app. If this version came from the website, updates from here on work in one tap.",
+        "Choosing a light or dark palette switches to it right away.",
+    ),
     "0.2.16" to listOf(
         "Copy a video's title or caption (YouTube, Facebook and more) with the button next to the title, before or after downloading.",
         "Cyberpunk theme: neon, glitching progress bars and network graph.",

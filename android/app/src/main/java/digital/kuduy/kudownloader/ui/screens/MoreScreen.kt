@@ -138,13 +138,14 @@ fun AboutScreen() {
             Text(
                 t("A fast download manager: resumable multi-connection downloads, videos and music from 1,000+ sites, torrents, queues and schedules, a private browser with an ad blocker, and KuAirSend for nearby devices."),
                 style = MaterialTheme.typography.bodyMedium,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextButton({ ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(REPO))) }) { Text(t("Source code")) }
                 TextButton({ ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://kuduydigital.github.io/ku-download-manager/privacy.html"))) }) { Text(t("Privacy")) }
             }
             SectionTitle(t("Built with"))
-            Text("yt-dlp · FFmpeg · aria2 · Brave adblock-rust · youtubedl-android · Jetpack Compose · Rust", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("yt-dlp · FFmpeg · aria2 · Brave adblock-rust · youtubedl-android · Jetpack Compose · Rust", style = MaterialTheme.typography.bodySmall, textAlign = androidx.compose.ui.text.style.TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

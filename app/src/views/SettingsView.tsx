@@ -504,10 +504,10 @@ export function SettingsView() {
                   </div>
                 </PrefRow>
                 <PrefRow label={t("Light mode colours")}>
-                  <PaletteSwatches value={settings.lightPalette || "default"} palettes={LIGHT_PALETTES} onChange={(v) => void save({ lightPalette: v })} />
+                  <PaletteSwatches value={settings.lightPalette || "default"} palettes={LIGHT_PALETTES} onChange={(v) => void save({ lightPalette: v, theme: "light" })} />
                 </PrefRow>
                 <PrefRow label={t("Dark mode colours")}>
-                  <PaletteSwatches value={settings.darkPalette || "default"} palettes={DARK_PALETTES} onChange={(v) => void save({ darkPalette: v })} />
+                  <PaletteSwatches value={settings.darkPalette || "default"} palettes={DARK_PALETTES} onChange={(v) => void save({ darkPalette: v, theme: "dark" })} />
                 </PrefRow>
                 <SwitchPref k="compact" label={t("Compact rows")} desc={t("Shows more downloads at once by hiding the second line.")} />
                 <SelectPref

@@ -192,6 +192,8 @@ data class MediaInfo(
     val subtitles: List<String> = emptyList(),
     val autoSubtitles: List<String> = emptyList(),
     val ffmpegAvailable: Boolean = false,
+    /** A link a video player can open directly, for watching without downloading. */
+    val streamUrl: String? = null,
 )
 
 @Serializable

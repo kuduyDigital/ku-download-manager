@@ -946,6 +946,13 @@ const bn: Record<string, string> = {
   // Anime light themes
   "Sakura": "সাকুরা",
   "Sora (sky)": "সোরা (আকাশ)",
+  // Browser: stream online, send to PC
+  "Stream online": "অনলাইনে দেখুন",
+  "Send to PC": "পিসিতে পাঠান",
+  "Getting the stream…": "স্ট্রিম আনা হচ্ছে…",
+  "No stream found on this page. Try Download instead.": "এই পেজে কোনো স্ট্রিম পাওয়া যায়নি। এর বদলে ডাউনলোড করে দেখুন।",
+  "Play with": "যা দিয়ে চালাবেন",
+  "No video player found. Install one (like VLC) to stream.": "কোনো ভিডিও প্লেয়ার পাওয়া যায়নি। স্ট্রিম করতে একটি (যেমন VLC) ইনস্টল করুন।",
 };
 
 export default bn;

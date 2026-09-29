@@ -369,5 +369,11 @@
  "Copy caption": "Copiar legenda",
  "Copy both": "Copiar ambos",
  "Sakura": "Sakura",
- "Sora (sky)": "Sora (céu)"
+ "Sora (sky)": "Sora (céu)",
+ "Stream online": "Assistir online",
+ "Send to PC": "Enviar para o PC",
+ "Getting the stream…": "Obtendo o stream…",
+ "No stream found on this page. Try Download instead.": "Nenhum stream encontrado nesta página. Tente baixar.",
+ "Play with": "Reproduzir com",
+ "No video player found. Install one (like VLC) to stream.": "Nenhum player de vídeo encontrado. Instale um (como o VLC) para assistir."
 }

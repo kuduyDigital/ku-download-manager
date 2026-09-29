@@ -369,5 +369,11 @@
  "Copy caption": "Copier la légende",
  "Copy both": "Copier les deux",
  "Sakura": "Sakura",
- "Sora (sky)": "Sora (ciel)"
+ "Sora (sky)": "Sora (ciel)",
+ "Stream online": "Regarder en ligne",
+ "Send to PC": "Envoyer au PC",
+ "Getting the stream…": "Récupération du flux…",
+ "No stream found on this page. Try Download instead.": "Aucun flux trouvé sur cette page. Essayez plutôt Télécharger.",
+ "Play with": "Lire avec",
+ "No video player found. Install one (like VLC) to stream.": "Aucun lecteur vidéo trouvé. Installez-en un (comme VLC) pour regarder en streaming."
 }

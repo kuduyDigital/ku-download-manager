@@ -948,6 +948,13 @@ const ja: Record<string, string> = {
   // Anime light themes
   "Sakura": "桜",
   "Sora (sky)": "空",
+  // Browser: stream online, send to PC
+  "Stream online": "オンラインで再生",
+  "Send to PC": "PCに送信",
+  "Getting the stream…": "ストリームを取得中…",
+  "No stream found on this page. Try Download instead.": "このページにストリームが見つかりません。ダウンロードをお試しください。",
+  "Play with": "再生アプリ",
+  "No video player found. Install one (like VLC) to stream.": "動画プレーヤーがありません。ストリーミングするには VLC などをインストールしてください。",
 };
 
 export default ja;

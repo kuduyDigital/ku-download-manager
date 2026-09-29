@@ -948,6 +948,13 @@ const hi: Record<string, string> = {
   // Anime light themes
   "Sakura": "साकुरा",
   "Sora (sky)": "सोरा (आकाश)",
+  // Browser: stream online, send to PC
+  "Stream online": "ऑनलाइन देखें",
+  "Send to PC": "पीसी पर भेजें",
+  "Getting the stream…": "स्ट्रीम ली जा रही है…",
+  "No stream found on this page. Try Download instead.": "इस पेज पर कोई स्ट्रीम नहीं मिली। इसके बजाय डाउनलोड आज़माएँ।",
+  "Play with": "इससे चलाएँ",
+  "No video player found. Install one (like VLC) to stream.": "कोई वीडियो प्लेयर नहीं मिला। स्ट्रीम करने के लिए एक (जैसे VLC) इंस्टॉल करें।",
 };
 
 export default hi;

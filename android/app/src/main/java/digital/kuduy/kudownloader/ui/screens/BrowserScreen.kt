@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Computer
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
@@ -24,6 +25,7 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -105,6 +107,7 @@ import digital.kuduy.kudownloader.browser.Tab
 import digital.kuduy.kudownloader.browser.isVideoPage
 import digital.kuduy.kudownloader.core.Files
 import digital.kuduy.kudownloader.core.Ku
+import kotlinx.coroutines.launch
 import digital.kuduy.kudownloader.core.Prefs
 import digital.kuduy.kudownloader.i18n.t
 import digital.kuduy.kudownloader.i18n.tf
@@ -145,6 +148,7 @@ fun BrowserScreen() {
     var menu by remember { mutableStateOf(false) }
     var tabsOpen by remember { mutableStateOf(false) }
     var mediaOpen by remember { mutableStateOf(false) }
+    var orbMenu by remember { mutableStateOf(false) }
     var historyOpen by remember { mutableStateOf(false) }
     val adblock by Prefs.adblock.state.collectAsStateWithLifecycle()
 
@@ -261,6 +265,15 @@ fun BrowserScreen() {
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
+                // Long-press menu open: a tap anywhere else closes it.
+                if (orbMenu && tab.canDownload) {
+                    Box(
+                        Modifier.fillMaxSize().clickable(
+                            interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                            indication = null,
+                        ) { orbMenu = false },
+                    )
+                }
                 // Always reachable, whatever the page does: a known video page,
                 // a player on the page, or a stream it loaded.
                 androidx.compose.animation.AnimatedVisibility(
@@ -269,10 +282,34 @@ fun BrowserScreen() {
                     enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.scaleIn(initialScale = 0.4f),
                     exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.scaleOut(targetScale = 0.4f),
                 ) {
-                    // A video page: its qualities straight away; otherwise the streams it loaded.
-                    DownloadOrb(count = tab.media.size) {
-                        if (tab.media.isEmpty() || isVideoPage(tab.url)) UiState.quality = MediaPrefill(tab.url, BrowserState.cookies(tab.url), tab.url, tab.title)
-                        else mediaOpen = true
+                    Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        androidx.compose.animation.AnimatedVisibility(
+                            orbMenu,
+                            enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.expandVertically(expandFrom = Alignment.Bottom),
+                            exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.shrinkVertically(shrinkTowards = Alignment.Bottom),
+                        ) {
+                            Column(Modifier.padding(end = 10.dp), horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                OrbAction(t("Stream online"), Icons.Filled.PlayArrow) {
+                                    orbMenu = false
+                                    streamOnline(ctx, tab)
+                                }
+                                OrbAction(t("Send to PC"), Icons.Filled.Computer) {
+                                    orbMenu = false
+                                    UiState.remoteSend = digital.kuduy.kudownloader.ui.RemoteSend(listOf(tab.url), referer = tab.url, cookies = BrowserState.cookies(tab.url))
+                                }
+                            }
+                        }
+                        // Tap: download (a video page shows its qualities straight away,
+                        // otherwise the streams it loaded). Long-press: stream or send to a PC.
+                        DownloadOrb(count = tab.media.size, onLongClick = { orbMenu = !orbMenu }) {
+                            if (orbMenu) {
+                                orbMenu = false
+                            } else if (tab.media.isEmpty() || isVideoPage(tab.url)) {
+                                UiState.quality = MediaPrefill(tab.url, BrowserState.cookies(tab.url), tab.url, tab.title)
+                            } else {
+                                mediaOpen = true
+                            }
+                        }
                     }
                 }
             }
@@ -293,8 +330,64 @@ private fun host(url: String) = runCatching { java.net.URI(url).host?.removePref
  * pulsing ring, so it is noticed without covering the page. A badge counts
  * the videos found when there is more than one.
  */
+/** A labelled mini button above the download button (long-press menu). */
 @Composable
-private fun DownloadOrb(count: Int, onClick: () -> Unit) {
+private fun OrbAction(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    Surface(
+        onClick = onClick,
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+        color = scheme.surfaceContainerHigh,
+        contentColor = scheme.onSurface,
+        shadowElevation = 6.dp,
+    ) {
+        Row(Modifier.height(44.dp).padding(start = 14.dp, end = 18.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(icon, null, Modifier.size(20.dp), tint = scheme.primary)
+            Spacer(Modifier.width(10.dp))
+            Text(label, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+        }
+    }
+}
+
+/**
+ * Watch without downloading: a video the page already loaded plays as is;
+ * otherwise yt-dlp finds a link with sound, and the phone's video player
+ * (VLC, MX Player, the built-in one) opens it.
+ */
+private fun streamOnline(ctx: android.content.Context, tab: Tab) {
+    val direct = tab.media.lastOrNull()?.takeIf { !isVideoPage(tab.url) }
+    val page = tab.url
+    val title = tab.title
+    val cookies = BrowserState.cookies(page)
+    Ku.scope.launch {
+        val url = direct?.url ?: run {
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) { UiState.toast(t("Getting the stream…")) }
+            runCatching { Ku.analyze(page, false, cookies, page).streamUrl }.getOrNull()
+        }
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+            if (url == null) {
+                UiState.toast(t("No stream found on this page. Try Download instead."))
+                return@withContext
+            }
+            val path = url.substringBefore('?').lowercase()
+            val type = when {
+                path.endsWith(".m3u8") || "m3u8" in url -> "application/x-mpegURL"
+                path.endsWith(".mpd") -> "application/dash+xml"
+                else -> "video/*"
+            }
+            val play = android.content.Intent(android.content.Intent.ACTION_VIEW)
+                .setDataAndType(android.net.Uri.parse(url), type)
+                .putExtra("title", title)
+            val chooser = android.content.Intent.createChooser(play, t("Play with")).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            val ok = runCatching { ctx.startActivity(chooser) }.isSuccess
+            if (!ok) UiState.toast(t("No video player found. Install one (like VLC) to stream."))
+        }
+    }
+}
+
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@Composable
+private fun DownloadOrb(count: Int, onLongClick: () -> Unit, onClick: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     // Pulses three times when it appears, then rests (no animation running
     // while you read or scroll the page).
@@ -316,13 +409,19 @@ private fun DownloadOrb(count: Int, onClick: () -> Unit) {
                 }
             }
         }
+        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
         Surface(
-            onClick = onClick,
             shape = androidx.compose.foundation.shape.CircleShape,
             color = scheme.primary,
             contentColor = scheme.onPrimary,
             shadowElevation = 6.dp,
-            modifier = Modifier.size(52.dp),
+            modifier = Modifier.size(52.dp).clip(androidx.compose.foundation.shape.CircleShape).combinedClickable(
+                onLongClick = {
+                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                    onLongClick()
+                },
+                onClick = onClick,
+            ),
         ) {
             Box(contentAlignment = Alignment.Center) { Icon(Icons.Filled.Download, t("Download video"), Modifier.size(24.dp)) }
         }

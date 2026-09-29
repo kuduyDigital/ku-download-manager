@@ -176,6 +176,7 @@ export interface MediaInfo {
   subtitles: string[];
   autoSubtitles: string[];
   ffmpegAvailable: boolean;
+  streamUrl?: string | null;
 }
 
 export interface MediaRequest {

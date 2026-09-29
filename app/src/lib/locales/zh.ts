@@ -948,6 +948,13 @@ const zh: Record<string, string> = {
   // Anime light themes
   "Sakura": "樱花",
   "Sora (sky)": "天空",
+  // Browser: stream online, send to PC
+  "Stream online": "在线播放",
+  "Send to PC": "发送到电脑",
+  "Getting the stream…": "正在获取视频流…",
+  "No stream found on this page. Try Download instead.": "此页面未找到视频流，请改用下载。",
+  "Play with": "播放方式",
+  "No video player found. Install one (like VLC) to stream.": "未找到视频播放器。请安装一个（如 VLC）以在线播放。",
 };
 
 export default zh;

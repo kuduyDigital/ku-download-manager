@@ -309,6 +309,9 @@ pub struct MediaInfo {
     pub subtitles: Vec<String>,
     pub auto_subtitles: Vec<String>,
     pub ffmpeg_available: bool,
+    /// A link a video player can open directly (video with sound), for
+    /// watching without downloading. Site links expire after a few hours.
+    pub stream_url: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]

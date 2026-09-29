@@ -26,6 +26,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Computer
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.MusicNote
@@ -214,6 +215,14 @@ fun VideoScreen() {
                     keyboardActions = KeyboardActions(onSearch = { analyze() }),
                     trailingIcon = {
                         Row {
+                            // Clear the address and the formats found for it, like on the desktop.
+                            if (url.isNotEmpty()) {
+                                IconButton({
+                                    url = ""
+                                    info = null
+                                    error = null
+                                }) { Icon(Icons.Filled.Close, t("Clear")) }
+                            }
                             IconButton({
                                 val cm = ctx.getSystemService(android.content.ClipboardManager::class.java)
                                 cm?.primaryClip?.getItemAt(0)?.coerceToText(ctx)?.toString()?.trim()?.let { url = it; analyze() }

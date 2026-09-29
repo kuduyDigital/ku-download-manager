@@ -239,6 +239,7 @@ pub fn parse_info(v: &Value, url: &str, ffmpeg: bool) -> Result<MediaInfo> {
         .collect();
     let size_of = |f: &Value| f["filesize"].as_i64().or_else(|| f["filesize_approx"].as_i64());
     let is_none = |x: &Value| x.as_str().is_none_or(|c| c == "none");
+    info.stream_url = stream_url(v, &usable);
 
     let best_audio = usable
         .iter()
@@ -449,6 +450,29 @@ pub fn build_args(job: &YtJob, ffmpeg: bool) -> Vec<String> {
     a.push("--".into());
     a.push(job.url.clone());
     a
+}
+
+/// The best link a phone's video player can play by itself: a format with
+/// both video and sound, up to 1080p, plain files before HLS; else the one
+/// link of a single-format site.
+fn stream_url(v: &Value, formats: &[&Value]) -> Option<String> {
+    // Missing codec info (common on Facebook) counts as present; "none" does not.
+    let has = |x: &Value| x.as_str() != Some("none");
+    let proto_rank = |f: &Value| match f["protocol"].as_str().unwrap_or("https") {
+        "https" | "http" => 2,
+        p if p.starts_with("m3u8") => 1,
+        _ => 0,
+    };
+    formats
+        .iter()
+        .filter(|f| has(&f["vcodec"]) && has(&f["acodec"]) && f["url"].is_string() && proto_rank(f) > 0)
+        .max_by_key(|f| {
+            let h = f["height"].as_u64().unwrap_or(0);
+            (proto_rank(f), if h <= 1080 { h } else { 0 }, (f["ext"] == "mp4") as u8)
+        })
+        .and_then(|f| f["url"].as_str())
+        .or_else(|| (formats.is_empty() || formats.len() == 1).then(|| v["url"].as_str()).flatten())
+        .map(str::to_string)
 }
 
 fn num(s: &str) -> Option<f64> {

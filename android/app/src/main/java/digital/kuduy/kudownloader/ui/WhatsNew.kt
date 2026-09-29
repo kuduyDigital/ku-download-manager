@@ -35,6 +35,8 @@ private val NOTES = listOf(
         "Fixed \"File name too long\" for videos with long titles (Facebook, Bengali, Hindi and more): files get a short, clean name.",
         "App updates now install over the app. If this version came from the website, updates from here on work in one tap.",
         "Choosing a light or dark palette switches to it right away.",
+        "Browser: press and hold the download button to stream the video online or send it to your PC.",
+        "Video downloader: a clear (✕) button in the address box.",
     ),
     "0.2.16" to listOf(
         "Copy a video's title or caption (YouTube, Facebook and more) with the button next to the title, before or after downloading.",

@@ -948,6 +948,13 @@ const fr: Record<string, string> = {
   // Anime light themes
   "Sakura": "Sakura",
   "Sora (sky)": "Sora (ciel)",
+  // Browser: stream online, send to PC
+  "Stream online": "Regarder en ligne",
+  "Send to PC": "Envoyer au PC",
+  "Getting the stream…": "Récupération du flux…",
+  "No stream found on this page. Try Download instead.": "Aucun flux trouvé sur cette page. Essayez plutôt Télécharger.",
+  "Play with": "Lire avec",
+  "No video player found. Install one (like VLC) to stream.": "Aucun lecteur vidéo trouvé. Installez-en un (comme VLC) pour regarder en streaming.",
 };
 
 export default fr;

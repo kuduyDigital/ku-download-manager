@@ -948,6 +948,13 @@ const ko: Record<string, string> = {
   // Anime light themes
   "Sakura": "사쿠라",
   "Sora (sky)": "소라 (하늘)",
+  // Browser: stream online, send to PC
+  "Stream online": "온라인으로 보기",
+  "Send to PC": "PC로 보내기",
+  "Getting the stream…": "스트림을 가져오는 중…",
+  "No stream found on this page. Try Download instead.": "이 페이지에서 스트림을 찾지 못했습니다. 대신 다운로드해 보세요.",
+  "Play with": "재생 앱",
+  "No video player found. Install one (like VLC) to stream.": "동영상 플레이어가 없습니다. 스트리밍하려면 VLC 같은 앱을 설치하세요.",
 };
 
 export default ko;

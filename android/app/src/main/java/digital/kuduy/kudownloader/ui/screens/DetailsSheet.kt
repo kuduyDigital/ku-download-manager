@@ -136,7 +136,7 @@ fun DetailsSheet(id: String, onClose: () -> Unit) {
             Spacer(Modifier.height(16.dp))
 
             if (!d.isFinished) {
-                LinearProgressIndicator(progress = { d.progress }, modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)))
+                digital.kuduy.kudownloader.ui.KuProgressBar(d.progress, Modifier.fillMaxWidth(), 8.dp, paused = d.status == "paused")
                 Spacer(Modifier.height(8.dp))
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -274,7 +274,8 @@ private fun InfoRow(label: String, value: String, copy: Boolean = false) {
 private fun InfoTab(d: Download) {
     InfoRow(t("Address"), d.url, copy = true)
     InfoRow(t("Saved to"), d.path, copy = true)
-    d.meta.mediaTitle?.let { InfoRow(t("Title"), it) }
+    d.meta.mediaTitle?.let { InfoRow(t("Title"), it, copy = true) }
+    d.meta.description?.takeIf { it.isNotBlank() && it != d.meta.mediaTitle }?.let { InfoRow(t("Caption"), it, copy = true) }
     d.meta.uploader?.let { InfoRow(t("Uploader"), it) }
     d.meta.duration?.let { InfoRow(t("Duration"), Fmt.clock(it)) }
     d.meta.infoHash?.let { InfoRow(t("Info hash"), it, copy = true) }
@@ -346,7 +347,7 @@ private fun ConnectionsTab(d: Download, details: JsonObject?) {
             val len = (end - start).coerceAtLeast(1)
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 3.dp)) {
                 Text("#${i + 1}", style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(32.dp))
-                LinearProgressIndicator(progress = { (done.toFloat() / len).coerceIn(0f, 1f) }, modifier = Modifier.weight(1f).height(6.dp).clip(RoundedCornerShape(3.dp)))
+                digital.kuduy.kudownloader.ui.KuProgressBar((done.toFloat() / len).coerceIn(0f, 1f), Modifier.weight(1f), 6.dp)
                 Spacer(Modifier.width(8.dp))
                 Text(Fmt.size(done), style = MaterialTheme.typography.labelSmall)
             }

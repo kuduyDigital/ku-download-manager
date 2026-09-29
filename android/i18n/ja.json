@@ -363,5 +363,11 @@
  "Cyberpunk": "サイバーパンク",
  "KuDownloader closed unexpectedly": "KuDownloader が予期せず終了しました",
  "Share the report so the problem can be fixed.": "問題を修正できるようにレポートを共有してください。",
- "Share report": "レポートを共有"
+ "Share report": "レポートを共有",
+ "Caption": "キャプション",
+ "Copy title": "タイトルをコピー",
+ "Copy caption": "キャプションをコピー",
+ "Copy both": "両方をコピー",
+ "Sakura": "桜",
+ "Sora (sky)": "空"
 }

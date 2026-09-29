@@ -516,7 +516,7 @@ private fun TransferRow(tr: AirTransfer) {
             }
             if (tr.state == "transferring" && tr.total > 0) {
                 Spacer(Modifier.height(8.dp))
-                LinearProgressIndicator(progress = { (tr.done.toFloat() / tr.total).coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)))
+                digital.kuduy.kudownloader.ui.KuProgressBar((tr.done.toFloat() / tr.total).coerceIn(0f, 1f), Modifier.fillMaxWidth(), 6.dp)
             }
             Spacer(Modifier.height(6.dp))
             val line = when (tr.state) {

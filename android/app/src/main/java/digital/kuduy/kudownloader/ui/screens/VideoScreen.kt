@@ -26,6 +26,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Computer
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Search
@@ -183,6 +184,7 @@ fun VideoScreen() {
                     prefill?.referer?.let { put("referer", it) }
                     (queueId ?: if (!start) "main" else null)?.let { put("queueId", it) }
                     put("title", i.title)
+                    i.description?.let { put("description", it) }
                     i.thumbnail?.let { put("thumbnail", it) }
                     size?.let { put("sizeHint", it) }
                     put("source", if (prefill != null) "browser" else "android")
@@ -306,7 +308,10 @@ fun VideoScreen() {
                             Spacer(Modifier.width(12.dp))
                         }
                         Column(Modifier.weight(1f)) {
-                            Text(i.title, style = MaterialTheme.typography.titleMedium, maxLines = 3, overflow = TextOverflow.Ellipsis)
+                            Row(verticalAlignment = Alignment.Top) {
+                                Text(i.title, style = MaterialTheme.typography.titleMedium, maxLines = 3, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                                CopyTitleButton(i.title, i.description, Modifier.padding(start = 2.dp))
+                            }
                             val facts = listOfNotNull(i.uploader, i.duration?.let { Fmt.clock(it) }, i.extractor.takeIf { it.isNotBlank() }, if (i.isLive) t("Live") else null, if (i.isPlaylist) tf("{count} videos", "count" to (i.playlistCount ?: i.entries.size)) else null)
                             Text(facts.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
@@ -400,6 +405,35 @@ fun VideoScreen() {
                         Button({ download(true) }, Modifier.weight(1f), enabled = !busy && (mode == "audio" || height != null || i.video.isEmpty())) { Text(t("Download"), fontWeight = FontWeight.SemiBold) }
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Copy the video's title, or its caption (TikTok, Instagram, Facebook and
+ * YouTube keep the text people want in the description).
+ */
+@Composable
+fun CopyTitleButton(title: String, description: String?, modifier: Modifier = Modifier) {
+    val ctx = LocalContext.current
+    var open by remember { mutableStateOf(false) }
+    val caption = description?.trim()?.takeIf { it.isNotEmpty() && it != title.trim() }
+    fun copy(text: String) {
+        val cm = ctx.getSystemService(android.content.ClipboardManager::class.java)
+        cm?.setPrimaryClip(android.content.ClipData.newPlainText(title, text))
+        // Android 13+ shows its own "Copied" confirmation.
+        if (android.os.Build.VERSION.SDK_INT < 33) UiState.toast(t("Copied"))
+    }
+    Box(modifier) {
+        IconButton({ if (caption == null) copy(title) else open = true }, Modifier.size(36.dp)) {
+            Icon(Icons.Filled.ContentCopy, t("Copy title"), Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        if (caption != null) {
+            DropdownMenu(open, { open = false }) {
+                DropdownMenuItem({ Text(t("Copy title")) }, { open = false; copy(title) })
+                DropdownMenuItem({ Text(t("Copy caption")) }, { open = false; copy(caption) })
+                DropdownMenuItem({ Text(t("Copy both")) }, { open = false; copy("$title\n\n$caption") })
             }
         }
     }

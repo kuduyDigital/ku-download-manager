@@ -187,6 +187,8 @@ pub fn parse_info(v: &Value, url: &str, ffmpeg: bool) -> Result<MediaInfo> {
         webpage_url: s("webpage_url").unwrap_or_else(|| url.to_string()),
         extractor: s("extractor_key").or_else(|| s("extractor")).unwrap_or_default(),
         title: s("title").unwrap_or_else(|| "Untitled".into()),
+        // Captions can be long; 5,000 characters covers any real post.
+        description: s("description").map(|d| d.trim().chars().take(5000).collect::<String>()).filter(|d| !d.is_empty()),
         uploader: s("uploader").or_else(|| s("channel")),
         duration: f64_of(&v["duration"]),
         view_count: v["view_count"].as_i64(),

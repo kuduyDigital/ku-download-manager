@@ -940,6 +940,14 @@ const zh: Record<string, string> = {
   "Nord": "北境",
   "Ocean": "海洋",
   "Cyberpunk": "赛博朋克",
+  // Copy title / caption
+  "Caption": "说明文字",
+  "Copy title": "复制标题",
+  "Copy caption": "复制说明",
+  "Copy both": "全部复制",
+  // Anime light themes
+  "Sakura": "樱花",
+  "Sora (sky)": "天空",
 };
 
 export default zh;

@@ -940,6 +940,14 @@ const ko: Record<string, string> = {
   "Nord": "노르드",
   "Ocean": "오션",
   "Cyberpunk": "사이버펑크",
+  // Copy title / caption
+  "Caption": "캡션",
+  "Copy title": "제목 복사",
+  "Copy caption": "캡션 복사",
+  "Copy both": "둘 다 복사",
+  // Anime light themes
+  "Sakura": "사쿠라",
+  "Sora (sky)": "소라 (하늘)",
 };
 
 export default ko;

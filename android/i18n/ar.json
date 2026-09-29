@@ -363,5 +363,11 @@
  "Cyberpunk": "سايبربانك",
  "KuDownloader closed unexpectedly": "أُغلق KuDownloader بشكل غير متوقع",
  "Share the report so the problem can be fixed.": "شارك التقرير حتى يمكن إصلاح المشكلة.",
- "Share report": "مشاركة التقرير"
+ "Share report": "مشاركة التقرير",
+ "Caption": "الوصف",
+ "Copy title": "نسخ العنوان",
+ "Copy caption": "نسخ الوصف",
+ "Copy both": "نسخ الاثنين",
+ "Sakura": "ساكورا",
+ "Sora (sky)": "سورا (السماء)"
 }

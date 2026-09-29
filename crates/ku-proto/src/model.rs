@@ -153,6 +153,8 @@ pub struct DownloadMeta {
     pub resumable: Option<bool>,
     pub thumbnail: Option<String>,
     pub media_title: Option<String>,
+    /// The post's caption / description (copyable after the download).
+    pub description: Option<String>,
     pub uploader: Option<String>,
     pub duration: Option<f64>,
     pub info_hash: Option<String>,
@@ -291,6 +293,8 @@ pub struct MediaInfo {
     pub webpage_url: String,
     pub extractor: String,
     pub title: String,
+    /// The post's caption / description (TikTok, Instagram, Facebook, YouTube…).
+    pub description: Option<String>,
     pub uploader: Option<String>,
     pub duration: Option<f64>,
     pub view_count: Option<i64>,
@@ -318,6 +322,8 @@ pub struct MediaRequest {
     pub user_agent: Option<String>,
     pub queue_id: Option<String>,
     pub title: Option<String>,
+    /// The post's caption, kept with the download.
+    pub description: Option<String>,
     pub thumbnail: Option<String>,
     pub size_hint: Option<i64>,
     pub source: Option<String>,

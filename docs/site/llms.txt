@@ -5,7 +5,7 @@
 ## Key facts
 
 - Price: free. License: MIT (open source).
-- Platforms: Windows 10/11 (64-bit), macOS 11 or later (Apple silicon and Intel), Linux (.deb, .rpm, Arch package; x86_64 and ARM64), Android 7 or later (APK).
+- Platforms: Windows 10/11 (64-bit), macOS 11 or later (Apple silicon and Intel; beta), Linux (.deb, .rpm, Arch package; x86_64 and ARM64; beta), Android 7 or later (APK).
 - Browser extension: Firefox (listed on Firefox Add-ons), Chrome, Edge, Brave, Opera and Vivaldi (installed from the desktop app).
 - Not on Google Play: Google Play does not allow apps that download from video sites; the APK is published on GitHub.
 - Privacy: downloads, history and settings stay on the user's devices; nothing is sent to the developer.

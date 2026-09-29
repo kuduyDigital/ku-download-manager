@@ -50,15 +50,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import digital.kuduy.kudownloader.core.Download
 import digital.kuduy.kudownloader.core.Fmt
@@ -103,13 +106,67 @@ fun FileGlyph(d: Download, size: Int = 40) {
     ) { Icon(g.icon, null, tint = g.tint, modifier = Modifier.size((size * 0.55f).dp)) }
 }
 
+private val CYBER_CYAN = Color(0xFF05D9E8)
+private val CYBER_MAGENTA = Color(0xFFFF2A6D)
+private val CYBER_YELLOW = Color(0xFFF9F002)
+
+/**
+ * The app's progress bar. In the Cyberpunk theme: segmented neon cyan with a
+ * yellow leading edge, glitching now and then; otherwise Material's own.
+ * [progress] null = indeterminate.
+ */
+@Composable
+fun KuProgressBar(progress: Float?, modifier: Modifier = Modifier, height: Dp = 4.dp, paused: Boolean = false) {
+    if (!LocalKuColors.current.cyber || progress == null) {
+        val shape = RoundedCornerShape(height / 2)
+        if (progress == null) {
+            androidx.compose.material3.LinearProgressIndicator(modifier.height(height).clip(shape))
+        } else {
+            androidx.compose.material3.LinearProgressIndicator(
+                progress = { progress.coerceIn(0f, 1f) },
+                modifier = modifier.height(height).clip(shape),
+                color = if (paused) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.primary,
+            )
+        }
+        return
+    }
+    Canvas(modifier.height(height)) {
+        val p = progress.coerceIn(0f, 1f)
+        val w = size.width * p
+        val h = size.height
+        val shift = if (paused) 0f else CyberGlitch.shift.dp.toPx()
+        val split = if (paused) 0f else CyberGlitch.split.dp.toPx()
+        val base = if (paused) Color(0xFF7465A6) else CYBER_CYAN
+        drawRect(base.copy(alpha = 0.14f), size = size)
+        val seg = 7.dp.toPx()
+        val gap = 1.5.dp.toPx()
+        fun blocks(color: Color, dx: Float) {
+            var x = 0f
+            while (x < w) {
+                drawRect(color, topLeft = Offset(x + dx, 0f), size = Size(minOf(seg, w - x), h))
+                x += seg + gap
+            }
+        }
+        if (split > 0f) {
+            blocks(CYBER_MAGENTA.copy(alpha = 0.75f), shift - split)
+            blocks(CYBER_CYAN.copy(alpha = 0.75f), shift + split)
+        }
+        blocks(base, shift)
+        if (!paused && w > 3.dp.toPx()) drawRect(CYBER_YELLOW, topLeft = Offset(w - 3.dp.toPx() + shift, 0f), size = Size(3.dp.toPx(), h))
+    }
+}
+
 /** Download (accent) and upload (green) speed over the last minute. */
 @Composable
 fun SpeedGraph(samples: List<Pair<Long, Long>>, modifier: Modifier = Modifier) {
-    val down = MaterialTheme.colorScheme.primary
-    val up = LocalKuColors.current.upload
-    val grid = MaterialTheme.colorScheme.outlineVariant
+    val cyber = LocalKuColors.current.cyber
+    val down = if (cyber) CYBER_CYAN else MaterialTheme.colorScheme.primary
+    val up = if (cyber) CYBER_MAGENTA else LocalKuColors.current.upload
+    val grid = if (cyber) CYBER_CYAN.copy(alpha = 0.16f) else MaterialTheme.colorScheme.outlineVariant
     Canvas(modifier) {
+        // Cyberpunk: the lines jolt sideways and split into magenta and cyan now and then.
+        val jolt = if (cyber) CyberGlitch.shift.dp.toPx() * 2 else 0f
+        val split = if (cyber) CyberGlitch.split.dp.toPx() else 0f
         val max = (samples.maxOfOrNull { maxOf(it.first, it.second) } ?: 0L).coerceAtLeast(64 * 1024).toFloat()
         val n = samples.size.coerceAtLeast(2)
         val stepX = size.width / (n - 1)
@@ -120,18 +177,26 @@ fun SpeedGraph(samples: List<Pair<Long, Long>>, modifier: Modifier = Modifier) {
         fun line(values: List<Long>, color: Color, fill: Boolean) {
             val path = Path()
             values.forEachIndexed { i, v ->
-                val x = i * stepX
+                val x = i * stepX + jolt
                 val y = size.height - (v / max) * (size.height - 4f) - 2f
                 if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
             }
             if (fill) {
                 val area = Path().apply {
                     addPath(path)
-                    lineTo((values.size - 1) * stepX, size.height)
-                    lineTo(0f, size.height)
+                    lineTo((values.size - 1) * stepX + jolt, size.height)
+                    lineTo(jolt, size.height)
                     close()
                 }
                 drawPath(area, Brush.verticalGradient(listOf(color.copy(alpha = 0.28f), color.copy(alpha = 0.02f))))
+            }
+            if (cyber) {
+                // Neon: a soft glow under the line, and the colour split while glitching.
+                drawPath(path, color.copy(alpha = 0.25f), style = Stroke(width = 6.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+                if (split > 0f) {
+                    translate(left = -split) { drawPath(path, CYBER_MAGENTA.copy(alpha = 0.7f), style = Stroke(width = 1.5.dp.toPx())) }
+                    translate(left = split) { drawPath(path, CYBER_CYAN.copy(alpha = 0.7f), style = Stroke(width = 1.5.dp.toPx())) }
+                }
             }
             drawPath(path, color, style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
         }

@@ -271,6 +271,8 @@ const LIGHT_PALETTES: Palette[] = [
   ["mint", "Mint", "#EDF5F0", "#FAFDFB"],
   ["rose", "Rose", "#F8EFF1", "#FEFAFB"],
   ["lavender", "Lavender", "#F1EFF9", "#FCFBFF"],
+  ["sakura", "Sakura", "#FDE9EE", "#E0578A"],
+  ["sora", "Sora (sky)", "#D6EBFB", "#2E98E8"],
 ];
 const DARK_PALETTES: Palette[] = [
   ["default", "Graphite", "#161618", "#2C2C2E"],

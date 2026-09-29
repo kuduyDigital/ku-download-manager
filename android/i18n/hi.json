@@ -363,5 +363,11 @@
  "Cyberpunk": "साइबरपंक",
  "KuDownloader closed unexpectedly": "KuDownloader अचानक बंद हो गया",
  "Share the report so the problem can be fixed.": "रिपोर्ट शेयर करें ताकि समस्या ठीक की जा सके।",
- "Share report": "रिपोर्ट शेयर करें"
+ "Share report": "रिपोर्ट शेयर करें",
+ "Caption": "कैप्शन",
+ "Copy title": "शीर्षक कॉपी करें",
+ "Copy caption": "कैप्शन कॉपी करें",
+ "Copy both": "दोनों कॉपी करें",
+ "Sakura": "साकुरा",
+ "Sora (sky)": "सोरा (आकाश)"
 }

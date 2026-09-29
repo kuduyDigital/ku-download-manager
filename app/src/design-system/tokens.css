@@ -495,3 +495,86 @@
   --line: rgba(60, 40, 130, 0.08);
   --line-strong: rgba(60, 40, 130, 0.14);
 }
+
+/* ───────── Anime light themes (their own accent, like Cyberpunk) ───────── */
+/* Sakura: cherry-blossom pinks on warm cream. */
+:root[data-theme="light"][data-palette="sakura"] {
+  --bg-window: #FFF4F6;
+  --bg-sidebar: #FDE9EE;
+  --bg-toolbar: #FFFAFB;
+  --bg-content: #FFFAFB;
+  --bg-raised: #FFFFFF;
+  --bg-sunken: #FBEAEF;
+  --bg-popover: #FFFFFF;
+  --bg-hover: rgba(219, 77, 124, 0.06);
+  --bg-active: rgba(219, 77, 124, 0.10);
+  --bg-selected: rgba(233, 94, 140, 0.12);
+  --bg-selected-strong: rgba(233, 94, 140, 0.18);
+  --fg-primary: #3A2330;
+  --fg-secondary: #85606F;
+  --fg-tertiary: #A98C98;
+  --line: rgba(160, 60, 100, 0.10);
+  --line-strong: rgba(160, 60, 100, 0.16);
+  --line-focus: rgba(233, 94, 140, 0.6);
+  --accent: #E0578A;
+  --accent-hover: #CC4679;
+  --accent-press: #B53A69;
+  --accent-soft: rgba(224, 87, 138, 0.13);
+  --accent-fg: #C23F73;
+  --progress: #EC6F9C;
+  --shadow-card: 0 0 0 0.5px rgba(160, 60, 100, 0.10), 0 2px 8px -2px rgba(224, 87, 138, 0.18);
+}
+:root[data-theme="light"][data-palette="sakura"] .progress > span {
+  background: linear-gradient(90deg, #F7A8C4, #EC6F9C 60%, #E0578A);
+}
+/* A few soft petals drifting across the sidebar (static: nothing animates). */
+:root[data-theme="light"][data-palette="sakura"] .sidebar {
+  background-image:
+    radial-gradient(ellipse 7px 4px at 22% 12%, rgba(236, 111, 156, 0.30) 60%, transparent 62%),
+    radial-gradient(ellipse 5px 3px at 78% 28%, rgba(236, 111, 156, 0.22) 60%, transparent 62%),
+    radial-gradient(ellipse 6px 3.5px at 40% 55%, rgba(247, 168, 196, 0.35) 60%, transparent 62%),
+    radial-gradient(ellipse 5px 3px at 70% 78%, rgba(236, 111, 156, 0.20) 60%, transparent 62%),
+    radial-gradient(ellipse 7px 4px at 15% 90%, rgba(247, 168, 196, 0.30) 60%, transparent 62%),
+    linear-gradient(180deg, #FDE9EE, #FFF4F6);
+}
+
+/* Sora (sky): clear blue sky with a touch of sunshine. */
+:root[data-theme="light"][data-palette="sora"] {
+  --bg-window: #EEF6FD;
+  --bg-sidebar: #E3F0FB;
+  --bg-toolbar: #F9FCFF;
+  --bg-content: #F9FCFF;
+  --bg-raised: #FFFFFF;
+  --bg-sunken: #E6F1FA;
+  --bg-popover: #FFFFFF;
+  --bg-hover: rgba(40, 140, 220, 0.06);
+  --bg-active: rgba(40, 140, 220, 0.10);
+  --bg-selected: rgba(46, 152, 232, 0.12);
+  --bg-selected-strong: rgba(46, 152, 232, 0.18);
+  --fg-primary: #16324A;
+  --fg-secondary: #56708A;
+  --fg-tertiary: #88A0B6;
+  --line: rgba(30, 90, 150, 0.10);
+  --line-strong: rgba(30, 90, 150, 0.16);
+  --line-focus: rgba(46, 152, 232, 0.6);
+  --accent: #2E98E8;
+  --accent-hover: #1F86D4;
+  --accent-press: #1774BB;
+  --accent-soft: rgba(46, 152, 232, 0.13);
+  --accent-fg: #1C7CC7;
+  --progress: #38A6F0;
+  --highlight: #FFD66B;
+  --shadow-card: 0 0 0 0.5px rgba(30, 90, 150, 0.10), 0 2px 8px -2px rgba(46, 152, 232, 0.18);
+}
+:root[data-theme="light"][data-palette="sora"] .progress > span {
+  background: linear-gradient(90deg, #7CCBFF, #38A6F0 70%, #2E98E8);
+  box-shadow: inset -3px 0 0 #FFD66B;
+}
+/* Soft clouds low in the sidebar, sunlight at the top. */
+:root[data-theme="light"][data-palette="sora"] .sidebar {
+  background-image:
+    radial-gradient(ellipse 60% 18% at 30% 92%, rgba(255, 255, 255, 0.85), transparent 70%),
+    radial-gradient(ellipse 45% 14% at 80% 86%, rgba(255, 255, 255, 0.75), transparent 70%),
+    radial-gradient(circle at 85% 4%, rgba(255, 214, 107, 0.35), transparent 30%),
+    linear-gradient(180deg, #D6EBFB, #EEF6FD 70%);
+}

@@ -141,6 +141,7 @@ fun QualitySheet(req: MediaPrefill, onClose: () -> Unit) {
                     put("cookies", Ku.json.encodeToJsonElement(req.cookies))
                     req.referer?.let { put("referer", it) }
                     put("title", i.title)
+                    i.description?.let { put("description", it) }
                     i.thumbnail?.let { put("thumbnail", it) }
                     size?.let { put("sizeHint", it) }
                     put("source", "browser")
@@ -173,6 +174,8 @@ fun QualitySheet(req: MediaPrefill, onClose: () -> Unit) {
                     val facts = listOfNotNull(i?.uploader, i?.duration?.let { Fmt.clock(it) })
                     if (facts.isNotEmpty()) Text(facts.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
+                // Copy the title or caption (once it is known).
+                if (i != null) CopyTitleButton(i.title, i.description)
             }
 
             when {

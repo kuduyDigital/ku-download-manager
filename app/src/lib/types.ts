@@ -58,6 +58,8 @@ export interface DownloadMeta {
   resumable?: boolean | null;
   thumbnail?: string | null;
   mediaTitle?: string | null;
+  /** The post's caption / description. */
+  description?: string | null;
   uploader?: string | null;
   duration?: number | null;
   infoHash?: string | null;
@@ -158,6 +160,8 @@ export interface MediaInfo {
   webpageUrl: string;
   extractor: string;
   title: string;
+  /** The post's caption / description. */
+  description?: string | null;
   uploader?: string | null;
   duration?: number | null;
   viewCount?: number | null;
@@ -183,6 +187,8 @@ export interface MediaRequest {
   userAgent?: string | null;
   queueId?: string | null;
   title?: string | null;
+  /** The post's caption, kept with the download. */
+  description?: string | null;
   thumbnail?: string | null;
   sizeHint?: number | null;
   source?: string | null;

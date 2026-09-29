@@ -19,10 +19,10 @@ videos to the app. Free and open source.
 | System | Package |
 |---|---|
 | Windows 10/11 x64 | `KuDownloader_<v>_x64-setup.exe` (per-user, no admin) |
-| macOS 11+ | `KuDownloader_<v>_aarch64.dmg` (Apple Silicon), `KuDownloader_<v>_x64.dmg` (Intel) |
-| Debian / Ubuntu | `KuDownloader_<v>_amd64.deb`, `…_arm64.deb` |
-| Fedora / openSUSE | `KuDownloader-<v>-1.x86_64.rpm`, `…aarch64.rpm` |
-| Arch | `kudownloader-<v>-1-x86_64.pkg.tar.zst` (`pacman -U`) |
+| macOS 11+ (beta) | `KuDownloader_<v>_aarch64.dmg` (Apple Silicon), `KuDownloader_<v>_x64.dmg` (Intel) |
+| Debian / Ubuntu (beta) | `KuDownloader_<v>_amd64.deb`, `…_arm64.deb` |
+| Fedora / openSUSE (beta) | `KuDownloader-<v>-1.x86_64.rpm`, `…aarch64.rpm` |
+| Arch (beta) | `kudownloader-<v>-1-x86_64.pkg.tar.zst` (`pacman -U`) |
 | Android 7+ | `KuDownloader_<v>_android-arm64-v8a.apk` (most phones), `…armeabi-v7a.apk`, `…x86_64.apk`, `…universal.apk` |
 
 Unsigned builds: on Windows SmartScreen may ask for “More info → Run anyway”;

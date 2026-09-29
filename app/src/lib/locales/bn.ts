@@ -938,6 +938,14 @@ const bn: Record<string, string> = {
   "Nord": "নর্ড",
   "Ocean": "সমুদ্র",
   "Cyberpunk": "সাইবারপাঙ্ক",
+  // Copy title / caption
+  "Caption": "ক্যাপশন",
+  "Copy title": "শিরোনাম কপি করুন",
+  "Copy caption": "ক্যাপশন কপি করুন",
+  "Copy both": "দুটোই কপি করুন",
+  // Anime light themes
+  "Sakura": "সাকুরা",
+  "Sora (sky)": "সোরা (আকাশ)",
 };
 
 export default bn;

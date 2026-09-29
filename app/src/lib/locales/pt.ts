@@ -940,6 +940,14 @@ const pt: Record<string, string> = {
   "Nord": "Nord",
   "Ocean": "Oceano",
   "Cyberpunk": "Cyberpunk",
+  // Copy title / caption
+  "Caption": "Legenda",
+  "Copy title": "Copiar título",
+  "Copy caption": "Copiar legenda",
+  "Copy both": "Copiar ambos",
+  // Anime light themes
+  "Sakura": "Sakura",
+  "Sora (sky)": "Sora (céu)",
 };
 
 export default pt;

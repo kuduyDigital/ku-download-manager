@@ -172,7 +172,7 @@ private fun Appearance() {
     ChoiceRow(
         t("Light palette"),
         s.str("lightPalette", "default"),
-        listOf("default" to t("Default"), "paper" to t("Paper"), "mist" to t("Mist"), "mint" to t("Mint"), "rose" to t("Rose"), "lavender" to t("Lavender")),
+        listOf("default" to t("Default"), "paper" to t("Paper"), "mist" to t("Mist"), "mint" to t("Mint"), "rose" to t("Rose"), "lavender" to t("Lavender"), "sakura" to t("Sakura"), "sora" to t("Sora (sky)")),
     ) { save(mapOf("lightPalette" to it)) }
     ChoiceRow(
         t("Dark palette"),

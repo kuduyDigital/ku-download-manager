@@ -21,6 +21,8 @@ data class DownloadMeta(
     val resumable: Boolean? = null,
     val thumbnail: String? = null,
     val mediaTitle: String? = null,
+    /** The post's caption (copyable after the download). */
+    val description: String? = null,
     val uploader: String? = null,
     val duration: Double? = null,
     val infoHash: String? = null,
@@ -174,6 +176,8 @@ data class MediaInfo(
     val webpageUrl: String = "",
     val extractor: String = "",
     val title: String = "",
+    /** The post's caption / description. */
+    val description: String? = null,
     val uploader: String? = null,
     val duration: Double? = null,
     val viewCount: Long? = null,

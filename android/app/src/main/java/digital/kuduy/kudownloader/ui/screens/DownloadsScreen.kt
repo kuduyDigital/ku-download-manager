@@ -469,9 +469,9 @@ fun DownloadRow(d: Download, selected: Boolean, selecting: Boolean, onClick: () 
                 if (!d.isFinished && d.status != "error") {
                     Spacer(Modifier.height(6.dp))
                     if (d.total > 0 || d.status != "downloading") {
-                        LinearProgressIndicator(progress = { d.progress }, modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)), color = if (d.status == "paused") MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.primary)
+                        digital.kuduy.kudownloader.ui.KuProgressBar(d.progress, Modifier.fillMaxWidth(), 4.dp, paused = d.status == "paused")
                     } else {
-                        LinearProgressIndicator(Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)))
+                        digital.kuduy.kudownloader.ui.KuProgressBar(null, Modifier.fillMaxWidth(), 4.dp)
                     }
                 }
                 Spacer(Modifier.height(4.dp))

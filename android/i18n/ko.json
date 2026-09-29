@@ -363,5 +363,11 @@
  "Cyberpunk": "사이버펑크",
  "KuDownloader closed unexpectedly": "KuDownloader가 예기치 않게 종료되었습니다",
  "Share the report so the problem can be fixed.": "문제를 해결할 수 있도록 보고서를 공유해 주세요.",
- "Share report": "보고서 공유"
+ "Share report": "보고서 공유",
+ "Caption": "캡션",
+ "Copy title": "제목 복사",
+ "Copy caption": "캡션 복사",
+ "Copy both": "둘 다 복사",
+ "Sakura": "사쿠라",
+ "Sora (sky)": "소라 (하늘)"
 }

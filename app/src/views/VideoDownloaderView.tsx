@@ -139,6 +139,7 @@ export function VideoDownloaderView() {
         cookies,
         queueId,
         title: info.title,
+        description: info.description ?? null,
         thumbnail: info.thumbnail,
         sizeHint: info.isPlaylist ? null : chosenSize ?? null,
         source: mediaPrefill?.source ?? "ui",

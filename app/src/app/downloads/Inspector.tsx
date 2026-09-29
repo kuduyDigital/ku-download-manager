@@ -372,6 +372,28 @@ export function Inspector({ id, onClose, onVerify }: { id: string; onClose: () =
             </span>
             {!d.url.startsWith("torrent:") && <IconButton icon={Copy} label={t("Copy link")} size="sm" onClick={() => copy(d.url, "Link")} />}
           </dd>
+          {d.meta.mediaTitle && (
+            <>
+              <dt>{t("Title")}</dt>
+              <dd className="fact-link">
+                <span className="selectable" title={d.meta.mediaTitle}>
+                  {d.meta.mediaTitle}
+                </span>
+                <IconButton icon={Copy} label={t("Copy title")} size="sm" onClick={() => copy(d.meta.mediaTitle!, "Title")} />
+              </dd>
+            </>
+          )}
+          {d.meta.description && d.meta.description !== d.meta.mediaTitle && (
+            <>
+              <dt>{t("Caption")}</dt>
+              <dd className="fact-link">
+                <span className="selectable fact-caption" title={d.meta.description}>
+                  {d.meta.description}
+                </span>
+                <IconButton icon={Copy} label={t("Copy caption")} size="sm" onClick={() => copy(d.meta.description!, "Caption")} />
+              </dd>
+            </>
+          )}
           <dt>{t("Size")}</dt>
           <dd className="num">{d.total > 0 ? `${fmt.bytes(d.total)} (${Math.round(d.total).toLocaleString()} bytes)` : t("Unknown")}</dd>
           <dt>{t("Type")}</dt>

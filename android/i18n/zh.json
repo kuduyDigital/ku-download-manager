@@ -363,5 +363,11 @@
  "Cyberpunk": "赛博朋克",
  "KuDownloader closed unexpectedly": "KuDownloader 意外关闭",
  "Share the report so the problem can be fixed.": "分享报告，以便修复这个问题。",
- "Share report": "分享报告"
+ "Share report": "分享报告",
+ "Caption": "说明文字",
+ "Copy title": "复制标题",
+ "Copy caption": "复制说明",
+ "Copy both": "全部复制",
+ "Sakura": "樱花",
+ "Sora (sky)": "天空"
 }

@@ -592,6 +592,7 @@ impl Core {
                     size_hint: req.size_hint,
                     source: req.source,
                     thumbnail: None,
+                    description: None,
                 })
                 .await;
         }
@@ -773,7 +774,7 @@ impl Core {
                     media: Some(req.media.clone()),
                     ..Default::default()
                 },
-                meta: DownloadMeta { thumbnail: req.thumbnail.clone(), media_title: title.clone(), ..Default::default() },
+                meta: DownloadMeta { thumbnail: req.thumbnail.clone(), media_title: title.clone(), description: req.description.clone(), ..Default::default() },
             };
             st.downloads.insert(d.id.clone(), d.clone());
             d
@@ -793,6 +794,9 @@ impl Core {
                             d.name = if playlist { classify::sanitize_filename(&info.title) } else { format!("{}.{ext}", classify::sanitize_filename(&info.title)) };
                         }
                         d.meta.media_title = Some(info.title.clone());
+                        if info.description.is_some() {
+                            d.meta.description = info.description.clone();
+                        }
                         d.meta.thumbnail = info.thumbnail.clone();
                         d.meta.uploader = info.uploader.clone();
                         d.meta.duration = info.duration;

@@ -639,6 +639,18 @@
   flex: 1;
 }
 
+/* Captions can be long: four lines here, all of it in the tooltip and the copy. */
+.fact-caption {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
+  white-space: pre-line;
+}
+.fact-link:has(.fact-caption) {
+  align-items: flex-start;
+}
+
 .insp-actions {
   display: flex;
   flex-wrap: wrap;

@@ -940,6 +940,14 @@ const ar: Record<string, string> = {
   "Nord": "نورد",
   "Ocean": "محيط",
   "Cyberpunk": "سايبربانك",
+  // Copy title / caption
+  "Caption": "الوصف",
+  "Copy title": "نسخ العنوان",
+  "Copy caption": "نسخ الوصف",
+  "Copy both": "نسخ الاثنين",
+  // Anime light themes
+  "Sakura": "ساكورا",
+  "Sora (sky)": "سورا (السماء)",
 };
 
 export default ar;

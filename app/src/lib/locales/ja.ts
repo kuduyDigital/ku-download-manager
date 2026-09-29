@@ -940,6 +940,14 @@ const ja: Record<string, string> = {
   "Nord": "ノルド",
   "Ocean": "オーシャン",
   "Cyberpunk": "サイバーパンク",
+  // Copy title / caption
+  "Caption": "キャプション",
+  "Copy title": "タイトルをコピー",
+  "Copy caption": "キャプションをコピー",
+  "Copy both": "両方をコピー",
+  // Anime light themes
+  "Sakura": "桜",
+  "Sora (sky)": "空",
 };
 
 export default ja;

@@ -940,6 +940,14 @@ const ru: Record<string, string> = {
   "Nord": "Норд",
   "Ocean": "Океан",
   "Cyberpunk": "Киберпанк",
+  // Copy title / caption
+  "Caption": "Описание",
+  "Copy title": "Копировать название",
+  "Copy caption": "Копировать описание",
+  "Copy both": "Копировать всё",
+  // Anime light themes
+  "Sakura": "Сакура",
+  "Sora (sky)": "Сора (небо)",
 };
 
 export default ru;

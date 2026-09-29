@@ -4,6 +4,13 @@
  */
 export const WHATS_NEW: { version: string; items: string[] }[] = [
   {
+    version: "0.2.16",
+    items: [
+      "Copy a video's title or caption from the details panel with one click.",
+      "Two new anime light themes: Sakura (cherry blossom pink) and Sora (sky blue). Settings › Appearance.",
+    ],
+  },
+  {
     version: "0.2.15",
     items: [
       "Right-clicking a window no longer shows a web page menu (Back, Refresh, Print), and Refresh can no longer reset a progress window by accident.",

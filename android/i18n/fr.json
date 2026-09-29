@@ -363,5 +363,11 @@
  "Cyberpunk": "Cyberpunk",
  "KuDownloader closed unexpectedly": "KuDownloader s'est fermé de façon inattendue",
  "Share the report so the problem can be fixed.": "Partagez le rapport pour que le problème puisse être corrigé.",
- "Share report": "Partager le rapport"
+ "Share report": "Partager le rapport",
+ "Caption": "Légende",
+ "Copy title": "Copier le titre",
+ "Copy caption": "Copier la légende",
+ "Copy both": "Copier les deux",
+ "Sakura": "Sakura",
+ "Sora (sky)": "Sora (ciel)"
 }

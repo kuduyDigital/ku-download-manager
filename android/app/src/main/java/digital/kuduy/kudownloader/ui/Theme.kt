@@ -12,6 +12,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
@@ -53,11 +54,17 @@ private fun lightTones(palette: String): List<Color> = when (palette) {
     "mist" -> listOf(Color(0xFFF1F4F9), Color.White, Color(0xFFEBEFF6), Color(0xFFE6EBF3), Color(0xFFDFE5EF), Color(0xFFD8DFEB))
     "mint" -> listOf(Color(0xFFF0F7F2), Color.White, Color(0xFFE8F2EB), Color(0xFFE2EEE6), Color(0xFFDBE9E0), Color(0xFFD3E3D9))
     "rose" -> listOf(Color(0xFFFAF1F3), Color.White, Color(0xFFF5E9EC), Color(0xFFF1E3E7), Color(0xFFECDCE1), Color(0xFFE6D4DA))
+    "sakura" -> listOf(Color(0xFFFFF4F7), Color.White, Color(0xFFFDEBF0), Color(0xFFFBE3EA), Color(0xFFF7D9E2), Color(0xFFF2CFDA))
+    "sora" -> listOf(Color(0xFFEEF6FD), Color.White, Color(0xFFE5F1FC), Color(0xFFDDECFA), Color(0xFFD3E6F8), Color(0xFFC9E0F5))
     "lavender" -> listOf(Color(0xFFF4F2FB), Color.White, Color(0xFFEDEAF7), Color(0xFFE8E4F4), Color(0xFFE1DCF0), Color(0xFFD9D3EB))
     else -> listOf(Color(0xFFF7F8FC), Color.White, Color(0xFFF2F4F9), Color(0xFFEEF0F6), Color(0xFFE8EBF2), Color(0xFFE2E5ED))
 }
 
-private fun lightScheme(accent: Color, palette: String): ColorScheme {
+/** Anime light palettes bring their own accent, like Cyberpunk does. */
+private val ANIME_ACCENTS = mapOf("sakura" to Color(0xFFE0578A), "sora" to Color(0xFF2E98E8))
+
+private fun lightScheme(accent0: Color, palette: String): ColorScheme {
+    val accent = ANIME_ACCENTS[palette] ?: accent0
     val (bg, lowest, low, mid, high) = lightTones(palette)
     val highest = lightTones(palette)[5]
     return lightColorScheme(
@@ -85,6 +92,18 @@ private fun lightScheme(accent: Color, palette: String): ColorScheme {
         outlineVariant = Color(0xFFDDE1EA),
         error = Danger,
     )
+}
+
+/**
+ * Cyberpunk glitch for progress bars and the network graph: one shared state,
+ * nudged by a single loop in [KuTheme] (not one animation per list row).
+ * Read it while drawing, so a glitch only redraws, never re-lays out.
+ */
+object CyberGlitch {
+    /** Sideways jump, in dp (0 = steady). */
+    var shift by androidx.compose.runtime.mutableFloatStateOf(0f)
+    /** Colour-split distance, in dp (0 = none). */
+    var split by androidx.compose.runtime.mutableFloatStateOf(0f)
 }
 
 /** Cyberpunk brings its own neon accent, whatever accent is picked. */
@@ -159,6 +178,21 @@ fun KuTheme(content: @Composable () -> Unit) {
         dark = dark,
         cyber = dark && palette == "cyberpunk" && !(dynamic && Build.VERSION.SDK_INT >= 31),
     )
+    if (ku.cyber) {
+        androidx.compose.runtime.LaunchedEffect(Unit) {
+            val rnd = kotlin.random.Random
+            while (true) {
+                kotlinx.coroutines.delay(rnd.nextLong(1800, 4200))
+                repeat(rnd.nextInt(2, 5)) {
+                    CyberGlitch.shift = rnd.nextFloat() * 6f - 3f
+                    CyberGlitch.split = rnd.nextFloat() * 2.5f + 1f
+                    kotlinx.coroutines.delay(rnd.nextLong(45, 90))
+                }
+                CyberGlitch.shift = 0f
+                CyberGlitch.split = 0f
+            }
+        }
+    }
     CompositionLocalProvider(
         LocalKuColors provides ku,
         LocalLayoutDirection provides if (I18n.isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr,

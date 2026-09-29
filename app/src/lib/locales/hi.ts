@@ -940,6 +940,14 @@ const hi: Record<string, string> = {
   "Nord": "नॉर्ड",
   "Ocean": "समुद्र",
   "Cyberpunk": "साइबरपंक",
+  // Copy title / caption
+  "Caption": "कैप्शन",
+  "Copy title": "शीर्षक कॉपी करें",
+  "Copy caption": "कैप्शन कॉपी करें",
+  "Copy both": "दोनों कॉपी करें",
+  // Anime light themes
+  "Sakura": "साकुरा",
+  "Sora (sky)": "सोरा (आकाश)",
 };
 
 export default hi;

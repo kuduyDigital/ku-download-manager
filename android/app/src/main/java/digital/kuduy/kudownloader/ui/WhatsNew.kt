@@ -31,6 +31,11 @@ import digital.kuduy.kudownloader.i18n.t
 
 /** What changed in each version (newest first), shown once after an update. */
 private val NOTES = listOf(
+    "0.2.16" to listOf(
+        "Copy a video's title or caption (YouTube, Facebook and more) with the button next to the title, before or after downloading.",
+        "Cyberpunk theme: neon, glitching progress bars and network graph.",
+        "Two new anime light themes: Sakura (cherry blossom pink) and Sora (sky blue). Settings › Light palette.",
+    ),
     "0.2.14" to listOf(
         "Fixed the browser freezing: pages with long addresses (search results, shared links) no longer lock the app for seconds.",
         "Ad blocking is lighter: each site gets only its own hiding rules, so pages stay fast.",

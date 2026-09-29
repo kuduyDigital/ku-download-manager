@@ -739,7 +739,7 @@ impl Core {
             }
             let name = match &title {
                 Some(t) if req.media.playlist => classify::sanitize_filename(t),
-                Some(t) => format!("{}.{ext}", classify::sanitize_filename(t)),
+                Some(t) => format!("{}.{ext}", classify::media_stem(t)),
                 None => url.clone(),
             };
             let d = Download {
@@ -791,7 +791,7 @@ impl Core {
                 if let Ok(info) = core.analyze_with(&d.url, playlist, &d.options).await {
                     core.update(&id, |d| {
                         if d.file_path.is_none() {
-                            d.name = if playlist { classify::sanitize_filename(&info.title) } else { format!("{}.{ext}", classify::sanitize_filename(&info.title)) };
+                            d.name = if playlist { classify::sanitize_filename(&info.title) } else { format!("{}.{ext}", classify::media_stem(&info.title)) };
                         }
                         d.meta.media_title = Some(info.title.clone());
                         if info.description.is_some() {
@@ -1713,7 +1713,7 @@ impl Core {
         let active_yt = lock(&self.yt).len() as u64 + 1;
         let profile_limit = s.profile().download;
         let speed_limit = d.options.speed_limit.filter(|l| *l > 0).or((profile_limit > 0).then(|| profile_limit / active_yt));
-        let name_stem = d.meta.media_title.clone();
+        let name_stem = yt_stem(&d);
         let job = YtJob { url: d.url.clone(), dir: PathBuf::from(&d.dir), media, speed_limit, name_stem };
         let (tx, rx) = oneshot::channel();
         lock(&self.yt).insert(d.id.clone(), tx);
@@ -2343,14 +2343,21 @@ fn magnet_name(url: &str) -> Option<String> {
     })
 }
 
+/// File name (without extension) yt-dlp saves a video under: the download's
+/// name, so a rename before starting is honoured; the title until one is known.
+fn yt_stem(d: &Download) -> Option<String> {
+    if d.name != d.url && !d.name.is_empty() {
+        return Path::new(&d.name).file_stem().map(|s| s.to_string_lossy().into_owned());
+    }
+    d.meta.media_title.clone()
+}
+
 fn delete_download_files(d: &Download) {
     let main = d.file_path.clone().map(PathBuf::from).unwrap_or_else(|| Path::new(&d.dir).join(&d.name));
     let mut candidates = vec![main.clone(), PathBuf::from(format!("{}.aria2", main.display()))];
     if d.engine == Engine::Ytdlp {
         // yt-dlp partials: "<stem>.<fmt>.<ext>.part", "*.ytdl", fragments.
-        let stem = d.meta.media_title.as_deref().map(classify::sanitize_filename).unwrap_or_else(|| {
-            Path::new(&d.name).file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_default()
-        });
+        let stem = yt_stem(d).map(|s| classify::media_stem(&s)).unwrap_or_default();
         if !stem.is_empty() {
             if let Ok(rd) = std::fs::read_dir(&d.dir) {
                 for e in rd.flatten() {

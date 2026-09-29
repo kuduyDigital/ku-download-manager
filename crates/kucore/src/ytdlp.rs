@@ -430,7 +430,7 @@ pub fn build_args(job: &YtJob, ffmpeg: bool) -> Vec<String> {
     let stem = job
         .name_stem
         .as_deref()
-        .map(crate::classify::sanitize_filename)
+        .map(crate::classify::media_stem)
         .filter(|s| !s.is_empty() && !m.playlist)
         .map(|s| s.replace('%', "%%"));
     if m.playlist {

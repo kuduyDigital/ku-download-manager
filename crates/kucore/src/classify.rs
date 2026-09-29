@@ -196,6 +196,54 @@ pub fn sanitize_filename(name: &str) -> String {
     out
 }
 
+/// A short, safe file name (no extension) for a video, made from its title.
+/// Social sites put view counts, emoji, hashtags and whole captions in the
+/// title; in Bengali, Hindi or CJK (3 bytes a letter) that easily passes the
+/// 255-byte file name limit once yt-dlp adds ".f123….m4a.part".
+pub fn media_stem(title: &str) -> String {
+    const MAX_BYTES: usize = 120;
+    const MAX_CHARS: usize = 90;
+    let line = title.lines().map(str::trim).find(|l| !l.is_empty()).unwrap_or("");
+    // Facebook: "5.1K views · 4.1K reactions | Real title | Page name".
+    let parts: Vec<&str> = line.split(" | ").map(str::trim).filter(|p| !p.is_empty()).collect();
+    let is_stats = |p: &str| {
+        let l = p.to_lowercase();
+        p.starts_with(|c: char| c.is_ascii_digit()) && ["views", "reactions", "likes", "comments", "shares", "plays"].iter().any(|w| l.contains(w))
+    };
+    let picked = if parts.iter().any(|p| is_stats(p)) {
+        parts.iter().copied().find(|p| !is_stats(p)).unwrap_or("")
+    } else {
+        line
+    };
+    let is_emoji = |c: char| {
+        matches!(c as u32, 0x1F000..=0x1FAFF | 0x2600..=0x27BF | 0x2B00..=0x2BFF | 0xFE00..=0xFE0F | 0x200D | 0x20E3 | 0xE0020..=0xE007F)
+    };
+    let words: Vec<String> = picked
+        .split_whitespace()
+        .filter(|w| !w.starts_with('#') && !w.starts_with('@'))
+        .map(|w| w.chars().filter(|c| !is_emoji(*c)).collect::<String>())
+        .filter(|w| !w.is_empty())
+        .collect();
+    let clean = sanitize_filename(&words.join(" "));
+    let mut out = String::new();
+    for w in clean.split(' ') {
+        let next = if out.is_empty() { w.len() } else { out.len() + 1 + w.len() };
+        if next > MAX_BYTES || out.chars().count() + 1 + w.chars().count() > MAX_CHARS {
+            if out.is_empty() {
+                // One huge "word": cut it at a character boundary.
+                out = w.chars().scan(0, |n, c| { *n += c.len_utf8(); (*n <= MAX_BYTES).then_some(c) }).take(MAX_CHARS).collect();
+            }
+            break;
+        }
+        if !out.is_empty() {
+            out.push(' ');
+        }
+        out.push_str(w);
+    }
+    let out = out.trim_end_matches(|c: char| c.is_whitespace() || "-_,.·|:;–—".contains(c)).trim_start_matches(|c: char| c.is_whitespace() || "-_,.·|".contains(c));
+    if out.chars().any(char::is_alphanumeric) { out.to_string() } else { "video".into() }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -226,6 +274,12 @@ mod tests {
         assert_eq!(sanitize_filename("../../etc/passwd"), "passwd");
         assert_eq!(sanitize_filename("a<b>:c?.txt"), "a_b__c_.txt");
         assert_eq!(sanitize_filename("CON.txt"), "_CON.txt");
+        let fb = "5.1K views \u{b7} 4.1K reactions | VISION QLED FHD Google TV Q10S ".to_string() + &"\u{1F3B5} \u{9b6}\u{995}\u{9cd}\u{9a4}\u{9bf}\u{9b6}\u{9be}\u{9b2}\u{9c0} 20W \u{9b8}\u{9cd}\u{99f}\u{9c7}\u{9b0}\u{9bf}\u{993} ".repeat(6) + "| Vision Television";
+        let s = media_stem(&fb);
+        assert!(s.starts_with("VISION QLED FHD Google TV Q10S "), "{s}");
+        assert!(s.len() <= 120 && !s.contains("views") && !s.contains('\u{1F3B5}'), "{s}");
+        assert_eq!(media_stem("Song | Artist (Official Video) #music"), "Song _ Artist (Official Video)");
+        assert_eq!(media_stem("\u{1F525}\u{1F525} #viral"), "video");
     }
 
     #[test]

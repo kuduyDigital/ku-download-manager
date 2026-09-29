@@ -58,6 +58,8 @@ android {
                 storePassword = signing.getProperty("storePassword")
                 keyAlias = signing.getProperty("keyAlias")
                 keyPassword = signing.getProperty("keyPassword")
+                // A .p12 made with OpenSSL is PKCS12 whatever its file name.
+                if (storeFile?.readBytes()?.firstOrNull() == 0x30.toByte()) storeType = "pkcs12"
             }
         }
     }

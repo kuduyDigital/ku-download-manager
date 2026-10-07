@@ -4,6 +4,13 @@
  */
 export const WHATS_NEW: { version: string; items: string[] }[] = [
   {
+    version: "0.2.24",
+    items: [
+      "Compact progress and Download File windows: long names fit on one line, and the facts read at a glance.",
+      "The progress and Download File windows follow theme changes right away.",
+    ],
+  },
+  {
     version: "0.2.23",
     items: [
       "Redesigned progress window: file-type icon, live speed graph, connection count, and \"when done\" options (open the file, close the window).",

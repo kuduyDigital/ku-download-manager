@@ -257,7 +257,6 @@ export function ProgressWindow({ id }: { id: string }) {
             <Checkbox checked={closeWhenDone} onChange={setCloseWhenDone}>
               {t("Close this window")}
             </Checkbox>
-            <span className="spacer" />
             <label className="pw-limit" title={t("Speed limit for this download")}>
               <Icon icon={Gauge} size={14} />
               <Select

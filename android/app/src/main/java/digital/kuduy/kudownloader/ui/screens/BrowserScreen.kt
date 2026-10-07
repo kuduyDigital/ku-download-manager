@@ -176,8 +176,11 @@ fun BrowserScreen() {
     // Filters are needed before the first page when blocking is on.
     LaunchedEffect(adblock) {
         if (adblock) {
-            val loaded = runCatching { Ku.call("adblockStatus").jsonObject["loaded"]?.jsonPrimitive?.contentOrNull == "true" }.getOrDefault(true)
-            if (!loaded) runCatching { Ku.call("adblockUpdate") }
+            val st = runCatching { Ku.call("adblockStatus").jsonObject }.getOrNull()
+            val loaded = st?.get("loaded")?.jsonPrimitive?.contentOrNull != "false"
+            // New default lists (e.g. pop-up filters) since the last update: fetch them once.
+            val stale = st?.get("stale")?.jsonPrimitive?.contentOrNull == "true"
+            if (!loaded || stale) runCatching { Ku.call("adblockUpdate") }
         }
     }
 

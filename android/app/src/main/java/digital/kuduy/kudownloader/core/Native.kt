@@ -22,6 +22,9 @@ object Native {
 
     @JvmStatic external fun shouldBlock(url: String, source: String, kind: String): Boolean
 
+    /** A pop-up tab or redirect to an ad site (pop-under networks included). */
+    @JvmStatic external fun shouldBlockPopup(url: String, source: String): Boolean
+
     @JvmStatic external fun cosmetic(url: String): String
 
     @JvmStatic external fun hidden(request: String): String

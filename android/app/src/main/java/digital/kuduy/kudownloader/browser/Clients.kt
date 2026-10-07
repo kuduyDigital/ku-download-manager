@@ -132,6 +132,10 @@ object PageScript {
 
 class KuWebClient(private val tab: Tab) : WebViewClient() {
     override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
+        if (tab.opener != null && blockedAd(url, false)) {
+            view.stopLoading()
+            return
+        }
         tab.url = url
         tab.started = true
         tab.hasVideo = false
@@ -147,6 +151,8 @@ class KuWebClient(private val tab: Tab) : WebViewClient() {
     }
 
     override fun onPageFinished(view: WebView, url: String) {
+        // Its first page loaded: from here on a normal tab.
+        if (url.startsWith("http")) tab.opener = null
         tab.url = url
         tab.title = view.title ?: url
         tab.progress = 100
@@ -191,6 +197,7 @@ class KuWebClient(private val tab: Tab) : WebViewClient() {
 
     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
         val u = request.url
+        if (request.isForMainFrame && blockedAd(u.toString(), request.isRedirect || !request.hasGesture())) return true
         return when (u.scheme?.lowercase(Locale.ROOT)) {
             "http", "https", "about", "data", "blob", "javascript" -> false
             "magnet" -> {
@@ -209,6 +216,28 @@ class KuWebClient(private val tab: Tab) : WebViewClient() {
             }
             else -> true
         }
+    }
+
+    /**
+     * Pop-under tabs and ad redirects (what streaming sites do on every click).
+     * Checked for a new pop-up tab's first page, and for page changes the user
+     * did not make (redirects, scripts); addresses typed or tapped never are.
+     * A blocked pop-up tab closes itself.
+     */
+    private fun blockedAd(url: String, unasked: Boolean): Boolean {
+        if (!Prefs.adblock.value || !url.startsWith("http")) return false
+        val popup = tab.opener != null
+        if (!popup && !unasked) return false
+        val source = tab.opener ?: tab.url
+        if (!Native.shouldBlockPopup(url, source)) return false
+        BlockCounter.add(tab)
+        if (popup) {
+            ui {
+                if (BrowserState.tabs.contains(tab)) BrowserState.close(tab)
+                UiState.toast(t("Pop-up ad blocked"))
+            }
+        }
+        return true
     }
 
     override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
@@ -268,6 +297,7 @@ class KuChromeClient(private val tab: Tab) : WebChromeClient() {
         val ctx = (view.context as? MutableContextWrapper)?.baseContext ?: view.context
         // A popup from a private tab stays private (same cookies, no history).
         val t = BrowserState.newTab(private = tab.private)
+        t.opener = tab.url
         t.started = true
         val nv = BrowserState.webView(t, ctx)
         (resultMsg.obj as? WebView.WebViewTransport)?.webView = nv

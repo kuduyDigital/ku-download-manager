@@ -65,6 +65,16 @@ pub extern "system" fn Java_digital_kuduy_kudownloader_core_Native_shouldBlock<'
 }
 
 #[no_mangle]
+pub extern "system" fn Java_digital_kuduy_kudownloader_core_Native_shouldBlockPopup<'l>(mut env: JNIEnv<'l>, _this: JObject<'l>, url: JString<'l>, source: JString<'l>) -> jboolean {
+    let (u, s) = (text(&mut env, &url), text(&mut env, &source));
+    if guard(false, || crate::adblock_engine::should_block_popup(&u, &s)) {
+        JNI_TRUE
+    } else {
+        JNI_FALSE
+    }
+}
+
+#[no_mangle]
 pub extern "system" fn Java_digital_kuduy_kudownloader_core_Native_cosmetic<'l>(mut env: JNIEnv<'l>, _this: JObject<'l>, url: JString<'l>) -> jstring {
     let u = text(&mut env, &url);
     let r = guard(serde_json::Value::Null, || crate::adblock_engine::cosmetic(&u));

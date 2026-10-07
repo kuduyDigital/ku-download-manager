@@ -41,6 +41,8 @@ class Tab(val id: String = UUID.randomUUID().toString(), val private: Boolean = 
     val media = mutableStateListOf<FoundMedia>()
     /** The page shows a <video> (reported by the page script). */
     var hasVideo by mutableStateOf(false)
+    /** The page that opened this tab as a pop-up, until its first page has loaded. */
+    @Volatile var opener: String? = null
     /** Something was opened in this tab (a popup gets content before any address). */
     var started by mutableStateOf(false)
     var view: WebView? = null

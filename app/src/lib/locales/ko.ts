@@ -955,6 +955,20 @@ const ko: Record<string, string> = {
   "No stream found on this page. Try Download instead.": "이 페이지에서 스트림을 찾지 못했습니다. 대신 다운로드해 보세요.",
   "Play with": "재생 앱",
   "No video player found. Install one (like VLC) to stream.": "동영상 플레이어가 없습니다. 스트리밍하려면 VLC 같은 앱을 설치하세요.",
+  // Menu bar
+  "Open app data folder": "앱 데이터 폴더 열기",
+  "Find…": "찾기…",
+  "Sidebar": "사이드바",
+  "Appearance…": "모양…",
+  "No queues": "대기열 없음",
+  "Edit speed profiles…": "속도 프로필 편집…",
+  "Download options…": "다운로드 옵션…",
+  "Update yt-dlp": "yt-dlp 업데이트",
+  "Documentation": "문서",
+  "Report a problem…": "문제 신고…",
+  "Website": "웹사이트",
+  // Settings menu
+  "All settings…": "모든 설정…",
 };
 
 export default ko;

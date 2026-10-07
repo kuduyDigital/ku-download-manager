@@ -955,6 +955,20 @@ const ja: Record<string, string> = {
   "No stream found on this page. Try Download instead.": "このページにストリームが見つかりません。ダウンロードをお試しください。",
   "Play with": "再生アプリ",
   "No video player found. Install one (like VLC) to stream.": "動画プレーヤーがありません。ストリーミングするには VLC などをインストールしてください。",
+  // Menu bar
+  "Open app data folder": "アプリのデータフォルダーを開く",
+  "Find…": "検索…",
+  "Sidebar": "サイドバー",
+  "Appearance…": "外観…",
+  "No queues": "キューがありません",
+  "Edit speed profiles…": "速度プロファイルを編集…",
+  "Download options…": "ダウンロードオプション…",
+  "Update yt-dlp": "yt-dlp を更新",
+  "Documentation": "ドキュメント",
+  "Report a problem…": "問題を報告…",
+  "Website": "ウェブサイト",
+  // Settings menu
+  "All settings…": "すべての設定…",
 };
 
 export default ja;

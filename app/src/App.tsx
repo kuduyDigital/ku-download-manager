@@ -12,7 +12,7 @@ import { syncLanguage, t, tf, tj } from "./lib/i18n";
 import { WelcomeGuide } from "./app/WelcomeGuide";
 import { AboutDialog } from "./app/AboutDialog";
 import { WhatsNew } from "./app/WhatsNew";
-import { pendingNotes } from "./lib/whatsNew";
+import { pendingNotes, WHATS_NEW } from "./lib/whatsNew";
 import { ToolDownloadsPanel } from "./app/MediaTools";
 import { AirSendPrompts } from "./app/airsend/AirSendPrompts";
 import { loadAir } from "./lib/airsend";
@@ -152,6 +152,12 @@ export default function App() {
       .then((i) => setNotes(pendingNotes(i.version, upgraded)))
       .catch(() => {});
   }, [settingsLoaded]);
+  // Help › What's new: the latest notes, any time.
+  useEffect(() => {
+    const show = () => setNotes(WHATS_NEW.slice(0, 3));
+    window.addEventListener("ku:whatsnew", show);
+    return () => window.removeEventListener("ku:whatsnew", show);
+  }, []);
   const [about, setAbout] = useState(false);
   useEffect(() => {
     const open = () => setAbout(true);
@@ -332,6 +338,12 @@ export default function App() {
   }, [openAdd, navigate, showList, view, selection]);
 
   const collapsed = sidebarPref ?? narrow;
+  // View › Sidebar.
+  useEffect(() => {
+    const toggle = () => setSidebarPref(!collapsed);
+    window.addEventListener("ku:sidebar", toggle);
+    return () => window.removeEventListener("ku:sidebar", toggle);
+  }, [collapsed]);
   const removeList = (removeIds ?? []).map(getDownload).filter(Boolean);
   const anyUnfinished = removeList.some((d) => d!.status !== "completed" && d!.status !== "seeding");
 

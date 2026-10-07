@@ -955,6 +955,20 @@ const ar: Record<string, string> = {
   "No stream found on this page. Try Download instead.": "لم يُعثر على بث في هذه الصفحة. جرّب التنزيل بدلًا من ذلك.",
   "Play with": "تشغيل باستخدام",
   "No video player found. Install one (like VLC) to stream.": "لا يوجد مشغّل فيديو. ثبّت واحدًا (مثل VLC) للبث.",
+  // Menu bar
+  "Open app data folder": "فتح مجلد بيانات التطبيق",
+  "Find…": "بحث…",
+  "Sidebar": "الشريط الجانبي",
+  "Appearance…": "المظهر…",
+  "No queues": "لا توجد قوائم انتظار",
+  "Edit speed profiles…": "تعديل ملفات السرعة…",
+  "Download options…": "خيارات التنزيل…",
+  "Update yt-dlp": "تحديث yt-dlp",
+  "Documentation": "التوثيق",
+  "Report a problem…": "الإبلاغ عن مشكلة…",
+  "Website": "الموقع",
+  // Settings menu
+  "All settings…": "كل الإعدادات…",
 };
 
 export default ar;

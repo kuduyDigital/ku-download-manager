@@ -955,6 +955,20 @@ const zh: Record<string, string> = {
   "No stream found on this page. Try Download instead.": "此页面未找到视频流，请改用下载。",
   "Play with": "播放方式",
   "No video player found. Install one (like VLC) to stream.": "未找到视频播放器。请安装一个（如 VLC）以在线播放。",
+  // Menu bar
+  "Open app data folder": "打开应用数据文件夹",
+  "Find…": "查找…",
+  "Sidebar": "侧边栏",
+  "Appearance…": "外观…",
+  "No queues": "没有队列",
+  "Edit speed profiles…": "编辑速度配置…",
+  "Download options…": "下载选项…",
+  "Update yt-dlp": "更新 yt-dlp",
+  "Documentation": "文档",
+  "Report a problem…": "报告问题…",
+  "Website": "网站",
+  // Settings menu
+  "All settings…": "全部设置…",
 };
 
 export default zh;

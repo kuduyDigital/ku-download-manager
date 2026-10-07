@@ -953,6 +953,20 @@ const bn: Record<string, string> = {
   "No stream found on this page. Try Download instead.": "এই পেজে কোনো স্ট্রিম পাওয়া যায়নি। এর বদলে ডাউনলোড করে দেখুন।",
   "Play with": "যা দিয়ে চালাবেন",
   "No video player found. Install one (like VLC) to stream.": "কোনো ভিডিও প্লেয়ার পাওয়া যায়নি। স্ট্রিম করতে একটি (যেমন VLC) ইনস্টল করুন।",
+  // Menu bar
+  "Open app data folder": "অ্যাপ ডেটা ফোল্ডার খুলুন",
+  "Find…": "খুঁজুন…",
+  "Sidebar": "সাইডবার",
+  "Appearance…": "চেহারা…",
+  "No queues": "কোনো কিউ নেই",
+  "Edit speed profiles…": "গতির প্রোফাইল সম্পাদনা…",
+  "Download options…": "ডাউনলোড অপশন…",
+  "Update yt-dlp": "yt-dlp আপডেট করুন",
+  "Documentation": "ডকুমেন্টেশন",
+  "Report a problem…": "সমস্যা জানান…",
+  "Website": "ওয়েবসাইট",
+  // Settings menu
+  "All settings…": "সব সেটিংস…",
 };
 
 export default bn;

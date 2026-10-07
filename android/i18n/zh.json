@@ -375,5 +375,16 @@
  "Getting the stream…": "正在获取视频流…",
  "No stream found on this page. Try Download instead.": "此页面未找到视频流，请改用下载。",
  "Play with": "播放方式",
- "No video player found. Install one (like VLC) to stream.": "未找到视频播放器。请安装一个（如 VLC）以在线播放。"
+ "No video player found. Install one (like VLC) to stream.": "未找到视频播放器。请安装一个（如 VLC）以在线播放。",
+ "Open app data folder": "打开应用数据文件夹",
+ "Find…": "查找…",
+ "Sidebar": "侧边栏",
+ "Appearance…": "外观…",
+ "No queues": "没有队列",
+ "Edit speed profiles…": "编辑速度配置…",
+ "Download options…": "下载选项…",
+ "Documentation": "文档",
+ "Report a problem…": "报告问题…",
+ "Website": "网站",
+ "All settings…": "全部设置…"
 }

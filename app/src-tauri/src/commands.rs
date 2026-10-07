@@ -84,6 +84,7 @@ pub fn handler() -> impl Fn(tauri::ipc::Invoke) -> bool + Send + Sync + 'static 
         grab_page,
         extension_dirs,
         reveal_path,
+        open_help,
         set_window_theme,
         detect_browsers,
         install_extension,
@@ -667,6 +668,19 @@ fn extension_last_seen() -> i64 {
 #[tauri::command]
 fn quit_app(app: AppHandle) {
     app.exit(0);
+}
+
+/// Open one of KuDownloader's own web pages (Help menu); fixed list, no free URLs.
+#[tauri::command]
+fn open_help(app: AppHandle, page: String) -> R<()> {
+    let url = match page.as_str() {
+        "docs" => "https://kuduydigital.github.io/ku-download-manager/docs.html",
+        "website" => "https://kuduydigital.github.io/ku-download-manager/",
+        "issue" => "https://github.com/kuduyDigital/ku-download-manager/issues/new",
+        "releases" => "https://github.com/kuduyDigital/ku-download-manager/releases",
+        _ => return Err("Unknown page".into()),
+    };
+    app.opener().open_url(url, None::<&str>).map_err(e)
 }
 
 /// Open a folder in the file manager (folders only).

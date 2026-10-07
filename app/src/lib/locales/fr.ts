@@ -955,6 +955,20 @@ const fr: Record<string, string> = {
   "No stream found on this page. Try Download instead.": "Aucun flux trouvé sur cette page. Essayez plutôt Télécharger.",
   "Play with": "Lire avec",
   "No video player found. Install one (like VLC) to stream.": "Aucun lecteur vidéo trouvé. Installez-en un (comme VLC) pour regarder en streaming.",
+  // Menu bar
+  "Open app data folder": "Ouvrir le dossier des données",
+  "Find…": "Rechercher…",
+  "Sidebar": "Barre latérale",
+  "Appearance…": "Apparence…",
+  "No queues": "Aucune file",
+  "Edit speed profiles…": "Modifier les profils de vitesse…",
+  "Download options…": "Options de téléchargement…",
+  "Update yt-dlp": "Mettre à jour yt-dlp",
+  "Documentation": "Documentation",
+  "Report a problem…": "Signaler un problème…",
+  "Website": "Site web",
+  // Settings menu
+  "All settings…": "Tous les réglages…",
 };
 
 export default fr;

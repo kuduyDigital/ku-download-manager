@@ -111,7 +111,7 @@ export function LogoMark({ size }: { size: number }) {
   );
 }
 
-const MENU_ORDER = ["File", "View", "Downloads", "Tasks", "Help"];
+const MENU_ORDER = ["File", "View", "Downloads", "Tasks", "Settings", "Help"];
 
 export function TitleBar() {
   const app = useApp();
@@ -121,46 +121,121 @@ export function TitleBar() {
   const right = platform ? platform.right : [];
   // macOS shows ⌘ instead of Ctrl (the handlers accept both).
   const kb = (k: string) => (platform?.os === "macos" ? k.replace("Ctrl ", "⌘") : k);
+  const queues = queuesStore.use();
+  const help = (page: string) => void run(invoke("open_help", { page }), "Could not open the page");
+  const afterAll = (action: string) => void run(api.setAfterAll(action), "Could not change it");
   const menus: Record<string, () => MenuItem[]> = {
-    Tasks: () => [
+    File: () => [
       { label: t("Add URL…"), shortcut: kb("Ctrl N"), onSelect: () => app.openAdd() },
       { label: t("Add from clipboard"), shortcut: kb("Ctrl V"), onSelect: () => void pasteLink(app.openAdd) },
       { label: t("Add batch download…"), onSelect: () => app.navigate("batch") },
-      "sep",
-      { label: t("Video downloader…"), onSelect: () => app.openMedia() },
-      { label: t("Grab links from a page…"), onSelect: () => app.navigate("grabber") },
-      "sep",
-      { label: t("Scheduler…"), onSelect: () => app.navigate("scheduled") },
-    ],
-    File: () => [
       { label: t("Open .torrent file…"), onSelect: () => void pickTorrent(app.openAdd) },
+      "sep",
       { label: t("Open download folder"), onSelect: () => void run(openDownloadDir(), "Could not open the folder") },
+      { label: t("Open app data folder"), onSelect: () => void run(api.openDataDir(), "Could not open the folder") },
       "sep",
       { label: t("Quit KuDownloader"), onSelect: () => void invoke("quit_app") },
+    ],
+    View: () => [
+      { label: t("All Downloads"), shortcut: kb("Ctrl 1"), onSelect: () => app.showList({ scope: "all", category: "" }) },
+      { label: t("Unfinished"), shortcut: kb("Ctrl 2"), onSelect: () => app.showList({ scope: "unfinished", category: "" }) },
+      { label: t("Finished"), shortcut: kb("Ctrl 3"), onSelect: () => app.showList({ scope: "finished", category: "" }) },
+      { label: t("Queues"), shortcut: kb("Ctrl 4"), onSelect: () => app.showList({ scope: "queue", category: "", queueId: queues[0]?.id ?? "main" }) },
+      { label: t("Find…"), shortcut: kb("Ctrl F"), onSelect: () => {
+          if (app.view !== "downloads") app.showList({ scope: "all" });
+          setTimeout(() => window.dispatchEvent(new Event("ku:find")), 0);
+        } },
+      "sep",
+      { label: t("Details panel"), shortcut: kb("Ctrl I"), checked: app.inspectorOpen, onSelect: () => app.setInspectorOpen(!app.inspectorOpen) },
+      { label: t("Sidebar"), checked: !document.querySelector(".sidebar[data-collapsed]"), onSelect: () => window.dispatchEvent(new Event("ku:sidebar")) },
+      { label: t("Compact rows"), checked: !!s?.compact, onSelect: () => void updateSettings({ compact: !s?.compact }) },
+      "sep",
+      {
+        label: t("Theme"),
+        submenu: (["light", "dark", "system"] as const).map((th) => ({ label: t(th[0].toUpperCase() + th.slice(1)), checked: s?.theme === th, onSelect: () => void updateSettings({ theme: th }) })),
+      },
+      { label: t("Appearance…"), onSelect: () => app.openSettings("appearance") },
     ],
     Downloads: () => [
       { label: t("Resume all"), onSelect: () => void run(api.resumeAll(), "Could not resume") },
       { label: t("Stop all"), onSelect: () => void run(api.pauseAll(), "Could not stop") },
       "sep",
+      {
+        label: t("Queues"),
+        submenu: queues.length
+          ? queues.map((q) => ({
+              label: queueName(q),
+              checked: q.running,
+              onSelect: () => void run(q.running ? api.stopQueue(q.id) : api.startQueue(q.id), q.running ? "Could not stop" : "Could not start"),
+            }))
+          : [{ label: t("No queues"), disabled: true }],
+      },
+      {
+        label: t("Speed limit"),
+        submenu: [
+          ...(s?.profiles ?? []).map((p) => ({
+            label: p.download ? `${t(p.name)} · ${fmt.speed(p.download)}` : t(p.name),
+            checked: p.id === s?.activeProfile,
+            onSelect: () => void run(api.setProfile(p.id).then(() => settingsStore.refresh()), "Could not change the profile"),
+          })),
+          "sep" as const,
+          { label: t("Edit speed profiles…"), onSelect: () => app.openSettings("speed") },
+        ],
+      },
+      {
+        label: t("When all downloads finish"),
+        submenu: [
+          { label: t("Do nothing"), onSelect: () => afterAll("none") },
+          { label: t("Sleep"), onSelect: () => afterAll("sleep") },
+          { label: t("Shut down"), onSelect: () => afterAll("shutdown") },
+          { label: t("Quit KuDownloader"), onSelect: () => afterAll("quit") },
+        ],
+      },
+      "sep",
       { label: t("Delete all completed"), icon: Trash2, danger: true, disabled: !allDownloads().some((d) => d.status === "completed"), onSelect: () => void run(api.clearFinished(), "Could not delete") },
       "sep",
-      { label: t("Options…"), shortcut: kb("Ctrl ,"), onSelect: () => app.openSettings("downloads") },
+      { label: t("Download options…"), onSelect: () => app.openSettings("downloads") },
     ],
-    View: () => [
-      { heading: t("Theme") },
-      ...(["light", "dark", "system"] as const).map((th) => ({ label: t(th[0].toUpperCase() + th.slice(1)), checked: s?.theme === th, onSelect: () => void updateSettings({ theme: th }) })),
+    Tasks: () => [
+      { label: t("Video downloader…"), onSelect: () => app.openMedia() },
+      { label: t("Grab links from a page…"), onSelect: () => app.navigate("grabber") },
+      { label: "KuAirSend", onSelect: () => app.navigate("airsend") },
       "sep",
-      { label: t("Compact rows"), checked: !!s?.compact, onSelect: () => void updateSettings({ compact: !s?.compact }) },
-      { label: t("Details panel"), shortcut: kb("Ctrl I"), checked: app.inspectorOpen, onSelect: () => app.setInspectorOpen(!app.inspectorOpen) },
-      "sep",
+      { label: t("Scheduler…"), onSelect: () => app.navigate("scheduled") },
       { label: t("Browser integration"), onSelect: () => app.navigate("browser") },
       { label: t("Media detection"), onSelect: () => app.navigate("media") },
+      "sep",
+      { label: t("Update yt-dlp"), onSelect: () => void run(api.updateYtdlp(), "Could not update yt-dlp") },
+    ],
+    Settings: () => [
+      { label: t("All settings…"), shortcut: kb("Ctrl ,"), onSelect: () => app.openSettings("general") },
+      "sep",
+      ...(
+        [
+          ["general", "General"],
+          ["downloads", "Downloads"],
+          ["connection", "Connection"],
+          ["speed", "Speed"],
+          ["scheduler", "Scheduler"],
+          ["browser", "Browser"],
+          ["media", "Media"],
+          ["torrent", "Torrent"],
+          ["notifications", "Notifications"],
+          ["appearance", "Appearance"],
+          ["advanced", "Advanced"],
+        ] as const
+      ).map(([id, label]) => ({ label: t(label), onSelect: () => app.openSettings(id) })),
     ],
     Help: () => [
       { label: t("Getting started…"), onSelect: () => window.dispatchEvent(new Event("ku:welcome")) },
-      { label: t("Browser integration setup"), onSelect: () => app.navigate("browser") },
+      { label: t("Documentation"), onSelect: () => help("docs") },
       { label: t("Keyboard shortcuts"), onSelect: () => app.openSettings("general") },
+      { label: t("Browser integration setup"), onSelect: () => app.navigate("browser") },
+      "sep",
+      { label: t("What's new"), onSelect: () => window.dispatchEvent(new Event("ku:whatsnew")) },
       { label: t("Check for updates…"), onSelect: () => window.dispatchEvent(new Event("ku:about")) },
+      { label: t("Report a problem…"), onSelect: () => help("issue") },
+      { label: t("Website"), onSelect: () => help("website") },
       "sep",
       { label: t("About KuDownloader"), onSelect: () => window.dispatchEvent(new Event("ku:about")) },
     ],

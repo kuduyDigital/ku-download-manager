@@ -375,5 +375,16 @@
  "Getting the stream…": "स्ट्रीम ली जा रही है…",
  "No stream found on this page. Try Download instead.": "इस पेज पर कोई स्ट्रीम नहीं मिली। इसके बजाय डाउनलोड आज़माएँ।",
  "Play with": "इससे चलाएँ",
- "No video player found. Install one (like VLC) to stream.": "कोई वीडियो प्लेयर नहीं मिला। स्ट्रीम करने के लिए एक (जैसे VLC) इंस्टॉल करें।"
+ "No video player found. Install one (like VLC) to stream.": "कोई वीडियो प्लेयर नहीं मिला। स्ट्रीम करने के लिए एक (जैसे VLC) इंस्टॉल करें।",
+ "Open app data folder": "ऐप डेटा फ़ोल्डर खोलें",
+ "Find…": "खोजें…",
+ "Sidebar": "साइडबार",
+ "Appearance…": "रूप-रंग…",
+ "No queues": "कोई कतार नहीं",
+ "Edit speed profiles…": "स्पीड प्रोफ़ाइल बदलें…",
+ "Download options…": "डाउनलोड विकल्प…",
+ "Documentation": "दस्तावेज़",
+ "Report a problem…": "समस्या की रिपोर्ट करें…",
+ "Website": "वेबसाइट",
+ "All settings…": "सभी सेटिंग्स…"
 }

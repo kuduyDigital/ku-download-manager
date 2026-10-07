@@ -955,6 +955,20 @@ const ru: Record<string, string> = {
   "No stream found on this page. Try Download instead.": "На этой странице нет потока. Попробуйте скачать.",
   "Play with": "Открыть в",
   "No video player found. Install one (like VLC) to stream.": "Нет видеоплеера. Установите его (например, VLC), чтобы смотреть онлайн.",
+  // Menu bar
+  "Open app data folder": "Открыть папку данных",
+  "Find…": "Найти…",
+  "Sidebar": "Боковая панель",
+  "Appearance…": "Оформление…",
+  "No queues": "Нет очередей",
+  "Edit speed profiles…": "Изменить профили скорости…",
+  "Download options…": "Параметры загрузки…",
+  "Update yt-dlp": "Обновить yt-dlp",
+  "Documentation": "Документация",
+  "Report a problem…": "Сообщить о проблеме…",
+  "Website": "Сайт",
+  // Settings menu
+  "All settings…": "Все настройки…",
 };
 
 export default ru;

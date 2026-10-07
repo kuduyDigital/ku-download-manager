@@ -375,5 +375,16 @@
  "Getting the stream…": "Получаем поток…",
  "No stream found on this page. Try Download instead.": "На этой странице нет потока. Попробуйте скачать.",
  "Play with": "Открыть в",
- "No video player found. Install one (like VLC) to stream.": "Нет видеоплеера. Установите его (например, VLC), чтобы смотреть онлайн."
+ "No video player found. Install one (like VLC) to stream.": "Нет видеоплеера. Установите его (например, VLC), чтобы смотреть онлайн.",
+ "Open app data folder": "Открыть папку данных",
+ "Find…": "Найти…",
+ "Sidebar": "Боковая панель",
+ "Appearance…": "Оформление…",
+ "No queues": "Нет очередей",
+ "Edit speed profiles…": "Изменить профили скорости…",
+ "Download options…": "Параметры загрузки…",
+ "Documentation": "Документация",
+ "Report a problem…": "Сообщить о проблеме…",
+ "Website": "Сайт",
+ "All settings…": "Все настройки…"
 }

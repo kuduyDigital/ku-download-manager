@@ -4,6 +4,15 @@
  */
 export const WHATS_NEW: { version: string; items: string[] }[] = [
   {
+    version: "0.2.22",
+    items: [
+      "Redesigned progress window: file-type icon, live speed graph, connection count, and \"when done\" options (open the file, close the window).",
+      "Set a speed limit for one download right from its progress window.",
+      "Download File shows the free space on the drive, and warns when the file won't fit.",
+      "Every dropdown shows its arrow again in dark mode.",
+    ],
+  },
+  {
     version: "0.2.20",
     items: [
       "Video Downloader: one click uses the link you copied, and your recent videos are listed.",

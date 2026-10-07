@@ -1,7 +1,7 @@
 {
   "name": "kudownloader-extension",
   "private": true,
-  "version": "0.2.21",
+  "version": "0.2.22",
   "type": "module",
   "scripts": {
     "build": "node build.mjs && node pack.mjs",

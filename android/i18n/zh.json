@@ -390,5 +390,18 @@
  "Link Grabber": "链接抓取",
  "Sort by {name}": "按{name}排序",
  "Use the link you copied": "使用复制的链接",
- "Recent videos": "最近的视频"
+ "Recent videos": "最近的视频",
+ "Private tab": "无痕标签页",
+ "Download all images…": "下载所有图片…",
+ "Find in page": "在页面中查找",
+ "Translate page": "翻译页面",
+ "Text size": "文字大小",
+ "Save as PDF": "另存为 PDF",
+ "Add to Home screen": "添加到主屏幕",
+ "New private tab": "新建无痕标签页",
+ "Data saver (no images)": "省流模式（不加载图片）",
+ "Previous": "上一个",
+ "No images on this page.": "此页面没有图片。",
+ "Could not open the print dialog.": "无法打开打印对话框。",
+ "Your launcher can't add shortcuts.": "你的启动器无法添加快捷方式。"
 }

@@ -62,6 +62,10 @@ object Prefs {
     val searchEngine = Pref("searchEngine", "duckduckgo")
     val homePage = Pref("homePage", "")
     val desktopMode = Pref("desktopMode", false)
+    /** Page text size, percent. */
+    val textZoom = Pref("textZoom", 100)
+    /** Data saver: pages load without images. */
+    val dataSaver = Pref("dataSaver", false)
     val blockPopups = Pref("blockPopups", true)
     val bookmarks = Pref("bookmarks", "[]")
     val history = Pref("history", "[]")
@@ -80,7 +84,7 @@ object Prefs {
 
     private val all = listOf(
         wifiOnly, pauseOnBatterySaver, highPerfWifi, clipboardOffer, adblock, pill, detectMedia, interceptDownloads,
-        searchEngine, homePage, desktopMode, blockPopups, bookmarks, history, adsBlocked, dynamicColor, welcomed, lastClipboard,
+        searchEngine, homePage, desktopMode, textZoom, dataSaver, blockPopups, bookmarks, history, adsBlocked, dynamicColor, welcomed, lastClipboard,
         ytdlpVersion, ytdlpChecked, appUpdateNotified, seenVersion,
     )
 

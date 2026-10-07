@@ -390,5 +390,18 @@
  "Link Grabber": "링크 수집기",
  "Sort by {name}": "{name}(으)로 정렬",
  "Use the link you copied": "복사한 링크 사용",
- "Recent videos": "최근 동영상"
+ "Recent videos": "최근 동영상",
+ "Private tab": "비공개 탭",
+ "Download all images…": "모든 이미지 다운로드…",
+ "Find in page": "페이지에서 찾기",
+ "Translate page": "페이지 번역",
+ "Text size": "글자 크기",
+ "Save as PDF": "PDF로 저장",
+ "Add to Home screen": "홈 화면에 추가",
+ "New private tab": "새 비공개 탭",
+ "Data saver (no images)": "데이터 절약 (이미지 없음)",
+ "Previous": "이전",
+ "No images on this page.": "이 페이지에 이미지가 없습니다.",
+ "Could not open the print dialog.": "인쇄 대화상자를 열 수 없습니다.",
+ "Your launcher can't add shortcuts.": "런처가 바로가기를 추가할 수 없습니다."
 }

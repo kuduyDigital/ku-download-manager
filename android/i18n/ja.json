@@ -390,5 +390,18 @@
  "Link Grabber": "リンク収集",
  "Sort by {name}": "{name}で並べ替え",
  "Use the link you copied": "コピーしたリンクを使う",
- "Recent videos": "最近の動画"
+ "Recent videos": "最近の動画",
+ "Private tab": "プライベートタブ",
+ "Download all images…": "すべての画像をダウンロード…",
+ "Find in page": "ページ内検索",
+ "Translate page": "ページを翻訳",
+ "Text size": "文字サイズ",
+ "Save as PDF": "PDFとして保存",
+ "Add to Home screen": "ホーム画面に追加",
+ "New private tab": "新しいプライベートタブ",
+ "Data saver (no images)": "データセーバー（画像なし）",
+ "Previous": "前へ",
+ "No images on this page.": "このページに画像はありません。",
+ "Could not open the print dialog.": "印刷ダイアログを開けませんでした。",
+ "Your launcher can't add shortcuts.": "お使いのランチャーはショートカットを追加できません。"
 }

@@ -390,5 +390,18 @@
  "Link Grabber": "Collecteur de liens",
  "Sort by {name}": "Trier par {name}",
  "Use the link you copied": "Utiliser le lien copié",
- "Recent videos": "Vidéos récentes"
+ "Recent videos": "Vidéos récentes",
+ "Private tab": "Onglet privé",
+ "Download all images…": "Télécharger toutes les images…",
+ "Find in page": "Rechercher dans la page",
+ "Translate page": "Traduire la page",
+ "Text size": "Taille du texte",
+ "Save as PDF": "Enregistrer en PDF",
+ "Add to Home screen": "Ajouter à l’écran d’accueil",
+ "New private tab": "Nouvel onglet privé",
+ "Data saver (no images)": "Économie de données (sans images)",
+ "Previous": "Précédent",
+ "No images on this page.": "Aucune image sur cette page.",
+ "Could not open the print dialog.": "Impossible d’ouvrir la fenêtre d’impression.",
+ "Your launcher can't add shortcuts.": "Votre lanceur ne peut pas ajouter de raccourcis."
 }

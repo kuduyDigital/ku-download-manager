@@ -32,6 +32,7 @@ import digital.kuduy.kudownloader.ui.AddPrefill
 import digital.kuduy.kudownloader.ui.GrabPrefill
 import digital.kuduy.kudownloader.ui.Screen
 import digital.kuduy.kudownloader.ui.UiState
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
@@ -154,7 +155,10 @@ class KuWebClient(private val tab: Tab) : WebViewClient() {
         // The script is usually in already (onPageCommitVisible); this covers
         // pages that never commit visibly. It guards itself against running twice.
         PageScript.inject(view, tab)
-        BrowserState.addHistory(url, tab.title)
+        if (!tab.private) {
+            BrowserState.addHistory(url, tab.title)
+            CookieSaver.soon()
+        }
         BlockCounter.save()
     }
 
@@ -262,7 +266,8 @@ class KuChromeClient(private val tab: Tab) : WebChromeClient() {
     override fun onCreateWindow(view: WebView, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message): Boolean {
         if (Prefs.blockPopups.value && !isUserGesture) return false
         val ctx = (view.context as? MutableContextWrapper)?.baseContext ?: view.context
-        val t = BrowserState.newTab()
+        // A popup from a private tab stays private (same cookies, no history).
+        val t = BrowserState.newTab(private = tab.private)
         t.started = true
         val nv = BrowserState.webView(t, ctx)
         (resultMsg.obj as? WebView.WebViewTransport)?.webView = nv
@@ -379,5 +384,21 @@ class PageBridge(private val tab: Tab) {
             val sels = Ku.json.parseToJsonElement(Native.hidden(json)).jsonArray.mapNotNull { it.jsonPrimitive.contentOrNull }
             sels.chunked(200).joinToString("\n") { it.joinToString(",") + "{display:none!important}" }
         }.getOrDefault("")
+    }
+}
+
+/**
+ * Sign-ins survive the app being closed or killed: cookies are written to
+ * disk a moment after a page finishes (once, however many pages load).
+ */
+object CookieSaver {
+    private var job: kotlinx.coroutines.Job? = null
+
+    fun soon() {
+        job?.cancel()
+        job = digital.kuduy.kudownloader.core.Ku.scope.launch {
+            kotlinx.coroutines.delay(1500)
+            android.webkit.CookieManager.getInstance().flush()
+        }
     }
 }

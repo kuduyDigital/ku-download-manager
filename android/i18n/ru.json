@@ -390,5 +390,18 @@
  "Link Grabber": "Сборщик ссылок",
  "Sort by {name}": "Сортировать по: {name}",
  "Use the link you copied": "Использовать скопированную ссылку",
- "Recent videos": "Недавние видео"
+ "Recent videos": "Недавние видео",
+ "Private tab": "Приватная вкладка",
+ "Download all images…": "Скачать все изображения…",
+ "Find in page": "Найти на странице",
+ "Translate page": "Перевести страницу",
+ "Text size": "Размер текста",
+ "Save as PDF": "Сохранить как PDF",
+ "Add to Home screen": "Добавить на главный экран",
+ "New private tab": "Новая приватная вкладка",
+ "Data saver (no images)": "Экономия трафика (без картинок)",
+ "Previous": "Назад",
+ "No images on this page.": "На этой странице нет изображений.",
+ "Could not open the print dialog.": "Не удалось открыть окно печати.",
+ "Your launcher can't add shortcuts.": "Ваш лаунчер не умеет добавлять ярлыки."
 }

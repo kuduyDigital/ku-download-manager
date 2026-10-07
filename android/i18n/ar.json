@@ -390,5 +390,18 @@
  "Link Grabber": "جامع الروابط",
  "Sort by {name}": "ترتيب حسب {name}",
  "Use the link you copied": "استخدم الرابط الذي نسخته",
- "Recent videos": "الفيديوهات الأخيرة"
+ "Recent videos": "الفيديوهات الأخيرة",
+ "Private tab": "علامة تبويب خاصة",
+ "Download all images…": "تنزيل كل الصور…",
+ "Find in page": "البحث في الصفحة",
+ "Translate page": "ترجمة الصفحة",
+ "Text size": "حجم النص",
+ "Save as PDF": "حفظ كملف PDF",
+ "Add to Home screen": "إضافة إلى الشاشة الرئيسية",
+ "New private tab": "علامة تبويب خاصة جديدة",
+ "Data saver (no images)": "توفير البيانات (بدون صور)",
+ "Previous": "السابق",
+ "No images on this page.": "لا توجد صور في هذه الصفحة.",
+ "Could not open the print dialog.": "تعذّر فتح نافذة الطباعة.",
+ "Your launcher can't add shortcuts.": "لا يمكن لمشغّل التطبيقات إضافة اختصارات."
 }

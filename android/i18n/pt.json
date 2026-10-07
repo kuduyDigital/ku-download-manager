@@ -390,5 +390,18 @@
  "Link Grabber": "Coletor de links",
  "Sort by {name}": "Ordenar por {name}",
  "Use the link you copied": "Usar o link copiado",
- "Recent videos": "Vídeos recentes"
+ "Recent videos": "Vídeos recentes",
+ "Private tab": "Aba privada",
+ "Download all images…": "Baixar todas as imagens…",
+ "Find in page": "Localizar na página",
+ "Translate page": "Traduzir página",
+ "Text size": "Tamanho do texto",
+ "Save as PDF": "Salvar como PDF",
+ "Add to Home screen": "Adicionar à tela inicial",
+ "New private tab": "Nova aba privada",
+ "Data saver (no images)": "Economia de dados (sem imagens)",
+ "Previous": "Anterior",
+ "No images on this page.": "Não há imagens nesta página.",
+ "Could not open the print dialog.": "Não foi possível abrir a impressão.",
+ "Your launcher can't add shortcuts.": "Seu launcher não pode adicionar atalhos."
 }

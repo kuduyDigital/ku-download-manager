@@ -390,5 +390,18 @@
  "Link Grabber": "লিংক গ্র্যাবার",
  "Sort by {name}": "{name} অনুযায়ী সাজান",
  "Use the link you copied": "কপি করা লিংকটি ব্যবহার করুন",
- "Recent videos": "সাম্প্রতিক ভিডিও"
+ "Recent videos": "সাম্প্রতিক ভিডিও",
+ "Private tab": "প্রাইভেট ট্যাব",
+ "Download all images…": "সব ছবি ডাউনলোড…",
+ "Find in page": "পেজে খুঁজুন",
+ "Translate page": "পেজ অনুবাদ করুন",
+ "Text size": "লেখার আকার",
+ "Save as PDF": "PDF হিসেবে সেভ করুন",
+ "Add to Home screen": "হোম স্ক্রিনে যোগ করুন",
+ "New private tab": "নতুন প্রাইভেট ট্যাব",
+ "Data saver (no images)": "ডেটা সেভার (ছবি ছাড়া)",
+ "Previous": "আগের",
+ "No images on this page.": "এই পেজে কোনো ছবি নেই।",
+ "Could not open the print dialog.": "প্রিন্ট ডায়ালগ খোলা যায়নি।",
+ "Your launcher can't add shortcuts.": "আপনার লঞ্চার শর্টকাট যোগ করতে পারে না।"
 }

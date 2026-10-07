@@ -50,6 +50,17 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Translate
+import androidx.compose.material.icons.filled.TextFields
+import androidx.compose.material.icons.filled.PictureAsPdf
+import androidx.compose.material.icons.filled.AddToHomeScreen
+import androidx.compose.material.icons.filled.DataSaverOn
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.ui.zIndex
+import kotlin.math.roundToInt
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
@@ -150,6 +161,8 @@ fun BrowserScreen() {
     var mediaOpen by remember { mutableStateOf(false) }
     var orbMenu by remember { mutableStateOf(false) }
     var historyOpen by remember { mutableStateOf(false) }
+    var finding by remember(tab.id) { mutableStateOf(false) }
+    var textSizeOpen by remember { mutableStateOf(false) }
     val adblock by Prefs.adblock.state.collectAsStateWithLifecycle()
 
     // A link opened from elsewhere in the app.
@@ -241,13 +254,16 @@ fun BrowserScreen() {
                 }
                 Box {
                     IconButton({ menu = true }, Modifier.size(38.dp)) { Icon(Icons.Filled.MoreVert, t("More"), Modifier.size(22.dp)) }
-                    BrowserMenu(tab, menu, { menu = false }, onHistory = { historyOpen = true })
+                    BrowserMenu(tab, menu, { menu = false }, onHistory = { historyOpen = true }, onFind = { finding = true }, onTextSize = { textSizeOpen = true })
                 }
             }
         }
         LoadingBar(tab.progress)
 
         Box(Modifier.weight(1f).fillMaxWidth()) {
+            if (finding && !tab.isStart) {
+                FindBar(tab, Modifier.align(Alignment.TopCenter).zIndex(2f)) { finding = false }
+            }
             if (tab.isStart) {
                 StartPage { open(tab, it) }
             } else {
@@ -320,6 +336,7 @@ fun BrowserScreen() {
     if (mediaOpen) MediaSheet(tab) { mediaOpen = false }
     if (tabsOpen) TabsSheet { tabsOpen = false }
     if (historyOpen) HistorySheet({ historyOpen = false }) { open(tab, it) }
+    if (textSizeOpen) TextSizeDialog { textSizeOpen = false }
     Fullscreen()
 }
 
@@ -635,6 +652,10 @@ private fun AddressPill(
                         }
                         Spacer(Modifier.width(8.dp))
                     }
+                    if (tab.private) {
+                        Icon(Icons.Filled.VisibilityOff, t("Private tab"), Modifier.size(15.dp), tint = scheme.tertiary)
+                        Spacer(Modifier.width(6.dp))
+                    }
                     if (tab.url.startsWith("https://")) {
                         Icon(Icons.Filled.Lock, null, Modifier.size(13.dp), tint = scheme.onSurfaceVariant)
                         Spacer(Modifier.width(5.dp))
@@ -665,11 +686,12 @@ private fun open(tab: Tab, url: String) {
 /** Page actions: big tiles for the everyday ones, then a grouped list (like Safari's sheet). */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun BrowserMenu(tab: Tab, expanded: Boolean, onDismiss: () -> Unit, onHistory: () -> Unit) {
+private fun BrowserMenu(tab: Tab, expanded: Boolean, onDismiss: () -> Unit, onHistory: () -> Unit, onFind: () -> Unit, onTextSize: () -> Unit) {
     if (!expanded) return
     val ctx = LocalContext.current
     val scheme = MaterialTheme.colorScheme
     val desktop by Prefs.desktopMode.state.collectAsStateWithLifecycle()
+    val dataSaver by Prefs.dataSaver.state.collectAsStateWithLifecycle()
     val adblock by Prefs.adblock.state.collectAsStateWithLifecycle()
     val marked = BrowserState.bookmarks.any { it.url == tab.url }
     val page = !tab.isStart
@@ -698,16 +720,31 @@ private fun BrowserMenu(tab: Tab, expanded: Boolean, onDismiss: () -> Unit, onHi
                         UiState.quality = MediaPrefill(tab.url, BrowserState.cookies(tab.url), tab.url, tab.title)
                     }
                     MenuRow(Icons.Filled.Link, t("Download all links…")) { onDismiss(); tab.view?.evaluateJavascript("window.__kuLinks&&window.__kuLinks()", null) }
+                    MenuRow(Icons.Filled.Image, t("Download all images…")) { onDismiss(); downloadImages(tab) }
+                }
+                MenuGroup {
+                    MenuRow(Icons.Filled.Search, t("Find in page")) { onDismiss(); onFind() }
+                    MenuRow(Icons.Filled.Translate, t("Translate page")) { onDismiss(); translate(tab) }
+                    MenuRow(Icons.Filled.TextFields, t("Text size")) { onDismiss(); onTextSize() }
+                    MenuRow(Icons.Filled.PictureAsPdf, t("Save as PDF")) { onDismiss(); savePdf(ctx, tab) }
+                    MenuRow(Icons.Filled.AddToHomeScreen, t("Add to Home screen")) { onDismiss(); pinToHome(ctx, tab) }
                 }
             }
             MenuGroup {
                 MenuRow(Icons.Filled.Add, t("New tab")) { onDismiss(); BrowserState.newTab() }
+                if (BrowserState.privateSupported) MenuRow(Icons.Filled.VisibilityOff, t("New private tab")) { onDismiss(); BrowserState.newTab(private = true) }
                 MenuRow(Icons.Filled.Home, t("Start page")) { onDismiss(); open(tab, "") }
                 MenuRow(Icons.Filled.History, t("History")) { onDismiss(); onHistory() }
             }
             MenuGroup {
                 MenuRow(Icons.Filled.Computer, t("Desktop site"), checked = desktop) { Prefs.desktopMode.value = !desktop; BrowserState.applyDesktopMode() }
                 MenuRow(Icons.Filled.Shield, t("Block ads"), checked = adblock) { Prefs.adblock.value = !adblock; tab.view?.reload() }
+                MenuRow(Icons.Filled.DataSaverOn, t("Data saver (no images)"), checked = dataSaver) {
+                    Prefs.dataSaver.value = !dataSaver
+                    BrowserState.applyPageSettingsAll(reload = false)
+                    // Turning it off: show the images of the open page.
+                    if (dataSaver) tab.view?.reload()
+                }
                 MenuRow(Icons.Filled.Settings, t("Browser settings")) {
                     onDismiss()
                     UiState.settingsSection = "browser"
@@ -1093,3 +1130,131 @@ private fun Fullscreen() {
     }
 }
 
+/** Find in page: matches highlighted by the WebView, with a count and next / previous. */
+@Composable
+private fun FindBar(tab: Tab, modifier: Modifier = Modifier, onClose: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    var query by remember { mutableStateOf("") }
+    var current by remember { mutableStateOf(0) }
+    var total by remember { mutableStateOf(0) }
+    val focus = remember { androidx.compose.ui.focus.FocusRequester() }
+    DisposableEffect(tab.view) {
+        val v = tab.view
+        v?.setFindListener { active, count, done -> if (done) { current = if (count > 0) active + 1 else 0; total = count } }
+        onDispose {
+            v?.clearMatches()
+            v?.setFindListener(null)
+        }
+    }
+    LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
+    LaunchedEffect(query) {
+        if (query.isEmpty()) {
+            tab.view?.clearMatches()
+            current = 0
+            total = 0
+        } else {
+            kotlinx.coroutines.delay(150)
+            tab.view?.findAllAsync(query)
+        }
+    }
+    Surface(
+        modifier = modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(14.dp),
+        color = scheme.surfaceContainerHigh,
+        shadowElevation = 6.dp,
+    ) {
+        Row(Modifier.height(48.dp).padding(start = 14.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Filled.Search, null, Modifier.size(18.dp), tint = scheme.onSurfaceVariant)
+            Spacer(Modifier.width(10.dp))
+            Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+                if (query.isEmpty()) Text(t("Find in page"), color = scheme.onSurfaceVariant, style = MaterialTheme.typography.bodyLarge)
+                androidx.compose.foundation.text.BasicTextField(
+                    query,
+                    { query = it },
+                    singleLine = true,
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = scheme.onSurface),
+                    cursorBrush = androidx.compose.ui.graphics.SolidColor(scheme.primary),
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Search),
+                    keyboardActions = androidx.compose.foundation.text.KeyboardActions(onSearch = { tab.view?.findNext(true) }),
+                    modifier = Modifier.fillMaxWidth().focusRequester(focus),
+                )
+            }
+            if (query.isNotEmpty()) {
+                Text(if (total == 0) t("No matches") else "$current/$total", style = MaterialTheme.typography.labelMedium, color = scheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 6.dp))
+            }
+            IconButton({ tab.view?.findNext(false) }, enabled = total > 0, modifier = Modifier.size(40.dp)) { Icon(Icons.Filled.KeyboardArrowUp, t("Previous")) }
+            IconButton({ tab.view?.findNext(true) }, enabled = total > 0, modifier = Modifier.size(40.dp)) { Icon(Icons.Filled.KeyboardArrowDown, t("Next")) }
+            IconButton(onClose, Modifier.size(40.dp)) { Icon(Icons.Filled.Close, t("Close")) }
+        }
+    }
+}
+
+/** Page text size, 50–200 %, for every tab; remembered. */
+@Composable
+private fun TextSizeDialog(onClose: () -> Unit) {
+    val zoom by Prefs.textZoom.state.collectAsStateWithLifecycle()
+    fun set(v: Int) {
+        Prefs.textZoom.value = v.coerceIn(50, 200)
+        BrowserState.applyPageSettingsAll(reload = false)
+    }
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onClose,
+        title = { Text(t("Text size")) },
+        text = {
+            Column {
+                Text("$zoom%", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.align(Alignment.CenterHorizontally))
+                androidx.compose.material3.Slider(
+                    value = zoom.toFloat(),
+                    onValueChange = { set((it / 10f).roundToInt() * 10) },
+                    valueRange = 50f..200f,
+                    steps = 14,
+                )
+            }
+        },
+        confirmButton = { androidx.compose.material3.TextButton(onClose) { Text(t("Done")) } },
+        dismissButton = { androidx.compose.material3.TextButton({ set(100) }) { Text(t("Reset")) } },
+    )
+}
+
+/** Every image on the page (64 px and up), into the link picker. */
+private fun downloadImages(tab: Tab) {
+    val js = """(function(){var s=new Set();document.querySelectorAll('img').forEach(function(i){var u=i.currentSrc||i.src;if(u&&/^https?:/i.test(u)&&(i.naturalWidth||64)>=64)s.add(u)});""" +
+        """var a=Array.from(s).map(function(u){return{url:u,text:''}});if(a.length)KuBridge.links('${tab.token}',JSON.stringify(a));return a.length})()"""
+    tab.view?.evaluateJavascript(js) { n -> if (n == "0" || n == "null") UiState.toast(t("No images on this page.")) }
+}
+
+/** The page through Google Translate, into the app's language. */
+private fun translate(tab: Tab) {
+    val lang = java.util.Locale.getDefault().language.ifBlank { "en" }
+    val u = "https://translate.google.com/translate?sl=auto&tl=$lang&u=" + java.net.URLEncoder.encode(tab.url, "UTF-8")
+    open(tab, u)
+}
+
+/** The system print dialog; "Save as PDF" is its first choice. */
+private fun savePdf(ctx: android.content.Context, tab: Tab) {
+    val v = tab.view ?: return
+    val pm = ctx.getSystemService(android.content.Context.PRINT_SERVICE) as? android.print.PrintManager ?: return
+    val name = tab.title.ifBlank { host(tab.url) }.take(80)
+    runCatching { pm.print(name, v.createPrintDocumentAdapter(name), null) }.onFailure { UiState.toast(t("Could not open the print dialog.")) }
+}
+
+/** A Home-screen icon that opens this site in KuDownloader's browser. */
+private fun pinToHome(ctx: android.content.Context, tab: Tab) {
+    if (!androidx.core.content.pm.ShortcutManagerCompat.isRequestPinShortcutSupported(ctx)) {
+        UiState.toast(t("Your launcher can't add shortcuts."))
+        return
+    }
+    val intent = android.content.Intent(ctx, digital.kuduy.kudownloader.MainActivity::class.java)
+        .setAction(digital.kuduy.kudownloader.MainActivity.ACTION_OPEN_SITE)
+        .setData(android.net.Uri.parse(tab.url))
+    val icon = tab.view?.favicon?.takeIf { it.width >= 16 }?.let { androidx.core.graphics.drawable.IconCompat.createWithBitmap(android.graphics.Bitmap.createScaledBitmap(it, 96, 96, true)) }
+        ?: androidx.core.graphics.drawable.IconCompat.createWithResource(ctx, digital.kuduy.kudownloader.R.mipmap.ic_launcher)
+    val info = androidx.core.content.pm.ShortcutInfoCompat.Builder(ctx, "site-" + tab.url.hashCode())
+        .setShortLabel(tab.title.ifBlank { host(tab.url) }.take(24))
+        .setLongLabel(tab.title.ifBlank { host(tab.url) }.take(60))
+        .setIcon(icon)
+        .setIntent(intent)
+        .build()
+    runCatching { androidx.core.content.pm.ShortcutManagerCompat.requestPinShortcut(ctx, info, null) }
+        .onFailure { UiState.toast(t("Your launcher can't add shortcuts.")) }
+}

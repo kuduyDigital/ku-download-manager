@@ -390,5 +390,18 @@
  "Link Grabber": "लिंक ग्रैबर",
  "Sort by {name}": "{name} के अनुसार क्रमबद्ध करें",
  "Use the link you copied": "कॉपी किया लिंक इस्तेमाल करें",
- "Recent videos": "हाल के वीडियो"
+ "Recent videos": "हाल के वीडियो",
+ "Private tab": "निजी टैब",
+ "Download all images…": "सभी चित्र डाउनलोड करें…",
+ "Find in page": "पेज में खोजें",
+ "Translate page": "पेज का अनुवाद करें",
+ "Text size": "टेक्स्ट का आकार",
+ "Save as PDF": "PDF के रूप में सहेजें",
+ "Add to Home screen": "होम स्क्रीन पर जोड़ें",
+ "New private tab": "नया निजी टैब",
+ "Data saver (no images)": "डेटा सेवर (बिना चित्र)",
+ "Previous": "पिछला",
+ "No images on this page.": "इस पेज पर कोई चित्र नहीं है।",
+ "Could not open the print dialog.": "प्रिंट डायलॉग नहीं खुल सका।",
+ "Your launcher can't add shortcuts.": "आपका लॉन्चर शॉर्टकट नहीं जोड़ सकता।"
 }

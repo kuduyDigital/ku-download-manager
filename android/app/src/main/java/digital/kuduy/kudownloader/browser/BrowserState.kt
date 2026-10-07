@@ -31,7 +31,7 @@ data class Bookmark(val url: String, val title: String, val at: Long = System.cu
 /** A media stream a page loaded (found by watching its requests). */
 data class FoundMedia(val url: String, val kind: String, val page: String, val title: String)
 
-class Tab(val id: String = UUID.randomUUID().toString()) {
+class Tab(val id: String = UUID.randomUUID().toString(), val private: Boolean = false) {
     var url by mutableStateOf("")
     var title by mutableStateOf("")
     var progress by mutableIntStateOf(100)
@@ -78,8 +78,8 @@ object BrowserState {
         if (tabs.isEmpty()) newTab()
     }
 
-    fun newTab(url: String? = null): Tab {
-        val t = Tab()
+    fun newTab(url: String? = null, private: Boolean = false): Tab {
+        val t = Tab(private = private)
         tabs.add(t)
         current = t
         if (url != null) t.url = url
@@ -96,6 +96,37 @@ object BrowserState {
         t.view = null
         if (tabs.isEmpty()) newTab()
         if (current == t) current = tabs.getOrNull((i - 1).coerceAtLeast(0)) ?: tabs.first()
+        // Last private tab gone: forget its cookies and site data.
+        if (t.private && tabs.none { it.private }) clearPrivate()
+    }
+
+    private const val PRIVATE_PROFILE = "ku-private"
+
+    /** Private tabs get their own cookies and storage (a separate WebView profile). */
+    val privateSupported: Boolean get() = WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE)
+
+    private fun privateProfile() = runCatching { androidx.webkit.ProfileStore.getInstance().getOrCreateProfile(PRIVATE_PROFILE) }.getOrNull()
+
+    private fun clearPrivate() {
+        if (!privateSupported) return
+        privateProfile()?.let { p ->
+            runCatching { p.cookieManager.removeAllCookies(null) }
+            runCatching { p.webStorage.deleteAllData() }
+        }
+    }
+
+    /** Cookies of the tab's profile (private tabs keep theirs apart). */
+    fun cookieManager(t: Tab?): CookieManager =
+        (if (t?.private == true && privateSupported) privateProfile()?.cookieManager else null) ?: CookieManager.getInstance()
+
+    /** Text size and data saver, for one page or all of them. */
+    fun applyPageSettings(v: WebView) {
+        v.settings.textZoom = Prefs.textZoom.value
+        v.settings.blockNetworkImage = Prefs.dataSaver.value
+    }
+
+    fun applyPageSettingsAll(reload: Boolean) {
+        tabs.forEach { t -> t.view?.let { applyPageSettings(it); if (reload) it.reload() } }
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -105,6 +136,8 @@ object BrowserState {
             return v
         }
         val v = WebView(MutableContextWrapper(ctx))
+        // Before anything else touches the WebView (a profile can't change later).
+        if (t.private && privateSupported) runCatching { privateProfile(); androidx.webkit.WebViewCompat.setProfile(v, PRIVATE_PROFILE) }
         v.settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
@@ -123,7 +156,8 @@ object BrowserState {
         if (WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING) && Build.VERSION.SDK_INT >= 33) {
             WebSettingsCompat.setAlgorithmicDarkeningAllowed(v.settings, true)
         }
-        CookieManager.getInstance().setAcceptThirdPartyCookies(v, true)
+        applyPageSettings(v)
+        cookieManager(t).setAcceptThirdPartyCookies(v, true)
         // A page you are not looking at gives way first when memory runs low.
         if (Build.VERSION.SDK_INT >= 26) v.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_IMPORTANT, true)
         v.addJavascriptInterface(PageBridge(t), "KuBridge")
@@ -215,7 +249,7 @@ object BrowserState {
 
     /** The page's cookies for [url], in the engine's shape (sent with downloads). */
     fun cookies(url: String): List<BrowserCookie> {
-        val raw = CookieManager.getInstance().getCookie(url) ?: return emptyList()
+        val raw = cookieManager(current).getCookie(url) ?: return emptyList()
         val host = runCatching { URI(url).host }.getOrNull() ?: return emptyList()
         val secure = url.startsWith("https:")
         return raw.split(';').mapNotNull { part ->

@@ -390,5 +390,18 @@
  "Link Grabber": "Link-Sammler",
  "Sort by {name}": "Nach {name} sortieren",
  "Use the link you copied": "Kopierten Link verwenden",
- "Recent videos": "Letzte Videos"
+ "Recent videos": "Letzte Videos",
+ "Private tab": "Privater Tab",
+ "Download all images…": "Alle Bilder herunterladen…",
+ "Find in page": "Auf Seite suchen",
+ "Translate page": "Seite übersetzen",
+ "Text size": "Textgröße",
+ "Save as PDF": "Als PDF speichern",
+ "Add to Home screen": "Zum Startbildschirm hinzufügen",
+ "New private tab": "Neuer privater Tab",
+ "Data saver (no images)": "Datensparmodus (ohne Bilder)",
+ "Previous": "Zurück",
+ "No images on this page.": "Keine Bilder auf dieser Seite.",
+ "Could not open the print dialog.": "Der Druckdialog konnte nicht geöffnet werden.",
+ "Your launcher can't add shortcuts.": "Dein Launcher kann keine Verknüpfungen hinzufügen."
 }

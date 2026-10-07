@@ -79,6 +79,10 @@ class MainActivity : ComponentActivity() {
             ACTION_UPDATE -> UiState.go(Screen.About)
             ACTION_ADD_URL -> if (id != null) UiState.add = AddPrefill(url = id)
             ACTION_ADD_CLIPBOARD -> window.decorView.post { offerClipboard(force = true) }
+            ACTION_OPEN_SITE -> intent.dataString?.takeIf { it.startsWith("http://") || it.startsWith("https://") }?.let {
+                UiState.browserUrl = it
+                UiState.go(Screen.Browser)
+            }
             Intent.ACTION_PROCESS_TEXT -> {
                 val text = intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString().orEmpty()
                 links(text)
@@ -150,6 +154,8 @@ class MainActivity : ComponentActivity() {
         const val ACTION_UPDATE = "digital.kuduy.kudownloader.UPDATE"
         const val ACTION_ADD_URL = "digital.kuduy.kudownloader.ADD_URL"
         const val ACTION_ADD_CLIPBOARD = "digital.kuduy.kudownloader.ADD_CLIPBOARD"
+        /** A site pinned to the Home screen from the browser. */
+        const val ACTION_OPEN_SITE = "digital.kuduy.kudownloader.OPEN_SITE"
 
         @Volatile var visible = false
             private set

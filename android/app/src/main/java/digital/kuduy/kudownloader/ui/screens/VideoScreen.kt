@@ -81,7 +81,6 @@ import digital.kuduy.kudownloader.i18n.t
 import digital.kuduy.kudownloader.i18n.tf
 import digital.kuduy.kudownloader.service.KuService
 import digital.kuduy.kudownloader.ui.EmptyState
-import digital.kuduy.kudownloader.ui.SectionTitle
 import digital.kuduy.kudownloader.ui.KuScaffold
 import digital.kuduy.kudownloader.ui.Notice
 import digital.kuduy.kudownloader.ui.UiState
@@ -305,7 +304,7 @@ fun VideoScreen() {
                     )
                 }
                 if (recent.isNotEmpty()) {
-                    item { SectionTitle(t("Recent videos")) }
+                    item { Text(t("Recent videos"), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 12.dp)) }
                     items(recent, key = { it.id }) { d ->
                         DownloadRow(d, selected = false, selecting = false, onClick = { UiState.details = d.id }, onLongClick = { UiState.details = d.id }, onAction = { rowAction(ctx, scope, d) })
                     }

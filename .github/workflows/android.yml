@@ -112,3 +112,7 @@ jobs:
             sleep 60
           done
           gh release upload "${{ github.ref_name }}" out/*.apk --clobber --repo "${{ github.repository }}" || echo "::warning::release not found; the APKs are in the job artifacts"
+      - name: Checksums (SHA256SUMS.txt)
+        if: startsWith(github.ref, 'refs/tags/v')
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: bash scripts/release-checksums.sh "${{ github.ref_name }}" "${{ github.repository }}" || echo "::warning::checksums not updated"

@@ -11,3 +11,12 @@ node_modules/
 /packaging/flatpak/*.deb
 /app/src-tauri/tauri.nosign.conf.json
 /app/src-tauri/tauri.winsign.conf.json
+
+# Signing material: never committed (see SIGNING.md)
+*.pfx
+*.p12
+*.jks
+*.keystore
+*.pem
+*.key
+android/keystore.properties

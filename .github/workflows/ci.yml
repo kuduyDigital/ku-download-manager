@@ -124,11 +124,16 @@ jobs:
           else
             echo "json=true" >> "$GITHUB_OUTPUT"
           fi
-          # Windows Authenticode: WINDOWS_CERTIFICATE = base64 .pfx
+          # Windows Authenticode: WINDOWS_CERTIFICATE = base64 .pfx (a self-signed
+          # certificate today; see SIGNING.md). The .pfx exists only for the
+          # import below; the key is removed from the store after the build.
           if [ "$RUNNER_OS" = "Windows" ] && [ -n "$WIN_CERT" ]; then
             echo "$WIN_CERT" | base64 -d > "$RUNNER_TEMP/cert.pfx"
             thumb=$(powershell -NoProfile -Command "\$p = ConvertTo-SecureString -String \$env:WIN_CERT_PASSWORD -Force -AsPlainText; (Import-PfxCertificate -FilePath \"$RUNNER_TEMP/cert.pfx\" -CertStoreLocation Cert:\\CurrentUser\\My -Password \$p).Thumbprint")
             rm -f "$RUNNER_TEMP/cert.pfx"
+            thumb=$(echo "$thumb" | tr -d '\r\n ')
+            if [ -z "$thumb" ]; then echo "::error::WINDOWS_CERTIFICATE could not be imported (wrong password?)"; exit 1; fi
+            echo "thumb=$thumb" >> "$GITHUB_OUTPUT"
             printf '{"bundle":{"windows":{"certificateThumbprint":"%s","digestAlgorithm":"sha256","timestampUrl":"http://timestamp.digicert.com"}}}' "$thumb" > app/src-tauri/tauri.winsign.conf.json
             args="$args --config src-tauri/tauri.winsign.conf.json"
           fi
@@ -152,7 +157,11 @@ jobs:
               { echo "$v<<__KU_EOF__"; printenv "$v"; echo "__KU_EOF__"; } >> "$GITHUB_ENV"
             done
           else
-            echo "No Apple signing secrets: building an unsigned app."
+            # No Developer ID: sign ad hoc ("-"). Gatekeeper still says
+            # "unidentified developer", but the app is no longer reported as
+            # damaged, and macOS can check it wasn't changed after the build.
+            echo "APPLE_SIGNING_IDENTITY=-" >> "$GITHUB_ENV"
+            echo "No Apple signing secrets: signing the app ad hoc."
           fi
       - uses: tauri-apps/tauri-action@v0
         env:
@@ -166,6 +175,40 @@ jobs:
           releaseName: KuDownloader ${{ github.ref_name }}
           releaseDraft: true
           includeUpdaterJson: ${{ steps.sign.outputs.json }}
+      # The installer and the app must carry our signature, intact. A
+      # self-signed certificate isn't trusted by Windows, so the status is
+      # "UnknownError" (untrusted root) rather than "Valid"; anything that
+      # means unsigned or altered fails the release.
+      - name: Verify the Windows signatures
+        if: runner.os == 'Windows' && steps.sign.outputs.thumb != ''
+        shell: pwsh
+        env:
+          THUMB: ${{ steps.sign.outputs.thumb }}
+        run: |
+          $files = @(Get-ChildItem target -Recurse -Filter *-setup.exe | Where-Object { $_.FullName -match 'bundle\\nsis' })
+          $files += Get-ChildItem target/release -Filter kudownloader.exe -ErrorAction SilentlyContinue
+          if ($files.Count -lt 2) { throw "Expected the installer and the app; found: $($files.Name -join ', ')" }
+          foreach ($f in $files) {
+            $s = Get-AuthenticodeSignature $f.FullName
+            "{0}: {1}, signer {2}" -f $f.Name, $s.Status, $s.SignerCertificate.Subject
+            if ($s.Status -in 'NotSigned', 'HashMismatch', 'NotSupportedFileFormat', 'Incompatible') { throw "$($f.Name) is not properly signed ($($s.Status))" }
+            if ($s.SignerCertificate.Thumbprint -ne $env:THUMB) { throw "$($f.Name) is signed by an unexpected certificate" }
+            if (-not $s.TimeStamperCertificate) { "::warning::$($f.Name) has no timestamp" }
+          }
+      - name: Remove the signing certificate
+        if: always() && runner.os == 'Windows' && steps.sign.outputs.thumb != ''
+        shell: pwsh
+        env:
+          THUMB: ${{ steps.sign.outputs.thumb }}
+        run: Remove-Item "Cert:\CurrentUser\My\$env:THUMB" -DeleteKey -ErrorAction SilentlyContinue
+      - name: Verify the macOS signature
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          app=$(find target -maxdepth 6 -type d -path '*/bundle/macos/*.app' | head -1)
+          [ -n "$app" ] || { echo "::error::no .app bundle found"; exit 1; }
+          codesign --verify --deep --strict --verbose=2 "$app"
+          codesign -dv "$app" 2>&1 | grep -E '^(Identifier|Signature|TeamIdentifier|Authority)=' || true
 
   # Without an AppImage, tauri-action points the generic linux-<arch> entry at
   # the .deb. Older AppImage copies fall back to that entry and would write the
@@ -192,6 +235,20 @@ jobs:
     uses: ./.github/workflows/linux-extras.yml
     with:
       tag: ${{ github.ref_name }}
+
+  # SHA256SUMS.txt for every file of the release (the Android workflow
+  # refreshes it after attaching the APKs).
+  checksums:
+    needs: [update-feed, linux-extras]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { sparse-checkout: scripts }
+      - run: bash scripts/release-checksums.sh "${{ github.ref_name }}" "${{ github.repository }}"
 
   # Browser stores (optional; each step runs only when its secrets exist).
   extension-stores:

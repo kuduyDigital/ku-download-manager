@@ -185,9 +185,14 @@ jobs:
         env:
           THUMB: ${{ steps.sign.outputs.thumb }}
         run: |
-          $files = @(Get-ChildItem target -Recurse -Filter *-setup.exe | Where-Object { $_.FullName -match 'bundle\\nsis' })
-          $files += Get-ChildItem target/release -Filter kudownloader.exe -ErrorAction SilentlyContinue
-          if ($files.Count -lt 2) { throw "Expected the installer and the app; found: $($files.Name -join ', ')" }
+          # The installer, and the app inside it (Tauri signs a copy for the
+          # installer; target/release keeps the unsigned original).
+          $setup = @(Get-ChildItem target -Recurse -Filter *-setup.exe | Where-Object { $_.FullName -match 'bundle\\nsis' })
+          if ($setup.Count -ne 1) { throw "Expected one installer; found: $($setup.Name -join ', ')" }
+          $inner = Join-Path $env:RUNNER_TEMP "installer"
+          7z e -y -r "-o$inner" $setup[0].FullName kudownloader.exe | Out-Null
+          $files = @($setup[0]) + @(Get-ChildItem $inner -Filter kudownloader.exe)
+          if ($files.Count -lt 2) { throw "kudownloader.exe not found inside $($setup[0].Name)" }
           foreach ($f in $files) {
             $s = Get-AuthenticodeSignature $f.FullName
             "{0}: {1}, signer {2}" -f $f.Name, $s.Status, $s.SignerCertificate.Subject

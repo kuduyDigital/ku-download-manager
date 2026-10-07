@@ -4,7 +4,7 @@
  */
 export const WHATS_NEW: { version: string; items: string[] }[] = [
   {
-    version: "0.2.22",
+    version: "0.2.23",
     items: [
       "Redesigned progress window: file-type icon, live speed graph, connection count, and \"when done\" options (open the file, close the window).",
       "Set a speed limit for one download right from its progress window.",

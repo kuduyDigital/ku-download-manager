@@ -346,7 +346,17 @@ function TreeItem({
 }) {
   return (
     <div className="tree-row" style={{ paddingLeft: 4 + depth * 22 }}>
-      <button type="button" className="nav-item" aria-current={active ? "page" : undefined} onClick={onClick}>
+      <button
+        type="button"
+        className="nav-item"
+        aria-current={active ? "page" : undefined}
+        onClick={(e) => {
+          onClick();
+          // A mouse click shouldn't leave the keyboard focus ring behind
+          // (it shows on the next key press); keyboard use keeps focus.
+          if (e.detail > 0) e.currentTarget.blur();
+        }}
+      >
         <Icon icon={icon} />
         <span className="truncate">{t(label)}</span>
         {!!count && <span className="count">{count}</span>}
@@ -420,7 +430,7 @@ export function Sidebar({ collapsed }: { collapsed: boolean; onToggle?: () => vo
         {open.unfinished && catChildren("unfinished")}
         <TreeItem icon={CircleCheck} label={t("Finished")} count={finished} active={is({ scope: "finished" })} expanded={open.finished} onToggle={() => toggle("finished")} onClick={() => showList({ scope: "finished", category: "" })} />
         {open.finished && catChildren("finished")}
-        <TreeItem icon={ListOrdered} label={t("Queues")} count={queued} active={isList && filter.scope === "queue"} expanded={open.queues} onToggle={() => toggle("queues")} onClick={() => showList({ scope: "queue", category: "", queueId: queues[0]?.id ?? "main" })} />
+        <TreeItem icon={ListOrdered} label={t("Queues")} count={queued} active={isList && filter.scope === "queue" && !open.queues} expanded={open.queues} onToggle={() => toggle("queues")} onClick={() => showList({ scope: "queue", category: "", queueId: queues[0]?.id ?? "main" })} />
         {open.queues &&
           queues.map((q) => (
             <TreeItem key={q.id} depth={1} icon={ListOrdered} label={queueName(q) + (q.running ? ` · ${t("running")}` : "")} active={is({ scope: "queue", queueId: q.id })} onClick={() => showList({ scope: "queue", category: "", queueId: q.id })} />

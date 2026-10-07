@@ -986,6 +986,14 @@ const pt: Record<string, string> = {
   "{n} connections": "{n} conexões",
   "{free} free on this drive": "{free} livres nesta unidade",
   "Not enough space: needs {size}, {free} free": "Espaço insuficiente: precisa de {size}, {free} livres",
+  // Compact progress / Download File windows
+  "From browser": "Do navegador",
+  "Open when done": "Abrir ao concluir",
+  "Close when done": "Fechar ao concluir",
+  "Less": "Menos",
+  "{done} of {total}": "{done} de {total}",
+  "{time} left": "faltam {time}",
+  "Saved to {folder}": "Salvo em {folder}",
 };
 
 export default pt;

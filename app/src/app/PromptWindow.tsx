@@ -2,8 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import type { AddRequest } from "../lib/types";
-import { settingsStore } from "../lib/store";
-import { applyAppearance } from "../lib/appearance";
+import { usePopupAppearance } from "../lib/popupAppearance";
 import { autoFit } from "../lib/fitWindow";
 import { ToastHost } from "../ui/overlays";
 import { AddDownloadDialog } from "./AddDownloadDialog";
@@ -15,15 +14,14 @@ import { AppContext, type AppApi } from "./context";
  */
 export function PromptWindow({ id }: { id: string }) {
   const [request, setRequest] = useState<AddRequest | null>(null);
-  const settings = settingsStore.use();
+  // Follows the main window's theme live (and the OS for "System").
+  usePopupAppearance();
   // One handle for the window's lifetime (getCurrentWindow() returns a new object each call).
   const win = useMemo(() => getCurrentWindow(), []);
 
   useEffect(() => {
     void invoke<AddRequest | null>("get_prompt", { id }).then((r) => (r ? setRequest(r) : void win.close()));
   }, [id, win]);
-
-  useEffect(() => void applyAppearance(settings), [settings]);
 
   // Fit the window to the dialog, then show it. It follows "More options"
   // opening and closing; resized by hand, the fields scroll instead.

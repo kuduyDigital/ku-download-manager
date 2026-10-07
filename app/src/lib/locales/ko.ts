@@ -986,6 +986,14 @@ const ko: Record<string, string> = {
   "{n} connections": "연결 {n}개",
   "{free} free on this drive": "이 드라이브 여유 공간 {free}",
   "Not enough space: needs {size}, {free} free": "공간 부족: {size} 필요, 여유 {free}",
+  // Compact progress / Download File windows
+  "From browser": "브라우저에서",
+  "Open when done": "완료되면 열기",
+  "Close when done": "완료되면 닫기",
+  "Less": "간단히",
+  "{done} of {total}": "{done} / {total}",
+  "{time} left": "{time} 남음",
+  "Saved to {folder}": "{folder}에 저장됨",
 };
 
 export default ko;

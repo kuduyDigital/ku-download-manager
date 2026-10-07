@@ -986,6 +986,14 @@ const de: Record<string, string> = {
   "{n} connections": "{n} Verbindungen",
   "{free} free on this drive": "{free} frei auf diesem Laufwerk",
   "Not enough space: needs {size}, {free} free": "Nicht genug Platz: benötigt {size}, {free} frei",
+  // Compact progress / Download File windows
+  "From browser": "Vom Browser",
+  "Open when done": "Nach Abschluss öffnen",
+  "Close when done": "Nach Abschluss schließen",
+  "Less": "Weniger",
+  "{done} of {total}": "{done} von {total}",
+  "{time} left": "noch {time}",
+  "Saved to {folder}": "Gespeichert in {folder}",
 };
 
 export default de;

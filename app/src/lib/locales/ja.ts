@@ -986,6 +986,14 @@ const ja: Record<string, string> = {
   "{n} connections": "{n} 接続",
   "{free} free on this drive": "このドライブの空き {free}",
   "Not enough space: needs {size}, {free} free": "空き容量不足：{size} 必要、空き {free}",
+  // Compact progress / Download File windows
+  "From browser": "ブラウザーから",
+  "Open when done": "完了したら開く",
+  "Close when done": "完了したら閉じる",
+  "Less": "閉じる",
+  "{done} of {total}": "{done} / {total}",
+  "{time} left": "残り {time}",
+  "Saved to {folder}": "保存先: {folder}",
 };
 
 export default ja;

@@ -986,6 +986,14 @@ const hi: Record<string, string> = {
   "{n} connections": "{n} कनेक्शन",
   "{free} free on this drive": "इस ड्राइव पर {free} खाली",
   "Not enough space: needs {size}, {free} free": "पर्याप्त जगह नहीं: {size} चाहिए, {free} खाली",
+  // Compact progress / Download File windows
+  "From browser": "ब्राउज़र से",
+  "Open when done": "पूरा होने पर खोलें",
+  "Close when done": "पूरा होने पर बंद करें",
+  "Less": "कम",
+  "{done} of {total}": "{total} में से {done}",
+  "{time} left": "{time} बाकी",
+  "Saved to {folder}": "{folder} में सहेजा गया",
 };
 
 export default hi;

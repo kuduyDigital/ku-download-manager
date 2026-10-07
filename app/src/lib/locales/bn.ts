@@ -984,6 +984,14 @@ const bn: Record<string, string> = {
   "{n} connections": "{n}টি সংযোগ",
   "{free} free on this drive": "এই ড্রাইভে {free} খালি",
   "Not enough space: needs {size}, {free} free": "জায়গা যথেষ্ট নয়: দরকার {size}, খালি {free}",
+  // Compact progress / Download File windows
+  "From browser": "ব্রাউজার থেকে",
+  "Open when done": "শেষ হলে খুলুন",
+  "Close when done": "শেষ হলে বন্ধ করুন",
+  "Less": "কম",
+  "{done} of {total}": "{total}-এর {done}",
+  "{time} left": "{time} বাকি",
+  "Saved to {folder}": "{folder}-এ সেভ হয়েছে",
 };
 
 export default bn;

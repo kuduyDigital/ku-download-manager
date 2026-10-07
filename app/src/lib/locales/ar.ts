@@ -986,6 +986,14 @@ const ar: Record<string, string> = {
   "{n} connections": "{n} اتصالات",
   "{free} free on this drive": "{free} متاحة على هذا القرص",
   "Not enough space: needs {size}, {free} free": "مساحة غير كافية: يحتاج {size}، المتاح {free}",
+  // Compact progress / Download File windows
+  "From browser": "من المتصفح",
+  "Open when done": "فتح عند الانتهاء",
+  "Close when done": "إغلاق عند الانتهاء",
+  "Less": "أقل",
+  "{done} of {total}": "{done} من {total}",
+  "{time} left": "متبقٍ {time}",
+  "Saved to {folder}": "حُفظ في {folder}",
 };
 
 export default ar;

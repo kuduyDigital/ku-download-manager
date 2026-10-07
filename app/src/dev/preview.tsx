@@ -188,7 +188,8 @@ mockIPC(
       case "app_ready":
         return [];
       case "get_settings":
-        return settings;
+        // A fresh object each time, like the real backend (JSON over IPC).
+        return { ...settings };
       case "save_settings":
         Object.assign(settings, (args as { settings: Settings }).settings);
         return settings;

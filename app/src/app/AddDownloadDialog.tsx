@@ -11,6 +11,7 @@ import { Button, Checkbox, Icon, IconButton, Input, Notice, Select } from "../ui
 import { Dialog, toast } from "../ui/overlays";
 import { CATEGORY_ICON, glyphColor } from "./downloads/FileGlyph";
 import { DuplicateNotice } from "./DuplicateNotice";
+import { MiddleName } from "../ui/MiddleName";
 import { useApp } from "./context";
 
 /** Translated when shown (the language loads after this module). */
@@ -276,9 +277,7 @@ export function AddDownloadDialog({ prefill, onClose }: { prefill?: Partial<AddR
             <Icon icon={media ? Clapperboard : CatIcon} size={22} />
           </span>
           <div className="dl-hero-id">
-            <b className="truncate" title={filename || probe?.filename || single}>
-              {filename || probe?.filename || (probing ? t("Checking the link…") : fmt.host(single) || single)}
-            </b>
+            <MiddleName className="dl-hero-name" name={filename || probe?.filename || (probing ? t("Checking the link…") : fmt.host(single) || single)} />
             <span className="dl-hero-meta">
               {probing ? (
                 <>
@@ -290,17 +289,19 @@ export function AddDownloadDialog({ prefill, onClose }: { prefill?: Partial<AddR
                 </span>
               ) : (
                 <>
-                  <span className="num">{probe?.size ? fmt.bytes(probe.size) : prefill?.sizeHint ? fmt.bytes(prefill.sizeHint) : t("Size unknown")}</span>
-                  <span className="truncate">{fmt.host(single)}</span>
+                  <span className="num dl-hero-size">{probe?.size ? fmt.bytes(probe.size) : prefill?.sizeHint ? fmt.bytes(prefill.sizeHint) : t("Size unknown")}</span>
+                  <span className="truncate dl-hero-host">{fmt.host(single)}</span>
                   {probe && !media && <span className="dl-chip" data-ok={probe.resumable === true}>{probe.resumable ? t("Resumable") : probe.resumable === false ? t("Not resumable") : t("Resume unknown")}</span>}
+                  {/* Where it came from, as an icon: the detail is in the tooltip. */}
+                  {fromBrowser && (
+                    <span className="dl-hero-from" title={prefill?.options?.cookies?.length ? t("Sent from your browser with your session cookies") : t("Sent from your browser")}>
+                      <Icon icon={Globe} size={12} />
+                      {t("From browser")}
+                    </span>
+                  )}
                 </>
               )}
             </span>
-            {fromBrowser && (
-              <span className="dl-hero-src faint">
-                <Icon icon={Globe} size={12} /> {prefill?.options?.cookies?.length ? t("Sent from your browser with your session cookies") : t("Sent from your browser")}
-              </span>
-            )}
           </div>
         </div>
       )}

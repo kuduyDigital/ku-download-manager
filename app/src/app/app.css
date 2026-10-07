@@ -872,3 +872,18 @@
 .recent-video-status.is-error {
   color: var(--danger);
 }
+
+/* A name that loses its middle, not its end (see ui/MiddleName.tsx). */
+.middle-name {
+  display: flex;
+  min-width: 0;
+  white-space: nowrap;
+}
+.middle-name-head {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.middle-name-tail {
+  flex: none;
+}

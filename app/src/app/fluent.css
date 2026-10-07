@@ -606,7 +606,7 @@ body {
   flex: 1;
   min-width: 0;
 }
-@container dlg (max-width: 500px) {
+@container dlg (max-width: 430px) {
   .dialog .dl-row {
     grid-template-columns: minmax(0, 1fr);
     gap: 6px;
@@ -993,94 +993,6 @@ body {
 .pw-bar .progress > span {
   border-radius: 4px;
 }
-.pw-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  margin-top: calc(var(--space-1) * -1);
-  font-size: var(--text-sm);
-  color: var(--fg-secondary);
-}
-.pw-status-text {
-  min-width: 0;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  overflow: hidden;
-}
-.pw-status[data-state="error"] {
-  align-items: flex-start;
-}
-.pw-status[data-state="error"] .pw-dot {
-  margin-top: 6px;
-}
-.pw-dot {
-  flex: none;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent);
-}
-.pw-status[data-state="downloading"] .pw-dot {
-  animation: pw-pulse 1.4s ease-in-out infinite;
-}
-.pw-status[data-state="completed"] .pw-dot {
-  background: var(--success);
-}
-.pw-status[data-state="error"] {
-  color: var(--danger);
-}
-.pw-status[data-state="error"] .pw-dot {
-  background: var(--danger);
-}
-.pw-status[data-state="paused"] .pw-dot,
-.pw-status[data-state="queued"] .pw-dot {
-  background: var(--fg-tertiary, var(--fg-secondary));
-}
-@keyframes pw-pulse {
-  50% {
-    opacity: 0.35;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .pw-status .pw-dot {
-    animation: none !important;
-  }
-}
-.pw-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 1px;
-  border: 1px solid var(--line);
-  border-radius: var(--card-radius);
-  background: var(--line);
-  overflow: hidden;
-}
-.pw-stats > div {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
-  padding: 7px var(--space-3);
-  background: var(--bg-raised);
-}
-.pw-stats span {
-  font-size: var(--text-xs);
-  color: var(--fg-secondary);
-}
-.pw-stats b {
-  font-size: var(--text-md);
-  font-weight: var(--weight-semibold);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.pw-stats small {
-  font-size: var(--text-xs);
-  font-weight: normal;
-  color: var(--fg-secondary);
-}
 .pw-details {
   display: flex;
   flex-direction: column;
@@ -1130,34 +1042,38 @@ body {
   flex: 1;
 }
 
-/* Name over two lines at most; host · size · resume badge under it. */
+/* One line for the name (middle ellipsis), one for host · size · badge.
+   The size and the badge never wrap; the host gives way. */
 .pw-name {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
   font-size: var(--text-md);
   font-weight: var(--weight-semibold);
-  line-height: 1.3;
-  word-break: break-word;
 }
 .pw-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
   font-size: var(--text-xs);
+  white-space: nowrap;
 }
-.pw-meta > .num::before {
+.pw-host {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.pw-size {
+  flex: none;
+}
+.pw-size::before {
   content: "·";
-  margin-right: 8px;
+  margin-right: 6px;
   opacity: 0.6;
 }
 .pw-chip {
   flex: none;
-  padding: 1px 7px;
+  padding: 0 7px;
   border-radius: 999px;
   font-size: 10.5px;
+  line-height: 17px;
   font-weight: var(--weight-medium);
   color: var(--warning);
   background: color-mix(in srgb, var(--warning) 14%, transparent);
@@ -1198,42 +1114,79 @@ body {
     display: none;
   }
 }
-.pw-conn-count {
-  margin-left: auto;
+/* The facts line: amount · speed (with a tiny graph) · time left. */
+.pw-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  min-width: 0;
+  font-size: var(--text-sm);
+  color: var(--fg-secondary);
+  white-space: nowrap;
+}
+.pw-line b,
+.pw-state,
+.pw-speed {
+  color: var(--fg-primary);
+  font-weight: var(--weight-semibold);
+}
+.pw-sep {
   flex: none;
-  font-size: var(--text-xs);
-  color: var(--fg-tertiary, var(--fg-secondary));
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.45;
 }
-
-/* Speed card: the figure over a faint line of the last minute. */
-.pw-stat-speed {
-  position: relative;
-}
-/* The graph has its own strip at the bottom of the card, under the figure. */
-.pw-stat-speed {
-  padding-bottom: 18px !important;
+.pw-speed {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 .pw-spark {
-  position: absolute;
-  inset: auto 0 0 0;
-  width: 100%;
-  height: 15px;
-  pointer-events: none;
+  flex: none;
+  width: 48px;
+  height: 16px;
 }
 .pw-spark .area {
-  fill: color-mix(in srgb, var(--accent) 8%, transparent);
+  fill: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 .pw-spark .line {
   fill: none;
-  stroke: color-mix(in srgb, var(--accent) 70%, transparent);
+  stroke: var(--accent);
   stroke-width: 1.5;
   vector-effect: non-scaling-stroke;
 }
-.pw-stats > div > :not(.pw-spark) {
-  position: relative;
+.pw-eta {
+  margin-left: auto;
 }
-.pw-path {
-  font-weight: var(--weight-medium) !important;
+.pw-line[data-state="error"] {
+  white-space: normal;
+  color: var(--danger);
+}
+.pw-error-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.pw-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 28px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--fg-secondary);
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+.pw-more:hover {
+  background: var(--bg-hover);
+  color: var(--fg-primary);
 }
 
 /* When done: … · speed limit */
@@ -1576,7 +1529,7 @@ body {
 }
 /* Only when the window is dragged shorter than its content (the automatic
    fit is taller): tighter, so more stays in view before scrolling. */
-@media (max-height: 230px) {
+@media (max-height: 170px) {
   .pw-body {
     gap: var(--space-2);
     padding-block: var(--space-2);
@@ -1585,14 +1538,11 @@ body {
     width: 36px;
     height: 36px;
   }
-  .pw-id > span {
+  .pw-meta {
     display: none;
   }
   .pw-pct {
     font-size: 20px;
-  }
-  .pw-stats > div {
-    padding: 4px var(--space-3);
   }
   .pw-actions {
     padding-top: var(--space-2);
@@ -2351,4 +2301,120 @@ body {
   .pw-options > .faint {
     display: none;
   }
+}
+
+/* ───────── Progress window: compact sizes (overrides the rules above) ───────── */
+.pw-head {
+  height: 34px;
+  padding: 0 6px 0 12px;
+}
+.pw-title {
+  font-size: var(--text-sm);
+  color: var(--fg-secondary);
+}
+.pw-body {
+  gap: 8px;
+  padding: 12px 14px 10px;
+}
+.pw-hero {
+  gap: 10px;
+}
+.pw-glyph {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+}
+.pw-id {
+  gap: 1px;
+}
+.pw-pct {
+  font-size: 22px;
+}
+.pw-bar .progress {
+  height: 6px;
+  border-radius: 3px;
+}
+.pw-bar .progress > span {
+  border-radius: 3px;
+}
+.pw-options {
+  gap: 4px 14px;
+  font-size: var(--text-xs);
+}
+.pw-limit .select {
+  height: 26px;
+  min-width: 100px;
+  font-size: var(--text-xs);
+}
+.pw-actions {
+  gap: 4px;
+  padding: 8px 10px 8px 6px;
+}
+.pw-actions .btn {
+  height: 30px;
+  min-width: 76px;
+}
+
+/* ───────── Download File: compact ───────── */
+.dl-hero-name {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+.dl-hero-meta {
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+.dl-hero-size,
+.dl-chip,
+.dl-hero-from {
+  flex: none;
+}
+.dl-hero-host {
+  min-width: 0;
+}
+.dl-hero-from {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--fg-tertiary, var(--fg-secondary));
+}
+:root[data-window="prompt"] .dialog-header {
+  padding: 10px 12px 2px 16px;
+}
+:root[data-window="prompt"] .dialog-title {
+  font-size: var(--text-md);
+}
+:root[data-window="prompt"] .dialog-body {
+  gap: 10px;
+  padding: 6px 16px 12px;
+}
+:root[data-window="prompt"] .dl-hero {
+  gap: 10px;
+}
+:root[data-window="prompt"] .dl-hero-glyph {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+}
+:root[data-window="prompt"] .dl-row {
+  grid-template-columns: 84px minmax(0, 1fr);
+  min-height: 40px;
+  padding: 5px 10px;
+}
+:root[data-window="prompt"] .dl-row > label {
+  font-size: var(--text-sm);
+  color: var(--fg-secondary);
+}
+:root[data-window="prompt"] .dl-row .input,
+:root[data-window="prompt"] .dl-row .select {
+  height: 30px;
+}
+:root[data-window="prompt"] .dl-stack {
+  gap: 4px;
+}
+:root[data-window="prompt"] .dialog-footer {
+  padding: 8px 12px;
+}
+:root[data-window="prompt"] .dialog-footer .btn {
+  height: 30px;
 }

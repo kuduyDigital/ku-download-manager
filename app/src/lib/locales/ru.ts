@@ -986,6 +986,14 @@ const ru: Record<string, string> = {
   "{n} connections": "Подключений: {n}",
   "{free} free on this drive": "Свободно на диске: {free}",
   "Not enough space: needs {size}, {free} free": "Недостаточно места: нужно {size}, свободно {free}",
+  // Compact progress / Download File windows
+  "From browser": "Из браузера",
+  "Open when done": "Открыть по завершении",
+  "Close when done": "Закрыть по завершении",
+  "Less": "Меньше",
+  "{done} of {total}": "{done} из {total}",
+  "{time} left": "осталось {time}",
+  "Saved to {folder}": "Сохранено в {folder}",
 };
 
 export default ru;

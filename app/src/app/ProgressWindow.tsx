@@ -7,8 +7,8 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { ArrowDownToLine, Check, ChevronDown, ChevronRight, FolderOpen, Gauge, Minus, Pause, Play, RotateCw, X } from "lucide-react";
 import { glyphColor, glyphFor } from "./downloads/FileGlyph";
 import { api, errorText } from "../lib/api";
-import { settingsStore } from "../lib/store";
-import { applyAppearance } from "../lib/appearance";
+import { usePopupAppearance } from "../lib/popupAppearance";
+import { MiddleName } from "../ui/MiddleName";
 import { autoFit } from "../lib/fitWindow";
 import * as fmt from "../lib/format";
 import type { CoreEvent, Details, Download } from "../lib/types";
@@ -76,8 +76,8 @@ const LIMITS = [0, 256 * 1024, 512 * 1024, 1024 ** 2, 2 * 1024 ** 2, 5 * 1024 **
 /** The last minute of speed as a small line: a feel for the trend, no axes. */
 function Sparkline({ values }: { values: number[] }) {
   if (values.length < 2) return null;
-  const w = 100;
-  const h = 24;
+  const w = 48;
+  const h = 16;
   // Headroom: a steady speed draws a line in the lower half, not a full block.
   const max = Math.max(1, ...values) * 1.8;
   const step = w / (values.length - 1);
@@ -93,7 +93,7 @@ function Sparkline({ values }: { values: number[] }) {
 /** IDM-style window for one download: status, speed, time left, live segment map. */
 export function ProgressWindow({ id }: { id: string }) {
   const win = useMemo(() => getCurrentWindow(), []);
-  const settings = settingsStore.use();
+  usePopupAppearance();
   const [d, setD] = useState<Download | null>(null);
   const [details, setDetails] = useState<Details | null>(null);
   const [more, setMore] = useState(false);
@@ -101,8 +101,6 @@ export function ProgressWindow({ id }: { id: string }) {
   const [speeds, setSpeeds] = useState<number[]>([]);
   const [openWhenDone, setOpenWhenDone] = usePref("ku-pw-open");
   const [closeWhenDone, setCloseWhenDone] = usePref("ku-pw-close");
-
-  useEffect(() => void applyAppearance(settings), [settings]);
 
   // Initial state + live updates for this download only.
   useEffect(() => {
@@ -170,15 +168,16 @@ export function ProgressWindow({ id }: { id: string }) {
   const maxSpeed = Math.max(1, ...conns.map((c) => c.speed));
   const act = (p: Promise<unknown>) => void p.catch((e) => setError(errorText(e)));
   const state = complete ? "completed" : d.status === "error" ? "error" : d.status === "paused" ? "paused" : d.status === "queued" ? "queued" : "downloading";
-  const status = complete ? "Download complete" : d.status === "error" ? "Failed" : d.status === "paused" ? "Paused" : d.status === "queued" ? "Queued" : d.status === "processing" ? "Merging…" : "Receiving data…";
+  const status = d.status === "paused" ? "Paused" : d.status === "queued" ? "Queued" : d.status === "processing" ? "Merging…" : "";
   const limit = d.options?.speedLimit ?? 0;
+  const amount = d.total > 0 ? tf("{done} of {total}", { done: fmt.bytes(d.done), total: fmt.bytes(d.total) }) : fmt.bytes(d.done);
 
   return (
     <div className="pw" data-state={state}>
       <header className="pw-head" data-tauri-drag-region>
-        <Icon icon={ArrowDownToLine} />
+        <Icon icon={ArrowDownToLine} size={14} />
         <span className="pw-title truncate" data-tauri-drag-region>
-          {complete ? t("Download complete") : live && d.done > 0 && d.total > 0 ? `${Math.floor(pct)}% · ${d.name}` : d.name}
+          {complete ? t("Download complete") : live && d.total > 0 ? `${Math.floor(pct)}% · ${t("Downloading")}` : t("Download")}
         </span>
         <IconButton icon={Minus} label={t("Minimize")} size="sm" onClick={() => void win.minimize()} />
         <IconButton icon={X} label={complete ? t("Close") : t("Close (the download continues)")} size="sm" onClick={() => void win.close()} />
@@ -187,17 +186,15 @@ export function ProgressWindow({ id }: { id: string }) {
       <div className="pw-body">
         <div className="pw-hero">
           <span className="pw-glyph" style={state === "completed" || state === "error" ? undefined : ({ "--glyph": glyphColor(d) } as CSSProperties)} data-state={state}>
-            <Icon icon={complete ? Check : glyphFor(d)} size={22} />
+            <Icon icon={complete ? Check : glyphFor(d)} size={18} />
           </span>
           <div className="pw-id">
-            <b className="pw-name selectable" title={d.name}>
-              {d.name}
-            </b>
+            <MiddleName name={d.name} className="pw-name" />
             <span className="pw-meta faint">
-              <span className="truncate" title={d.url}>
+              <span className="pw-host truncate" title={d.url}>
                 {fmt.host(d.url) || d.url}
               </span>
-              {d.total > 0 && <span className="num">{fmt.bytes(d.total)}</span>}
+              {d.total > 0 && <span className="pw-size num">{fmt.bytes(d.total)}</span>}
               {!complete && d.meta.resumable != null && (
                 <span className="pw-chip" data-ok={d.meta.resumable}>
                   {d.meta.resumable ? t("Resumable") : t("Not resumable")}
@@ -212,53 +209,53 @@ export function ProgressWindow({ id }: { id: string }) {
           <Progress value={complete ? 100 : pct} state={state} indeterminate={live && d.total <= 0} />
         </div>
 
-        <div className="pw-status" data-state={state}>
-          <span className="pw-dot" />
-          <span className="pw-status-text">{d.status === "error" ? te(d.error) || t(status) : t(status)}</span>
-          {live && d.activeConnections > 0 && <span className="pw-conn-count num">{tf("{n} connections", { n: d.activeConnections })}</span>}
-        </div>
-
-        <div className="pw-stats">
-          <div>
-            <span>{complete ? t("Size") : t("Downloaded")}</span>
-            <b className="num">
-              {complete ? fmt.bytes(d.total || d.done) : fmt.bytes(d.done)}
-              {!complete && d.total > 0 && <small> / {fmt.bytes(d.total)}</small>}
-            </b>
+        {/* One line of facts instead of cards: amount · speed · time left. */}
+        {state === "error" ? (
+          <div className="pw-line" data-state="error">
+            <span className="pw-error-text">{te(d.error) || t("Failed")}</span>
           </div>
-          {live ? (
-            <>
-              <div className="pw-stat-speed">
-                <span>{t("Transfer rate")}</span>
-                <b className="num">{live ? fmt.speed(d.speed) : "—"}</b>
-                {live && <Sparkline values={speeds} />}
-              </div>
-              <div>
-                <span>{t("Time left")}</span>
-                <b className="num">{eta != null ? fmt.duration(eta) : "—"}</b>
-              </div>
-            </>
-          ) : (
-            <div>
-              <span>{t("Saved to")}</span>
-              <b className="truncate pw-path" title={d.dir}>
-                {d.dir}
-              </b>
-            </div>
-          )}
-        </div>
+        ) : complete ? (
+          <div className="pw-line">
+            <b className="num">{fmt.bytes(d.total || d.done)}</b>
+            <span className="pw-sep" />
+            <span className="truncate faint" title={d.dir}>
+              {tf("Saved to {folder}", { folder: d.dir })}
+            </span>
+          </div>
+        ) : (
+          <div className="pw-line">
+            {status && (
+              <>
+                <span className="pw-state">{t(status)}</span>
+                <span className="pw-sep" />
+              </>
+            )}
+            <b className="num">{amount}</b>
+            {live && (
+              <>
+                <span className="pw-sep" />
+                <span className="pw-speed num">
+                  <Sparkline values={speeds} />
+                  {fmt.speed(d.speed)}
+                </span>
+              </>
+            )}
+            {eta != null && (
+              <span className="pw-eta num">{tf("{time} left", { time: fmt.duration(eta) })}</span>
+            )}
+          </div>
+        )}
 
         {(live || state === "queued") && (
           <div className="pw-options">
-            <span className="faint">{t("When done:")}</span>
             <Checkbox checked={openWhenDone} onChange={setOpenWhenDone}>
-              {t("Open the file")}
+              {t("Open when done")}
             </Checkbox>
             <Checkbox checked={closeWhenDone} onChange={setCloseWhenDone}>
-              {t("Close this window")}
+              {t("Close when done")}
             </Checkbox>
             <label className="pw-limit" title={t("Speed limit for this download")}>
-              <Icon icon={Gauge} size={14} />
+              <Icon icon={Gauge} size={13} />
               <Select
                 aria-label={t("Speed limit for this download")}
                 value={limit}
@@ -269,82 +266,83 @@ export function ProgressWindow({ id }: { id: string }) {
           </div>
         )}
 
-        {!complete && (
-          <>
-            <button type="button" className="dl-more" onClick={() => setMore(!more)} aria-expanded={more}>
-              <Icon icon={more ? ChevronDown : ChevronRight} size={14} /> {more ? t("Hide details") : t("Show details")}
-            </button>
-            {more && (
-              <div className="pw-details">
-                <div className="pw-map" aria-label={t("Downloaded parts of the file")} style={{ gridTemplateColumns: `repeat(${cells.length}, 1fr)` }}>
-                  {cells.map((v, i) => (
-                    <span key={i} style={{ opacity: v > 0 ? 0.35 + v * 0.65 : 1 }} data-have={v > 0} />
-                  ))}
-                </div>
-                {conns.length > 0 && (
-                  <div className="pw-conns num">
-                    {conns.slice(0, 16).map((c, i) => (
-                      <div key={i} className="conn-row" title={c.label}>
-                        <span className="faint">
-                          {d.engine === "kuhttp" ? t("Part") : t("Conn")} {String(i + 1).padStart(2, "0")}
-                        </span>
-                        <Progress value={c.pct >= 0 ? c.pct : (c.speed / maxSpeed) * 100} state="downloading" />
-                        <span style={{ textAlign: "right" }}>{fmt.speed(c.speed)}</span>
-                      </div>
-                    ))}
+        {!complete && more && (
+          <div className="pw-details">
+            <div className="pw-map" aria-label={t("Downloaded parts of the file")} style={{ gridTemplateColumns: `repeat(${cells.length}, 1fr)` }}>
+              {cells.map((v, i) => (
+                <span key={i} style={{ opacity: v > 0 ? 0.35 + v * 0.65 : 1 }} data-have={v > 0} />
+              ))}
+            </div>
+            {conns.length > 0 && (
+              <div className="pw-conns num">
+                {conns.slice(0, 16).map((c, i) => (
+                  <div key={i} className="conn-row" title={c.label}>
+                    <span className="faint">
+                      {d.engine === "kuhttp" ? t("Part") : t("Conn")} {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <Progress value={c.pct >= 0 ? c.pct : (c.speed / maxSpeed) * 100} state="downloading" />
+                    <span style={{ textAlign: "right" }}>{fmt.speed(c.speed)}</span>
                   </div>
-                )}
-                <div className="pw-facts">
-                  <span>{t("Address")}</span>
-                  <span className="truncate selectable" title={d.url}>
-                    {d.url}
-                  </span>
-                  <span>{t("Saved to")}</span>
-                  <span className="truncate selectable" title={d.dir}>
-                    {d.dir}
-                  </span>
-                  <span>{t("Resume")}</span>
-                  <span>{d.meta.resumable === false ? t("No — pausing restarts the file") : d.meta.resumable ? t("Yes") : t("Unknown")}</span>
-                </div>
+                ))}
               </div>
             )}
-          </>
+            <div className="pw-facts">
+              <span>{t("Address")}</span>
+              <span className="truncate selectable" title={d.url}>
+                {d.url}
+              </span>
+              <span>{t("Saved to")}</span>
+              <span className="truncate selectable" title={d.dir}>
+                {d.dir}
+              </span>
+              <span>{t("Connections")}</span>
+              <span className="num">{d.activeConnections || "—"}</span>
+            </div>
+          </div>
         )}
         {error && <div className="pw-error">{error}</div>}
       </div>
 
       <footer className="pw-actions">
-        <Button variant="ghost" icon={FolderOpen} onClick={() => act(api.openFolder(d.id))}>
-          {t("Show in folder")}
-        </Button>
+        <IconButton icon={FolderOpen} label={t("Show in folder")} onClick={() => act(api.openFolder(d.id))} />
+        {!complete && (
+          <button type="button" className="pw-more" onClick={() => setMore(!more)} aria-expanded={more}>
+            {more ? t("Less") : t("Details")}
+            <Icon icon={more ? ChevronDown : ChevronRight} size={12} />
+          </button>
+        )}
         <span className="spacer" />
         {complete ? (
           <>
-            <Button onClick={() => void win.close()}>{t("Close")}</Button>
-            <Button variant="primary" onClick={() => act(api.openFile(d.id).then(() => win.close()))}>
+            <Button size="sm" onClick={() => void win.close()}>
+              {t("Close")}
+            </Button>
+            <Button size="sm" variant="primary" onClick={() => act(api.openFile(d.id).then(() => win.close()))}>
               {t("Open")}
             </Button>
           </>
         ) : state === "error" ? (
           <>
-            <Button onClick={() => void win.close()}>{t("Close")}</Button>
-            <Button variant="primary" icon={RotateCw} onClick={() => act(api.resume([d.id]))}>
+            <Button size="sm" onClick={() => void win.close()}>
+              {t("Close")}
+            </Button>
+            <Button size="sm" variant="primary" icon={RotateCw} onClick={() => act(api.resume([d.id]))}>
               {t("Retry")}
             </Button>
           </>
         ) : (
           <>
             {/* Like IDM: Cancel stops the download and keeps it in the list (resumable); deleting is done from the list. */}
-            <Button className="is-danger" title={t("Stops the download and keeps it in your list, so you can resume it later.")} onClick={() => act((live || d.status === "queued" ? api.pause([d.id]) : Promise.resolve()).then(() => win.close()))}>
+            <Button size="sm" className="is-danger" title={t("Stops the download and keeps it in your list, so you can resume it later.")} onClick={() => act((live || d.status === "queued" ? api.pause([d.id]) : Promise.resolve()).then(() => win.close()))}>
               {t("Cancel")}
             </Button>
             {live || d.status === "queued" ? (
-              <Button variant="primary" icon={Pause} onClick={() => act(api.pause([d.id]))}>
+              <Button size="sm" variant="primary" icon={Pause} onClick={() => act(api.pause([d.id]))}>
                 {t("Pause")}
               </Button>
             ) : (
-              <Button variant="primary" icon={d.status === "error" ? RotateCw : Play} onClick={() => act(api.resume([d.id]))}>
-                {d.status === "error" ? t("Retry") : t("Resume")}
+              <Button size="sm" variant="primary" icon={Play} onClick={() => act(api.resume([d.id]))}>
+                {t("Resume")}
               </Button>
             )}
           </>

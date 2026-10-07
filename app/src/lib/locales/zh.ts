@@ -986,6 +986,14 @@ const zh: Record<string, string> = {
   "{n} connections": "{n} 个连接",
   "{free} free on this drive": "此磁盘可用 {free}",
   "Not enough space: needs {size}, {free} free": "空间不足：需要 {size}，可用 {free}",
+  // Compact progress / Download File windows
+  "From browser": "来自浏览器",
+  "Open when done": "完成后打开",
+  "Close when done": "完成后关闭",
+  "Less": "收起",
+  "{done} of {total}": "{done} / {total}",
+  "{time} left": "剩余 {time}",
+  "Saved to {folder}": "已保存到 {folder}",
 };
 
 export default zh;

@@ -986,6 +986,14 @@ const fr: Record<string, string> = {
   "{n} connections": "{n} connexions",
   "{free} free on this drive": "{free} libres sur ce disque",
   "Not enough space: needs {size}, {free} free": "Pas assez de place : {size} nécessaires, {free} libres",
+  // Compact progress / Download File windows
+  "From browser": "Du navigateur",
+  "Open when done": "Ouvrir à la fin",
+  "Close when done": "Fermer à la fin",
+  "Less": "Moins",
+  "{done} of {total}": "{done} sur {total}",
+  "{time} left": "{time} restant",
+  "Saved to {folder}": "Enregistré dans {folder}",
 };
 
 export default fr;

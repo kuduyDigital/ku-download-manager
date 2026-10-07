@@ -31,6 +31,12 @@ import digital.kuduy.kudownloader.i18n.t
 
 /** What changed in each version (newest first), shown once after an update. */
 private val NOTES = listOf(
+    "0.2.21" to listOf(
+        "Download videos on movie and streaming sites: the Download button now appears on embedded players too.",
+        "Safari-style browser: the address bar sits at the bottom and shrinks while you scroll.",
+        "Video formats show up faster, and More options opens instantly.",
+        "Frosted-glass download button in your theme's colour.",
+    ),
     "0.2.20" to listOf(
         "A fresh look: floating tab bar, bold titles, gradient icons and progress bars.",
         "Browser: pop-up ads and ad redirects are blocked; find in page, translate, text size, private tabs, save as PDF, add to Home screen and more in the menu.",

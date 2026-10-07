@@ -121,6 +121,8 @@ fun CoroutineScope.act(block: suspend () -> Unit) = launch {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DownloadsScreen() {
+    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+    val fabExpanded by remember { androidx.compose.runtime.derivedStateOf { listState.firstVisibleItemIndex == 0 } }
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
     val map by Ku.downloads.collectAsStateWithLifecycle()
@@ -245,15 +247,17 @@ fun DownloadsScreen() {
         },
         floatingActionButton = {
             if (!selecting) {
+                // Round while you scroll through the list, so it covers less.
                 ExtendedFloatingActionButton(
                     onClick = { UiState.add = AddPrefill() },
-                    icon = { Icon(Icons.Filled.Add, null) },
+                    icon = { Icon(Icons.Filled.Add, t("Add URL")) },
                     text = { Text(t("Add URL")) },
+                    expanded = fabExpanded,
                 )
             }
         },
     ) { pad ->
-        LazyColumn(Modifier.fillMaxSize().padding(pad), contentPadding = PaddingValues(bottom = 96.dp)) {
+        LazyColumn(Modifier.fillMaxSize().padding(pad), state = listState, contentPadding = PaddingValues(bottom = 96.dp)) {
             item(key = "speed") { SpeedCard(stats.downloadSpeed, stats.uploadSpeed, stats.active, history) }
             NetworkWatch.reason()?.let { why ->
                 item(key = "hold") {
@@ -328,22 +332,7 @@ fun DownloadsScreen() {
                         }
                     },
                     onLongClick = { if (d.id !in selected) selected.add(d.id) },
-                    onAction = {
-                        scope.act {
-                            when {
-                                d.isFinished -> if (!Files.open(ctx, File(d.path))) UiState.toast(t("No app on this phone can open this file."))
-                                Ku.heldByQueue(d) -> {
-                                    Ku.startNow(listOf(d.id))
-                                    KuService.ensure(ctx)
-                                }
-                                d.isRunning || d.status == "queued" -> Ku.pause(listOf(d.id))
-                                else -> {
-                                    Ku.resume(listOf(d.id))
-                                    KuService.ensure(ctx)
-                                }
-                            }
-                        }
-                    },
+                    onAction = { rowAction(ctx, scope, d) },
                 )
             }
         }
@@ -443,6 +432,24 @@ private fun SpeedCard(down: Long, up: Long, active: Int, history: List<Pair<Long
             if (active > 0 || history.any { it.first > 0 || it.second > 0 }) {
                 Spacer(Modifier.height(10.dp))
                 SpeedGraph(history, Modifier.fillMaxWidth().height(64.dp))
+            }
+        }
+    }
+}
+
+/** A row's button: open a finished file, start one its queue holds, pause or resume. */
+fun rowAction(ctx: android.content.Context, scope: kotlinx.coroutines.CoroutineScope, d: Download) {
+    scope.act {
+        when {
+            d.isFinished -> if (!Files.open(ctx, File(d.path))) UiState.toast(t("No app on this phone can open this file."))
+            Ku.heldByQueue(d) -> {
+                Ku.startNow(listOf(d.id))
+                KuService.ensure(ctx)
+            }
+            d.isRunning || d.status == "queued" -> Ku.pause(listOf(d.id))
+            else -> {
+                Ku.resume(listOf(d.id))
+                KuService.ensure(ctx)
             }
         }
     }

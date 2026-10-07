@@ -74,7 +74,7 @@ private fun nameOf(l: GrabLink): String = runCatching {
     java.net.URLDecoder.decode(u.path.trimEnd('/').substringAfterLast('/'), "UTF-8").ifBlank { u.host ?: l.url }
 }.getOrDefault(l.url)
 
-/** Fetch Projects: collect the links on a page and download the ones you pick. */
+/** Link Grabber: collect the links on a page and download the ones you pick. */
 @Composable
 fun FetchScreen() {
     val ctx = LocalContext.current
@@ -160,7 +160,7 @@ fun FetchScreen() {
     }
 
     KuScaffold(
-        t("Fetch Projects"),
+        t("Link Grabber"),
         back = true,
         bottom = {
             if (chosen.isNotEmpty()) {

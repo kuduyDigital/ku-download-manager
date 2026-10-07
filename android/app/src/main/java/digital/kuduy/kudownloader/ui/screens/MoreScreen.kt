@@ -80,7 +80,7 @@ fun MoreScreen() {
             }
             Group(t("Tools")) {
                 ClickRow(t("Batch downloads"), t("Many links at once, or a numbered pattern"), Icons.AutoMirrored.Filled.PlaylistAdd) { UiState.go(Screen.Batch) }
-                ClickRow(t("Fetch Projects"), t("Download the files linked on a page"), Icons.Filled.TravelExplore) { UiState.go(Screen.Fetch) }
+                ClickRow(t("Link Grabber"), t("Download the files linked on a page"), Icons.Filled.TravelExplore) { UiState.go(Screen.Fetch) }
                 ClickRow(t("Queues and schedules"), t("Start downloads at night or one after another"), Icons.Filled.Queue) { UiState.go(Screen.Queues) }
                 ClickRow("KuAirSend", t("Send files to nearby KuDownloader devices"), Icons.Filled.WifiTethering) { UiState.go(Screen.AirSend) }
             }

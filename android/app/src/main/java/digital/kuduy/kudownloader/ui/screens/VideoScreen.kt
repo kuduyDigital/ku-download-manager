@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -80,6 +81,7 @@ import digital.kuduy.kudownloader.i18n.t
 import digital.kuduy.kudownloader.i18n.tf
 import digital.kuduy.kudownloader.service.KuService
 import digital.kuduy.kudownloader.ui.EmptyState
+import digital.kuduy.kudownloader.ui.SectionTitle
 import digital.kuduy.kudownloader.ui.KuScaffold
 import digital.kuduy.kudownloader.ui.Notice
 import digital.kuduy.kudownloader.ui.UiState
@@ -202,6 +204,9 @@ fun VideoScreen() {
         }
     }
 
+    val all by Ku.downloads.collectAsStateWithLifecycle()
+    val recent = remember(all) { all.values.filter { it.kind == "media" }.sortedByDescending { it.createdAt }.take(8) }
+
     KuScaffold(t("Video downloader")) { pad ->
         LazyColumn(Modifier.fillMaxSize().padding(pad), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             item {
@@ -214,46 +219,37 @@ fun VideoScreen() {
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Search),
                     keyboardActions = KeyboardActions(onSearch = { analyze() }),
                     trailingIcon = {
-                        Row {
-                            // Clear the address and the formats found for it, like on the desktop.
-                            if (url.isNotEmpty()) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (url.isEmpty()) {
+                                IconButton({
+                                    val cm = ctx.getSystemService(android.content.ClipboardManager::class.java)
+                                    cm?.primaryClip?.getItemAt(0)?.coerceToText(ctx)?.toString()?.trim()?.let { url = it; analyze() }
+                                }) { Icon(Icons.Filled.ContentPaste, t("Paste")) }
+                            } else {
+                                // Clear the address and the formats found for it, like on the desktop.
                                 IconButton({
                                     url = ""
                                     info = null
                                     error = null
                                 }) { Icon(Icons.Filled.Close, t("Clear")) }
+                                androidx.compose.material3.FilledIconButton({ analyze() }, enabled = !loading, modifier = Modifier.padding(end = 6.dp)) {
+                                    Icon(Icons.AutoMirrored.Filled.ArrowForward, t("Find formats"))
+                                }
                             }
-                            IconButton({
-                                val cm = ctx.getSystemService(android.content.ClipboardManager::class.java)
-                                cm?.primaryClip?.getItemAt(0)?.coerceToText(ctx)?.toString()?.trim()?.let { url = it; analyze() }
-                            }) { Icon(Icons.Filled.ContentPaste, t("Paste")) }
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
-            item {
-                // The playlist switch and the button share a line when both fit, and
-                // wrap onto two lines on narrow screens or with long translations.
-                FlowRow(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    if (url.contains("list=") || playlist) {
-                        Row(
-                            Modifier.weight(1f, fill = false).align(Alignment.CenterVertically).clip(RoundedCornerShape(12.dp)).clickable { playlist = !playlist }.padding(vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Switch(playlist, { playlist = it })
-                            Spacer(Modifier.width(10.dp))
-                            Text(t("Whole playlist"), maxLines = 2)
-                        }
-                    }
-                    Button({ analyze() }, Modifier.align(Alignment.CenterVertically), enabled = url.isNotBlank() && !loading) {
-                        Icon(Icons.Filled.Search, null, Modifier.size(18.dp))
-                        Spacer(Modifier.width(6.dp))
-                        Text(t("Find formats"), maxLines = 1)
+            if (url.contains("list=") || playlist) {
+                item {
+                    Row(
+                        Modifier.clip(RoundedCornerShape(12.dp)).clickable { playlist = !playlist }.padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Switch(playlist, { playlist = it })
+                        Spacer(Modifier.width(10.dp))
+                        Text(t("Whole playlist"), maxLines = 2)
                     }
                 }
             }
@@ -307,6 +303,12 @@ fun VideoScreen() {
                         t("Download videos and music"),
                         t("Paste a link from YouTube, Instagram, TikTok, X, Facebook, Vimeo and 1,000+ other sites, or tap the KuDownload button in the built-in browser."),
                     )
+                }
+                if (recent.isNotEmpty()) {
+                    item { SectionTitle(t("Recent videos")) }
+                    items(recent, key = { it.id }) { d ->
+                        DownloadRow(d, selected = false, selecting = false, onClick = { UiState.details = d.id }, onLongClick = { UiState.details = d.id }, onAction = { rowAction(ctx, scope, d) })
+                    }
                 }
             }
             if (i != null) {

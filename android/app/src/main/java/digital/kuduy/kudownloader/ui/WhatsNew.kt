@@ -31,6 +31,9 @@ import digital.kuduy.kudownloader.i18n.t
 
 /** What changed in each version (newest first), shown once after an update. */
 private val NOTES = listOf(
+    "0.2.18" to listOf(
+        "Video formats load faster.",
+    ),
     "0.2.17" to listOf(
         "Fixed \"File name too long\" for videos with long titles (Facebook, Bengali, Hindi and more): files get a short, clean name.",
         "App updates now install over the app. If this version came from the website, updates from here on work in one tap.",

@@ -4,6 +4,14 @@
  */
 export const WHATS_NEW: { version: string; items: string[] }[] = [
   {
+    version: "0.2.18",
+    items: [
+      "Videos load about twice as fast: YouTube formats in ~2.5 s instead of ~5 s.",
+      "yt-dlp and FFmpeg install themselves on first start, so videos just work.",
+      "Tidier menu bar with more actions and a new Settings menu: queues, speed limit, what to do when downloads finish, documentation and more.",
+    ],
+  },
+  {
     version: "0.2.17",
     items: [
       "Fixed \"File name too long\" for videos with long titles (Facebook, Bengali, Hindi and more): files get a short, clean name.",

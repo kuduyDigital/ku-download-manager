@@ -399,11 +399,16 @@ private fun SpeedCard(down: Long, up: Long, active: Int, history: List<Pair<Long
     val settings by Ku.settings.collectAsStateWithLifecycle()
     val profile = settings["activeProfile"]?.jsonPrimitive?.contentOrNull ?: "unlimited"
     val profiles = (settings["profiles"] as? JsonArray)?.map { it.jsonObject }.orEmpty()
+    val accent = MaterialTheme.colorScheme.primary
     Card {
-        Column(Modifier.padding(14.dp)) {
+        // A soft accent glow from the top-left corner: the screen's hero card.
+        Column(
+            Modifier.background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(accent.copy(alpha = 0.20f), accent.copy(alpha = 0.04f), Color.Transparent)))
+                .padding(16.dp),
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text(Fmt.speed(down), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+                    Text(Fmt.speed(down), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
                     val parts = mutableListOf(if (active > 0) tf("{count} downloading", "count" to active) else t("Idle"))
                     if (up > 0) parts += "↑ ${Fmt.speed(up)}"
                     Text(parts.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

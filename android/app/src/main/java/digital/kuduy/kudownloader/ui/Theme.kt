@@ -46,7 +46,8 @@ data class KuColors(val success: Color, val warning: Color, val danger: Color, v
 
 val LocalKuColors = staticCompositionLocalOf { KuColors(Color(0xFF16A34A), Color(0xFFD97706), Danger, UploadColor, false) }
 
-private fun tone(c: Color, towards: Color, amount: Float) = lerp(c, towards, amount)
+/** [c] moved [amount] of the way towards [towards]. */
+fun tone(c: Color, towards: Color, amount: Float) = lerp(c, towards, amount)
 
 /** Light palettes (same names as the desktop's): background → deepest container. */
 private fun lightTones(palette: String): List<Color> = when (palette) {
@@ -197,6 +198,22 @@ fun KuTheme(content: @Composable () -> Unit) {
         LocalKuColors provides ku,
         LocalLayoutDirection provides if (I18n.isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr,
     ) {
-        MaterialTheme(colorScheme = scheme, typography = Typography(), content = content)
+        MaterialTheme(colorScheme = scheme, typography = KuType, content = content)
     }
+}
+
+/** Headings a touch bolder and tighter than Material's defaults (a calmer, premium look). */
+private val KuType: Typography = Typography().let { b ->
+    fun androidx.compose.ui.text.TextStyle.tight(weight: Int, spacing: Float) =
+        copy(fontWeight = androidx.compose.ui.text.font.FontWeight(weight), letterSpacing = androidx.compose.ui.unit.TextUnit(spacing, androidx.compose.ui.unit.TextUnitType.Sp))
+    b.copy(
+        headlineLarge = b.headlineLarge.tight(700, -0.6f),
+        headlineMedium = b.headlineMedium.tight(700, -0.5f),
+        headlineSmall = b.headlineSmall.tight(700, -0.3f),
+        titleLarge = b.titleLarge.tight(600, -0.2f),
+        titleMedium = b.titleMedium.tight(600, -0.1f),
+        titleSmall = b.titleSmall.tight(600, 0f),
+        labelLarge = b.labelLarge.tight(600, 0.1f),
+        labelSmall = b.labelSmall.tight(600, 0.2f),
+    )
 }

@@ -6,6 +6,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -100,10 +104,12 @@ fun glyphFor(name: String, category: String = "", kind: String = ""): Glyph {
 @Composable
 fun FileGlyph(d: Download, size: Int = 40) {
     val g = glyphFor(d.name, d.category, d.kind)
+    // A small gradient tile, lighter at the top-left (like an app icon).
     Box(
-        Modifier.size(size.dp).clip(RoundedCornerShape(10.dp)).background(g.tint.copy(alpha = 0.14f)),
+        Modifier.size(size.dp).clip(RoundedCornerShape((size * 0.3f).dp))
+            .background(Brush.linearGradient(listOf(tone(g.tint, Color.White, 0.28f), g.tint, tone(g.tint, Color.Black, 0.18f)))),
         contentAlignment = Alignment.Center,
-    ) { Icon(g.icon, null, tint = g.tint, modifier = Modifier.size((size * 0.55f).dp)) }
+    ) { Icon(g.icon, null, tint = Color.White, modifier = Modifier.size((size * 0.52f).dp)) }
 }
 
 private val CYBER_CYAN = Color(0xFF05D9E8)
@@ -120,13 +126,14 @@ fun KuProgressBar(progress: Float?, modifier: Modifier = Modifier, height: Dp = 
     if (!LocalKuColors.current.cyber || progress == null) {
         val shape = RoundedCornerShape(height / 2)
         if (progress == null) {
-            androidx.compose.material3.LinearProgressIndicator(modifier.height(height).clip(shape))
+            androidx.compose.material3.LinearProgressIndicator(modifier.height(height).clip(shape), trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
         } else {
-            androidx.compose.material3.LinearProgressIndicator(
-                progress = { progress.coerceIn(0f, 1f) },
-                modifier = modifier.height(height).clip(shape),
-                color = if (paused) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.primary,
-            )
+            val scheme = MaterialTheme.colorScheme
+            val p = progress.coerceIn(0f, 1f)
+            val fill = if (paused) listOf(scheme.outline, scheme.outline) else listOf(scheme.primary, tone(scheme.primary, Color.White, 0.35f))
+            Box(modifier.height(height).clip(shape).background(scheme.onSurface.copy(alpha = 0.08f))) {
+                if (p > 0f) Box(Modifier.fillMaxWidth(p).height(height).clip(shape).background(Brush.horizontalGradient(fill)))
+            }
         }
         return
     }
@@ -219,8 +226,9 @@ fun SectionTitle(text: String, modifier: Modifier = Modifier) {
 fun Card(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Surface(
         modifier = modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(22.dp),
         color = MaterialTheme.colorScheme.surfaceContainerLow,
+        border = hairline(),
         content = content,
     )
 }
@@ -248,10 +256,11 @@ fun ClickRow(title: String, subtitle: String? = null, icon: ImageVector? = null,
     ) {
         icon?.let {
             // Icons sit in a soft tinted tile.
+            val p = MaterialTheme.colorScheme.primary
             Box(
-                Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f)),
+                Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(Brush.linearGradient(listOf(tone(p, Color.White, 0.25f), tone(p, Color.Black, 0.1f)))),
                 contentAlignment = Alignment.Center,
-            ) { Icon(it, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp)) }
+            ) { Icon(it, null, tint = Color.White, modifier = Modifier.size(21.dp)) }
             Spacer(Modifier.width(16.dp))
         }
         Column(Modifier.weight(1f)) {
@@ -377,11 +386,15 @@ fun Pill(text: String, color: Color, modifier: Modifier = Modifier) {
 @Composable
 fun EmptyState(icon: ImageVector, title: String, body: String, modifier: Modifier = Modifier, action: (@Composable () -> Unit)? = null) {
     Column(modifier.fillMaxWidth().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-        Box(Modifier.size(72.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) {
-            Icon(icon, null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(36.dp))
+        val p = MaterialTheme.colorScheme.primary
+        Box(Modifier.size(112.dp).background(Brush.radialGradient(listOf(p.copy(alpha = 0.22f), Color.Transparent))), contentAlignment = Alignment.Center) {
+            Box(
+                Modifier.size(72.dp).clip(RoundedCornerShape(24.dp)).background(Brush.linearGradient(listOf(tone(p, Color.White, 0.3f), p, tone(p, Color.Black, 0.2f)))),
+                contentAlignment = Alignment.Center,
+            ) { Icon(icon, null, tint = Color.White, modifier = Modifier.size(34.dp)) }
         }
-        Spacer(Modifier.height(16.dp))
-        Text(title, style = MaterialTheme.typography.titleMedium)
+        Spacer(Modifier.height(8.dp))
+        Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.height(6.dp))
         Text(body, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
         action?.let {
@@ -415,7 +428,17 @@ fun KuScaffold(
     androidx.compose.material3.Scaffold(
         topBar = {
             androidx.compose.material3.TopAppBar(
-                title = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold) },
+                // Main screens: a big bold title (iOS-style); sub-screens: a regular one.
+                title = {
+                    Text(
+                        title,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = if (back) MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineMedium,
+                        fontWeight = if (back) FontWeight.SemiBold else FontWeight.Bold,
+                    )
+                },
+                colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background, scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer),
                 navigationIcon = {
                     if (back) {
                         androidx.compose.material3.IconButton({ UiState.back() }) {
@@ -440,8 +463,49 @@ fun Group(title: String? = null, content: @Composable () -> Unit) {
         title?.let {
             Text(it, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(start = 8.dp, top = 10.dp, bottom = 8.dp))
         }
-        Surface(shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.surfaceContainerLow, modifier = Modifier.fillMaxWidth()) {
+        Surface(shape = RoundedCornerShape(22.dp), color = MaterialTheme.colorScheme.surfaceContainerLow, border = hairline(), modifier = Modifier.fillMaxWidth()) {
             Column { content() }
+        }
+    }
+}
+
+/** A faint edge that keeps cards crisp on any background. */
+@Composable
+fun hairline() = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f))
+
+/**
+ * The tab bar: a floating rounded pill above the system navigation, the
+ * selected tab in an accent gradient capsule that slides between tabs.
+ */
+@Composable
+fun FloatingTabBar(count: Int, selected: Int, onSelect: (Int) -> Unit, item: @Composable (index: Int, selected: Boolean) -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    Box(Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 14.dp, vertical = 8.dp)) {
+        Surface(
+            shape = RoundedCornerShape(30.dp),
+            color = scheme.surfaceContainerHigh.copy(alpha = 0.96f),
+            border = hairline(),
+            shadowElevation = 10.dp,
+            modifier = Modifier.fillMaxWidth().height(66.dp),
+        ) {
+            androidx.compose.foundation.layout.BoxWithConstraints(Modifier.padding(6.dp)) {
+                val w = maxWidth / count
+                val x by androidx.compose.animation.core.animateDpAsState(w * selected, androidx.compose.animation.core.spring(dampingRatio = 0.8f, stiffness = 500f), label = "tab")
+                if (selected in 0 until count) {
+                    Box(
+                        Modifier.offset(x = x).width(w).fillMaxHeight().clip(RoundedCornerShape(24.dp))
+                            .background(Brush.linearGradient(listOf(tone(scheme.primary, Color.White, 0.22f), scheme.primary))),
+                    )
+                }
+                Row(Modifier.fillMaxSize()) {
+                    repeat(count) { i ->
+                        Box(
+                            Modifier.weight(1f).fillMaxHeight().clip(RoundedCornerShape(24.dp)).clickable { onSelect(i) },
+                            contentAlignment = Alignment.Center,
+                        ) { item(i, i == selected) }
+                    }
+                }
+            }
         }
     }
 }

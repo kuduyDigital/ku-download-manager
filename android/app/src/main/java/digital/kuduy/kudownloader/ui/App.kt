@@ -8,6 +8,8 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -183,20 +185,16 @@ private fun Main() {
         snackbarHost = { SnackbarHost(snack) },
         bottomBar = {
             if (screen.top && !imeVisible) {
-                NavigationBar {
-                    tabs.forEach { tab ->
-                        NavigationBarItem(
-                            selected = topScreen == tab.screen,
-                            onClick = { UiState.go(tab.screen) },
-                            icon = {
-                                when {
-                                    tab.screen == Screen.Downloads && active.active > 0 -> BadgedBox(badge = { Badge { Text("${active.active}") } }) { Icon(tab.icon, null) }
-                                    tab.screen == Screen.AirSend && requests > 0 -> BadgedBox(badge = { Badge { Text("$requests") } }) { Icon(tab.icon, null) }
-                                    else -> Icon(tab.icon, null)
-                                }
-                            },
-                            label = { Text(tab.label, maxLines = 1, softWrap = false, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, style = MaterialTheme.typography.labelSmall) },
-                        )
+                FloatingTabBar(tabs.size, tabs.indexOfFirst { it.screen == topScreen }, { UiState.go(tabs[it].screen) }) { i, on ->
+                    val tab = tabs[i]
+                    val tint = if (on) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        when {
+                            tab.screen == Screen.Downloads && active.active > 0 -> BadgedBox(badge = { Badge { Text("${active.active}") } }) { Icon(tab.icon, tab.label, tint = tint) }
+                            tab.screen == Screen.AirSend && requests > 0 -> BadgedBox(badge = { Badge { Text("$requests") } }) { Icon(tab.icon, tab.label, tint = tint) }
+                            else -> Icon(tab.icon, tab.label, tint = tint, modifier = Modifier.size(22.dp))
+                        }
+                        Text(tab.label, maxLines = 1, softWrap = false, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, style = MaterialTheme.typography.labelSmall, color = tint)
                     }
                 }
             }

@@ -116,6 +116,8 @@ impl Core {
         tokio::spawn(async move { c.main_loop().await });
         let c = self.clone();
         tokio::spawn(async move { c.scheduler_loop().await });
+        #[cfg(not(target_os = "android"))]
+        self.ensure_tools();
         self.wake.notify_one();
     }
 
@@ -2292,7 +2294,46 @@ impl Core {
     pub async fn update_ytdlp(&self) -> Result<String> {
         let s = self.settings();
         let yt = paths::find_binary("yt-dlp", Some(&s.ytdlp_path)).ok_or_else(|| anyhow!("yt-dlp was not found"))?;
+        // Our own copy is the folder build, which cannot update itself:
+        // install the latest release over it instead.
+        #[cfg(not(target_os = "android"))]
+        if yt.starts_with(paths::tools_dir()) {
+            self.install_tool("yt-dlp").await?;
+            return Ok("yt-dlp is up to date.".into());
+        }
         ytdlp::self_update(&yt).await
+    }
+
+    /// First start (and any start after a tool went missing): download the
+    /// media tools in the background, so videos work without a trip to
+    /// Settings. Also swaps the single-file yt-dlp we used to install for the
+    /// folder build, which starts ~1.5 s faster on every video lookup.
+    /// aria2 comes with the app (Windows) or the package (Linux).
+    #[cfg(not(target_os = "android"))]
+    fn ensure_tools(self: &Arc<Self>) {
+        let s = self.settings();
+        let mut need = Vec::new();
+        let old_single_file = paths::tools_dir().join(paths::exe_name("yt-dlp")).is_file();
+        if s.ytdlp_path.trim().is_empty() && (old_single_file || paths::find_binary("yt-dlp", None).is_none()) {
+            need.push("yt-dlp");
+        }
+        // No checksummed FFmpeg build for macOS: Homebrew there.
+        if !cfg!(target_os = "macos") && s.ffmpeg_path.trim().is_empty() && paths::find_binary("ffmpeg", None).is_none() {
+            need.push("ffmpeg");
+        }
+        if need.is_empty() {
+            return;
+        }
+        let c = self.clone();
+        tokio::spawn(async move {
+            // One after the other: yt-dlp (small) is ready first.
+            for tool in need {
+                match c.install_tool(tool).await {
+                    Ok(p) => tracing::info!("{tool} installed at {p}"),
+                    Err(e) => tracing::warn!("{tool} auto-install: {e:#}"),
+                }
+            }
+        });
     }
 
     /// Persist and stop engines. Running downloads stay "downloading" in the

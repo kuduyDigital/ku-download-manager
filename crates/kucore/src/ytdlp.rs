@@ -156,6 +156,9 @@ pub fn friendly_error(raw: &str) -> String {
 pub async fn analyze(env: &YtEnv, url: &str, playlist: bool) -> Result<MediaInfo> {
     let mut cmd = env.base_command();
     cmd.args(["-J", "--no-warnings", "--no-progress"]);
+    // Reading formats does not need translated subtitles or the extra player
+    // config request (~0.7 s less on YouTube; every quality still listed).
+    cmd.args(["--extractor-args", "youtube:skip=translated_subs;player_skip=configs"]);
     if playlist {
         cmd.args(["--yes-playlist", "--flat-playlist"]);
     } else {

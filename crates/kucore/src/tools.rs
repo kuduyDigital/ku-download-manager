@@ -47,14 +47,17 @@ fn source(tool: Tool) -> Result<Source> {
     let s = |base: &str, asset: &'static str, sums: &str, archive: bool| Source { asset, url: format!("{base}/{asset}"), sums_url: format!("{base}/{sums}"), archive };
     Ok(match tool {
         Tool::YtDlp => {
+            // The folder builds start in ~1 s; the single-file ones unpack
+            // themselves on every run (~2.5 s before any work is done).
             let asset = match (os, arch) {
-                ("windows", _) => "yt-dlp.exe",
-                ("linux", "aarch64") => "yt-dlp_linux_aarch64",
-                ("linux", _) => "yt-dlp_linux",
-                ("macos", _) => "yt-dlp_macos",
+                ("windows", "aarch64") => "yt-dlp_win_arm64.zip",
+                ("windows", _) => "yt-dlp_win.zip",
+                ("linux", "aarch64") => "yt-dlp_linux_aarch64.zip",
+                ("linux", _) => "yt-dlp_linux.zip",
+                ("macos", _) => "yt-dlp_macos.zip",
                 _ => bail!("No yt-dlp build for this system; install it with your package manager."),
             };
-            s(YTDLP, asset, "SHA2-256SUMS", false)
+            s(YTDLP, asset, "SHA2-256SUMS", true)
         }
         Tool::Ffmpeg => {
             // "shared" builds are ~80 MB instead of ~185 MB and include ffprobe.
@@ -131,7 +134,11 @@ async fn install_once(tool: Tool, client: &reqwest::Client, progress: &mut (impl
         let dest = dir.join(tool.name());
         let staging = dir.join(format!("{}.new", tool.name()));
         let _ = std::fs::remove_dir_all(&staging);
-        let extracted = if src.asset.ends_with(".zip") { extract_bin(&part, &staging) } else { extract_tar_xz(&part, &staging) };
+        let extracted = match tool {
+            Tool::YtDlp => extract_ytdlp(&part, &staging, &exe),
+            Tool::Ffmpeg if src.asset.ends_with(".zip") => extract_bin(&part, &staging),
+            Tool::Ffmpeg => extract_tar_xz(&part, &staging),
+        };
         let _ = std::fs::remove_file(&part);
         extracted?;
         if !staging.join(&exe).is_file() && !staging.join("bin").join(&exe).is_file() {
@@ -140,6 +147,8 @@ async fn install_once(tool: Tool, client: &reqwest::Client, progress: &mut (impl
         }
         let _ = std::fs::remove_dir_all(&dest);
         std::fs::rename(&staging, &dest)?;
+        // An older single-file copy next to the folder would be found first.
+        let _ = std::fs::remove_file(dir.join(&exe));
         if dest.join(&exe).is_file() { dest.join(exe) } else { dest.join("bin").join(exe) }
     } else {
         let dest = dir.join(&exe);
@@ -194,6 +203,43 @@ fn extract_tar_xz(path: &Path, dest: &Path) -> Result<()> {
 #[cfg(not(target_os = "linux"))]
 fn extract_tar_xz(_: &Path, _: &Path) -> Result<()> {
     bail!("tar.xz archives are only used on Linux")
+}
+
+/// yt-dlp folder build: the whole zip (the program and its `_internal`
+/// folder), with the program renamed to `exe` so it is found like before.
+fn extract_ytdlp(zip_path: &Path, dest: &Path, exe: &str) -> Result<()> {
+    std::fs::create_dir_all(dest)?;
+    let mut zip = zip::ZipArchive::new(std::fs::File::open(zip_path)?)?;
+    let mut main = None;
+    for i in 0..zip.len() {
+        let mut entry = zip.by_index(i)?;
+        let Some(rel) = entry.enclosed_name() else { continue };
+        let out = dest.join(&rel);
+        if entry.is_dir() {
+            std::fs::create_dir_all(&out)?;
+            continue;
+        }
+        if let Some(parent) = out.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        std::io::copy(&mut entry, &mut std::fs::File::create(&out)?)?;
+        #[cfg(unix)]
+        if let Some(mode) = entry.unix_mode() {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&out, std::fs::Permissions::from_mode(mode & 0o777 | 0o600))?;
+        }
+        // The program sits at the top: yt-dlp.exe, yt-dlp_macos, yt-dlp_linux…
+        let top = rel.components().count() == 1;
+        let name = rel.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
+        if top && name.starts_with("yt-dlp") {
+            main = Some(out);
+        }
+    }
+    let main = main.ok_or_else(|| anyhow!("the yt-dlp archive has no program"))?;
+    if main != dest.join(exe) {
+        std::fs::rename(&main, dest.join(exe))?;
+    }
+    Ok(())
 }
 
 /// Flatten `<root>/bin/*` of a release zip into `dest`.
@@ -270,5 +316,19 @@ mod live {
             assert_eq!(ku_proto::paths::find_binary(t.name(), None).as_deref(), Some(p.as_path()));
         }
         let _ = std::fs::remove_dir_all(&dir);
+    }
+}
+
+#[cfg(test)]
+mod live_install {
+    /// Real download from GitHub: `KU_DATA_DIR=<tmp> cargo test -p kucore live_ytdlp -- --ignored`.
+    #[tokio::test]
+    #[ignore]
+    async fn live_ytdlp() {
+        let client = reqwest::Client::builder().build().unwrap();
+        let p = super::install(super::Tool::YtDlp, &client, |_, _| {}).await.unwrap();
+        let out = std::process::Command::new(&p).arg("--version").output().unwrap();
+        assert!(out.status.success(), "{p:?}");
+        println!("installed {} -> {}", p.display(), String::from_utf8_lossy(&out.stdout).trim());
     }
 }

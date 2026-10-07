@@ -9,6 +9,7 @@
   var TOKEN = "__KU_TOKEN__";
   var PILL = __KU_PILL__;
   var LABEL = __KU_LABEL__;
+  var ACCENT = "__KU_ACCENT__"; // the app's accent, "r,g,b"
   var bridge = window.KuBridge;
   if (!bridge) return;
   // Hide the bridge from the page where the browser allows it (it is
@@ -106,10 +107,15 @@
     var root = host.attachShadow ? host.attachShadow({ mode: "closed" }) : host;
     var css = document.createElement("style");
     css.textContent =
-      ".b{position:fixed;display:none;align-items:center;gap:6px;height:32px;padding:0 12px;border:0;border-radius:16px;" +
-      "background:#2563EB;color:#fff;font:600 13px system-ui,-apple-system,Roboto,sans-serif;letter-spacing:.01em;" +
-      "box-shadow:0 2px 10px rgba(0,0,0,.4);touch-action:manipulation;-webkit-tap-highlight-color:transparent}" +
-      ".b:active{background:#1D4ED8}.b svg{width:16px;height:16px}";
+      // Frosted glass in the app's accent: the video shows through, blurred.
+      ".b{position:fixed;display:none;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:17px;" +
+      "background:linear-gradient(180deg,rgba(" + ACCENT + ",.62),rgba(" + ACCENT + ",.48));" +
+      "-webkit-backdrop-filter:blur(14px) saturate(170%);backdrop-filter:blur(14px) saturate(170%);" +
+      "border:1px solid rgba(255,255,255,.38);color:#fff;font:600 13px system-ui,-apple-system,Roboto,sans-serif;letter-spacing:.01em;" +
+      "text-shadow:0 1px 2px rgba(0,0,0,.25);" +
+      "box-shadow:0 6px 20px rgba(" + ACCENT + ",.45),inset 0 1px 0 rgba(255,255,255,.45);" +
+      "touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:transform .12s,background .12s}" +
+      ".b:active{transform:scale(.96);background:rgba(" + ACCENT + ",.78)}.b svg{width:16px;height:16px}";
     btn = document.createElement("button");
     btn.className = "b";
     btn.setAttribute("aria-label", LABEL);

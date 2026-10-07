@@ -166,6 +166,28 @@ object BrowserState {
         v.webViewClient = KuWebClient(t)
         v.webChromeClient = KuChromeClient(t)
         v.setDownloadListener(KuDownloads(t))
+        // Scrolling down shrinks the address bar, up (or the top) brings it back.
+        // Only a change of direction touches state (no work per scroll step).
+        // The page view resizes when the bar does, which nudges the scroll
+        // position; events right after a change are ignored so the bar can't
+        // bounce (e.g. at the bottom of a page).
+        var lastToggle = 0L
+        v.setOnScrollChangeListener { _, _, y, _, oldY ->
+            val c = BrowserSignals.compact
+            val want = when {
+                y <= 0 -> false
+                y - oldY > 12 -> true
+                y - oldY < -12 -> false
+                else -> c
+            }
+            if (want != c) {
+                val now = android.os.SystemClock.uptimeMillis()
+                if (now - lastToggle > 400 || y <= 0) {
+                    lastToggle = now
+                    BrowserSignals.compact = want
+                }
+            }
+        }
         t.view = v
         val restored = t.saved?.let { v.restoreState(it) } != null
         t.saved = null

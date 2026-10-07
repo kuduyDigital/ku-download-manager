@@ -130,23 +130,31 @@ fun VideoScreen() {
     var busy by remember { mutableStateOf(false) }
     var queueId by remember { mutableStateOf<String?>(null) }
 
+    fun show(i: MediaInfo) {
+        info = i
+        height = pickDefault(i, Ku.settingLong("videoHeight", 1080).toInt())
+        items.clear()
+        items.addAll(i.entries.map { it.index })
+        if (i.video.isEmpty() && i.audio.isNotEmpty()) mode = "audio"
+    }
+
     fun analyze() {
         val u = normalizeUrl(url)
         if (u.isBlank()) return
         scope.launch {
-            loading = true
             error = null
             info = null
+            // Already read (cached): no "Reading…" flash; otherwise show it.
+            val spinner = launch {
+                kotlinx.coroutines.delay(200)
+                loading = true
+            }
             try {
-                val i = Ku.analyze(u, playlist, prefill?.cookies.orEmpty(), prefill?.referer)
-                info = i
-                height = pickDefault(i, Ku.settingLong("videoHeight", 1080).toInt())
-                items.clear()
-                items.addAll(i.entries.map { it.index })
-                if (i.video.isEmpty() && i.audio.isNotEmpty()) mode = "audio"
+                show(Ku.analyze(u, playlist, prefill?.cookies.orEmpty(), prefill?.referer))
             } catch (e: Exception) {
                 error = e.message
             } finally {
+                spinner.cancel()
                 loading = false
             }
         }
@@ -156,7 +164,14 @@ fun VideoScreen() {
     LaunchedEffect(prefill) {
         if (prefill != null) {
             url = prefill.url
-            if (prefill.auto) analyze()
+            val known = prefill.info
+            if (known != null) {
+                error = null
+                playlist = known.isPlaylist
+                show(known)
+            } else if (prefill.auto) {
+                analyze()
+            }
         }
     }
 

@@ -112,7 +112,7 @@ fun QualitySheet(req: MediaPrefill, onClose: () -> Unit) {
 
     fun moreOptions() {
         onClose()
-        UiState.media = req
+        UiState.media = req.copy(info = info)
         UiState.go(Screen.Video)
     }
 

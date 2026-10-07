@@ -184,7 +184,9 @@ private fun Main() {
     Scaffold(
         snackbarHost = { SnackbarHost(snack) },
         bottomBar = {
-            if (screen.top && !imeVisible) {
+            // Browsing with the address bar shrunk: the page gets the whole screen.
+            val immersive = screen == Screen.Browser && digital.kuduy.kudownloader.browser.BrowserSignals.compact
+            if (screen.top && !imeVisible && !immersive) {
                 FloatingTabBar(tabs.size, tabs.indexOfFirst { it.screen == topScreen }, { UiState.go(tabs[it].screen) }) { i, on ->
                     val tab = tabs[i]
                     val tint = if (on) Color.White else MaterialTheme.colorScheme.onSurfaceVariant

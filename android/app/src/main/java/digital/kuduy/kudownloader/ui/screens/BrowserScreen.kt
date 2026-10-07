@@ -61,6 +61,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.ui.zIndex
 import kotlin.math.roundToInt
+import androidx.compose.animation.animateContentSize
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
@@ -151,6 +152,15 @@ fun BrowserScreen() {
     val tab = BrowserState.current ?: return
     // Switching tabs: let go of the WebViews of tabs not used for a while.
     LaunchedEffect(tab.id) { BrowserState.trim() }
+    // On a video page for a moment: read its formats now, so the download
+    // button shows them at once. Once per page (results are cached and shared);
+    // pages you only pass through cost nothing.
+    LaunchedEffect(tab.url) {
+        val u = tab.url
+        if (!isVideoPage(u)) return@LaunchedEffect
+        kotlinx.coroutines.delay(1500)
+        if (tab.url == u) Ku.prefetchMedia(u, BrowserState.cookies(u), u)
+    }
     val focus = LocalFocusManager.current
     var address by remember(tab.id) { mutableStateOf(tab.url) }
     var editing by remember { mutableStateOf(false) }
@@ -217,51 +227,6 @@ fun BrowserScreen() {
     }
 
     Column(Modifier.fillMaxSize().statusBarsPadding()) {
-        // Address bar: a Safari-style pill showing the site; tap to type.
-        Row(
-            Modifier.fillMaxWidth().height(50.dp).padding(start = 6.dp, end = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            androidx.compose.animation.AnimatedVisibility(!editing && !tab.isStart) {
-                IconButton({ val v = tab.view; if (v != null && v.canGoBack()) v.goBack() else open(tab, "") }, Modifier.size(38.dp)) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, t("Back"), Modifier.size(22.dp))
-                }
-            }
-            AddressPill(
-                tab = tab,
-                adblock = adblock,
-                editing = editing,
-                address = address,
-                onAddress = { address = it },
-                onEditing = { on ->
-                    editing = on
-                    if (on) address = tab.url
-                },
-                onGo = {
-                    open(tab, BrowserState.resolve(address))
-                    focus.clearFocus()
-                },
-                modifier = Modifier.weight(1f),
-            )
-            if (editing) {
-                androidx.compose.material3.TextButton({ focus.clearFocus(); editing = false }) { Text(t("Cancel"), fontWeight = FontWeight.SemiBold) }
-            } else {
-                IconButton({ tabsOpen = true }, Modifier.size(38.dp)) {
-                    Box(
-                        Modifier.size(22.dp).clip(RoundedCornerShape(7.dp)).border(1.8.dp, MaterialTheme.colorScheme.onSurface, RoundedCornerShape(7.dp)),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(if (BrowserState.tabs.size > 99) "∞" else "${BrowserState.tabs.size}", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
-                    }
-                }
-                Box {
-                    IconButton({ menu = true }, Modifier.size(38.dp)) { Icon(Icons.Filled.MoreVert, t("More"), Modifier.size(22.dp)) }
-                    BrowserMenu(tab, menu, { menu = false }, onHistory = { historyOpen = true }, onFind = { finding = true }, onTextSize = { textSizeOpen = true })
-                }
-            }
-        }
-        LoadingBar(tab.progress)
 
         Box(Modifier.weight(1f).fillMaxWidth()) {
             if (finding && !tab.isStart) {
@@ -333,6 +298,73 @@ fun BrowserScreen() {
                 }
             }
         }
+
+        // Safari-style bottom bar: the address pill floats in thumb reach;
+        // scrolling down a page shrinks it to the site name (tap to bring it back).
+        val compact = BrowserSignals.compact && !editing && !tab.isStart && !finding
+        Surface(color = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.97f), modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.animateContentSize()) {
+                androidx.compose.material3.HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                LoadingBar(tab.progress)
+                if (compact) {
+                    Row(
+                        Modifier.fillMaxWidth().height(30.dp).clickable { BrowserSignals.compact = false },
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        if (tab.url.startsWith("https://")) {
+                            Icon(Icons.Filled.Lock, null, Modifier.size(11.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Spacer(Modifier.width(4.dp))
+                        }
+                        Text(host(tab.url), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+                    }
+                } else {
+                Row(
+                    Modifier.fillMaxWidth().height(58.dp).padding(start = 8.dp, end = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    androidx.compose.animation.AnimatedVisibility(!editing && !tab.isStart) {
+                        IconButton({ val v = tab.view; if (v != null && v.canGoBack()) v.goBack() else open(tab, "") }, Modifier.size(38.dp)) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, t("Back"), Modifier.size(22.dp))
+                        }
+                    }
+                    AddressPill(
+                        tab = tab,
+                        adblock = adblock,
+                        editing = editing,
+                        address = address,
+                        onAddress = { address = it },
+                        onEditing = { on ->
+                            editing = on
+                            if (on) address = tab.url
+                        },
+                        onGo = {
+                            open(tab, BrowserState.resolve(address))
+                            focus.clearFocus()
+                        },
+                        modifier = Modifier.weight(1f),
+                    )
+                    if (editing) {
+                        androidx.compose.material3.TextButton({ focus.clearFocus(); editing = false }) { Text(t("Cancel"), fontWeight = FontWeight.SemiBold) }
+                    } else {
+                        IconButton({ tabsOpen = true }, Modifier.size(38.dp)) {
+                            Box(
+                                Modifier.size(22.dp).clip(RoundedCornerShape(7.dp)).border(1.8.dp, MaterialTheme.colorScheme.onSurface, RoundedCornerShape(7.dp)),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(if (BrowserState.tabs.size > 99) "∞" else "${BrowserState.tabs.size}", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                        Box {
+                            IconButton({ menu = true }, Modifier.size(38.dp)) { Icon(Icons.Filled.MoreVert, t("More"), Modifier.size(22.dp)) }
+                            BrowserMenu(tab, menu, { menu = false }, onHistory = { historyOpen = true }, onFind = { finding = true }, onTextSize = { textSizeOpen = true })
+                        }
+                    }
+                }
+                }
+            }
+        }
     }
 
     BrowserSignals.pill?.let { p -> PillSheet(p.page, p.src, p.title) { BrowserSignals.pill = null } }
@@ -357,9 +389,10 @@ private fun OrbAction(label: String, icon: androidx.compose.ui.graphics.vector.I
     Surface(
         onClick = onClick,
         shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
-        color = scheme.surfaceContainerHigh,
+        color = scheme.surfaceContainerHigh.copy(alpha = 0.88f),
         contentColor = scheme.onSurface,
         shadowElevation = 6.dp,
+        border = androidx.compose.foundation.BorderStroke(1.dp, scheme.primary.copy(alpha = 0.35f)),
     ) {
         Row(Modifier.height(44.dp).padding(start = 14.dp, end = 18.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(icon, null, Modifier.size(20.dp), tint = scheme.primary)
@@ -430,18 +463,27 @@ private fun DownloadOrb(count: Int, onLongClick: () -> Unit, onClick: () -> Unit
             }
         }
         val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+        val circle = androidx.compose.foundation.shape.CircleShape
+        val accent = scheme.primary
+        // Frosted glass in the theme's accent: translucent body, a light rim,
+        // a sheen on the top half and a soft glow in the same colour.
         Surface(
-            shape = androidx.compose.foundation.shape.CircleShape,
-            color = scheme.primary,
-            contentColor = scheme.onPrimary,
-            shadowElevation = 6.dp,
-            modifier = Modifier.size(52.dp).clip(androidx.compose.foundation.shape.CircleShape).combinedClickable(
-                onLongClick = {
-                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                    onLongClick()
-                },
-                onClick = onClick,
-            ),
+            shape = circle,
+            color = Color.Transparent,
+            contentColor = Color.White,
+            modifier = Modifier.size(52.dp)
+                .shadow(14.dp, circle, ambientColor = accent, spotColor = accent)
+                .clip(circle)
+                .background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(digital.kuduy.kudownloader.ui.tone(accent, Color.White, 0.25f).copy(alpha = 0.82f), accent.copy(alpha = 0.70f))))
+                .background(androidx.compose.ui.graphics.Brush.verticalGradient(0f to Color.White.copy(alpha = 0.28f), 0.5f to Color.White.copy(alpha = 0.04f), 0.5f to Color.Transparent))
+                .border(1.dp, androidx.compose.ui.graphics.Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.65f), Color.White.copy(alpha = 0.12f))), circle)
+                .combinedClickable(
+                    onLongClick = {
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        onLongClick()
+                    },
+                    onClick = onClick,
+                ),
         ) {
             Box(contentAlignment = Alignment.Center) { Icon(Icons.Filled.Download, t("Download video"), Modifier.size(24.dp)) }
         }
@@ -591,9 +633,10 @@ private fun AddressPill(
     LaunchedEffect(address) { if (address != field.text) field = field.copy(text = address, selection = TextRange(address.length)) }
 
     Surface(
-        shape = RoundedCornerShape(11.dp),
-        color = scheme.surfaceContainerHigh,
-        modifier = modifier.height(38.dp),
+        shape = RoundedCornerShape(14.dp),
+        color = scheme.surfaceContainerHighest,
+        shadowElevation = 2.dp,
+        modifier = modifier.height(42.dp),
     ) {
         Row(Modifier.fillMaxSize().padding(start = 10.dp, end = 1.dp), verticalAlignment = Alignment.CenterVertically) {
             if (editing || tab.isStart) {
@@ -663,7 +706,7 @@ private fun AddressPill(
                         Icon(Icons.Filled.Lock, null, Modifier.size(13.dp), tint = scheme.onSurfaceVariant)
                         Spacer(Modifier.width(5.dp))
                     }
-                    Text(host(tab.url), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                    Text(host(tab.url), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.weight(1f))
                 }
                 val loading = tab.progress in 1..99
                 IconButton({ if (loading) tab.view?.stopLoading() else tab.view?.reload() }, Modifier.size(36.dp)) {

@@ -36,6 +36,8 @@ data class MediaPrefill(
     val referer: String? = null,
     val title: String? = null,
     val auto: Boolean = true,
+    /** Formats already read (the quality sheet's "More options"): shown at once, not read again. */
+    val info: digital.kuduy.kudownloader.core.MediaInfo? = null,
 )
 
 /** Links to hand to another KuDownloader (a PC or laptop) to download there. */

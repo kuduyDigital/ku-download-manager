@@ -107,6 +107,11 @@ object CyberGlitch {
     var split by androidx.compose.runtime.mutableFloatStateOf(0f)
 }
 
+/** The app's accent as "r,g,b", for the page script's download pill. */
+object PageAccent {
+    @Volatile var rgb: String = "37,99,235"
+}
+
 /** Cyberpunk brings its own neon accent, whatever accent is picked. */
 private val CYBER_ACCENT = Color(0xFFFF2A6D)
 
@@ -171,6 +176,8 @@ fun KuTheme(content: @Composable () -> Unit) {
         dark -> darkScheme(accent, palette)
         else -> lightScheme(accent, lightPalette)
     }
+    // The browser's in-page download pill uses the same accent.
+    PageAccent.rgb = scheme.primary.let { "${(it.red * 255).toInt()},${(it.green * 255).toInt()},${(it.blue * 255).toInt()}" }
     val ku = KuColors(
         success = if (dark) Color(0xFF4ADE80) else Color(0xFF16A34A),
         warning = if (dark) Color(0xFFFBBF24) else Color(0xFFD97706),

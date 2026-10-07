@@ -87,6 +87,8 @@ object BrowserSignals {
     var pill by mutableStateOf<PillPick?>(null)
     var fullscreen by mutableStateOf<Pair<View, WebChromeClient.CustomViewCallback>?>(null)
     var chooser by mutableStateOf<Pair<ValueCallback<Array<Uri>>, WebChromeClient.FileChooserParams>?>(null)
+    /** Address bar shrunk while scrolling down a page (Safari-style). */
+    var compact by mutableStateOf(false)
     /** Bumped when a page's renderer died: the browser rebuilds the page view. */
     var renderResets by androidx.compose.runtime.mutableIntStateOf(0)
 }
@@ -101,6 +103,7 @@ object PageScript {
             .replace("__KU_TOKEN__", tab.token)
             .replace("__KU_PILL__", Prefs.pill.value.toString())
             .replace("__KU_LABEL__", org.json.JSONObject.quote(t("Download")))
+            .replace("__KU_ACCENT__", digital.kuduy.kudownloader.ui.PageAccent.rgb)
         view.evaluateJavascript(js, null)
         val url = view.url
         if (Prefs.adblock.value && url != null && url != tab.cosmeticFor) {
@@ -139,6 +142,7 @@ class KuWebClient(private val tab: Tab) : WebViewClient() {
         tab.url = url
         tab.started = true
         tab.hasVideo = false
+        BrowserSignals.compact = false
         tab.progress = 5
         tab.blocked = 0
         tab.media.clear()

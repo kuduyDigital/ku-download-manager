@@ -11,9 +11,17 @@ set -euo pipefail
 tag="$1"
 repo="$2"
 
+# The release is still a draft here, and drafts can't be looked up by tag:
+# find it in the list (newest first).
+id=$(gh api "repos/$repo/releases?per_page=30" --jq ".[] | select(.tag_name == \"$tag\") | .id" | head -1)
+if [ -z "$id" ]; then
+  echo "::error::No release for $tag"
+  exit 1
+fi
+
 # Freshly uploaded files can take a moment to get their digest.
 for attempt in 1 2 3 4 5 6; do
-  gh api "repos/$repo/releases/tags/$tag" --jq '.assets[] | select(.name != "SHA256SUMS.txt") | "\(.digest // "")  \(.name)"' > sums.raw
+  gh api "repos/$repo/releases/$id" --jq '.assets[] | select(.name != "SHA256SUMS.txt") | "\(.digest // "")  \(.name)"' > sums.raw
   if ! grep -q '^  ' sums.raw; then break; fi
   sleep 10
 done

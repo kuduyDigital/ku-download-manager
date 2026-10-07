@@ -4,7 +4,7 @@
  */
 export const WHATS_NEW: { version: string; items: string[] }[] = [
   {
-    version: "0.2.19",
+    version: "0.2.20",
     items: [
       "Video Downloader: one click uses the link you copied, and your recent videos are listed.",
       "Toolbar labels now fit any window and language; nothing is cut off at the right edge.",

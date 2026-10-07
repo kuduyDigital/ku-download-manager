@@ -31,7 +31,7 @@ import digital.kuduy.kudownloader.i18n.t
 
 /** What changed in each version (newest first), shown once after an update. */
 private val NOTES = listOf(
-    "0.2.19" to listOf(
+    "0.2.20" to listOf(
         "A fresh look: floating tab bar, bold titles, gradient icons and progress bars.",
         "Browser: pop-up ads and ad redirects are blocked; find in page, translate, text size, private tabs, save as PDF, add to Home screen and more in the menu.",
         "You stay signed in to websites after closing the app.",

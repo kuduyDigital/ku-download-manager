@@ -367,7 +367,7 @@ fun BrowserScreen() {
         }
     }
 
-    BrowserSignals.pill?.let { p -> PillSheet(p.page, p.src, p.title) { BrowserSignals.pill = null } }
+    BrowserSignals.pill?.let { p -> PillSheet(p.page, p.src, p.title, p.referer) { BrowserSignals.pill = null } }
     if (mediaOpen) MediaSheet(tab) { mediaOpen = false }
     if (tabsOpen) TabsSheet { tabsOpen = false }
     if (historyOpen) HistorySheet({ historyOpen = false }) { open(tab, it) }
@@ -972,14 +972,18 @@ private fun SiteTile(name: String, url: String, size: Int) {
 /** The KuDownload button was tapped on a video. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PillSheet(page: String, src: String?, title: String, onClose: () -> Unit) {
+/**
+ * [page] is the player's page (an embedded player's own address on movie
+ * sites); [referer] the site around it, which embed hosts check.
+ */
+private fun PillSheet(page: String, src: String?, title: String, referer: String, onClose: () -> Unit) {
     ModalBottomSheet(onDismissRequest = onClose) {
         Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 28.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(title.ifBlank { host(page) }, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
             FilledTonalButton(
                 {
                     onClose()
-                    UiState.quality = MediaPrefill(page, BrowserState.cookies(page), page, title)
+                    UiState.quality = MediaPrefill(page, BrowserState.cookies(page), referer, title)
                 },
                 Modifier.fillMaxWidth(),
             ) { Text(t("Choose quality")) }

@@ -80,7 +80,7 @@ private val IMAGE = Regex("""\.(png|jpe?g|gif|webp|svg|ico|bmp|avif)(?:$|[?#])""
 private val FONT = Regex("""\.(woff2?|ttf|otf|eot)(?:$|[?#])""", RegexOption.IGNORE_CASE)
 
 /** What a pill tap or a media entry hands to the browser screen. */
-data class PillPick(val page: String, val src: String?, val title: String)
+data class PillPick(val page: String, val src: String?, val title: String, val referer: String = page)
 
 /** Page-level state the browser screen reacts to. */
 object BrowserSignals {
@@ -98,13 +98,16 @@ object PageScript {
 
     fun get(ctx: Context): String = source ?: ctx.assets.open("browser/page.js").bufferedReader().use { it.readText() }.also { source = it }
 
+    /** The script with this tab's secret and the current settings filled in. */
+    fun source(ctx: Context, tab: Tab): String = get(ctx)
+        .replace("__KU_TOKEN__", tab.token)
+        .replace("__KU_PILL__", Prefs.pill.value.toString())
+        .replace("__KU_LABEL__", org.json.JSONObject.quote(t("Download")))
+        .replace("__KU_ACCENT__", digital.kuduy.kudownloader.ui.PageAccent.rgb)
+
     fun inject(view: WebView, tab: Tab) {
-        val js = get(view.context)
-            .replace("__KU_TOKEN__", tab.token)
-            .replace("__KU_PILL__", Prefs.pill.value.toString())
-            .replace("__KU_LABEL__", org.json.JSONObject.quote(t("Download")))
-            .replace("__KU_ACCENT__", digital.kuduy.kudownloader.ui.PageAccent.rgb)
-        view.evaluateJavascript(js, null)
+        // Already there when injected at document start (it guards itself).
+        view.evaluateJavascript(source(view.context, tab), null)
         val url = view.url
         if (Prefs.adblock.value && url != null && url != tab.cosmeticFor) {
             tab.cosmeticFor = url
@@ -380,10 +383,31 @@ class PageBridge(private val tab: Tab) {
     fun media(token: String, json: String) {
         if (!ok(token)) return
         val o = runCatching { Ku.json.parseToJsonElement(json).jsonObject }.getOrNull() ?: return
-        val src = o["src"]?.jsonPrimitive?.contentOrNull?.takeIf { it.startsWith("http") }
         val page = o["page"]?.jsonPrimitive?.contentOrNull ?: tab.url
-        val title = o["title"]?.jsonPrimitive?.contentOrNull ?: tab.title
-        ui { BrowserSignals.pill = PillPick(page, src, title) }
+        val inFrame = page != tab.url
+        ui {
+            // A blob: player has no file address: use the stream it loaded.
+            val src = o["src"]?.jsonPrimitive?.contentOrNull?.takeIf { it.startsWith("http") }
+                ?: tab.media.lastOrNull { it.kind == "m3u8" || it.kind == "mpd" }?.url
+            // An embedded player's own title is useless ("Player"): the page's.
+            val title = if (inFrame) tab.title else o["title"]?.jsonPrimitive?.contentOrNull ?: tab.title
+            // Embed hosts want the site that embeds them as referer.
+            BrowserSignals.pill = PillPick(page, src, title, referer = if (inFrame) tab.url else page)
+        }
+    }
+
+    /** A stream playlist a player fetched (seen by the page script in any frame). */
+    @JavascriptInterface
+    fun stream(token: String, url: String, frame: String) {
+        if (!ok(token) || !url.startsWith("http")) return
+        val kind = if (url.substringBefore('?').endsWith(".mpd", true) || url.contains("dash", true)) "mpd" else "m3u8"
+        val key = url.substringBefore('?')
+        ui {
+            if (tab.media.none { it.url.substringBefore('?') == key }) {
+                tab.media.add(FoundMedia(url, kind, if (frame.startsWith("http")) frame else tab.url, tab.title))
+                if (tab.media.size > 60) tab.media.removeAt(0)
+            }
+        }
     }
 
     @JavascriptInterface
@@ -407,6 +431,7 @@ class PageBridge(private val tab: Tab) {
     @JavascriptInterface
     fun video(token: String, present: Boolean) {
         if (!ok(token)) return
+        // Frames only ever report "yes" (page.js); the top page also says "no".
         ui { tab.hasVideo = present }
     }
 

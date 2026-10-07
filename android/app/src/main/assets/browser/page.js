@@ -17,6 +17,53 @@
   try {
     delete window.KuBridge;
   } catch (e) {}
+  // Runs in every frame, from the start of each document: movie and
+  // streaming sites play inside an embedded player (an iframe from another
+  // site). In frames only the video part runs.
+  var TOP = window === window.top;
+
+  // ───────── streams the player loads ─────────
+  // Players behind blob: URLs (HLS/DASH via MediaSource) fetch a playlist
+  // first. Its address is the downloadable one, so the app is told about it;
+  // recognised by type, not only by name ("/master", "/playlist?id=…").
+  var streams = {};
+  function sawStream(url, type) {
+    if (!url || typeof url !== "string" || url.indexOf("http") !== 0 || streams[url]) return;
+    if (!/mpegurl|dash\+xml/i.test(type || "") && !/\.(m3u8|mpd)(?:[?#]|$)/i.test(url)) return;
+    streams[url] = 1;
+    try {
+      bridge.stream(TOKEN, url, location.href);
+    } catch (e) {}
+  }
+  try {
+    var origFetch = window.fetch;
+    if (origFetch) {
+      window.fetch = function () {
+        var p = origFetch.apply(this, arguments);
+        p.then(function (r) {
+          try {
+            sawStream(r.url, r.headers.get("content-type"));
+          } catch (e) {}
+        }, function () {});
+        return p;
+      };
+    }
+    var xo = XMLHttpRequest.prototype.open;
+    var xs = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.open = function (m, u) {
+      this.__kuUrl = u;
+      return xo.apply(this, arguments);
+    };
+    XMLHttpRequest.prototype.send = function () {
+      var x = this;
+      x.addEventListener("load", function () {
+        try {
+          sawStream(x.responseURL || String(x.__kuUrl || ""), x.getResponseHeader("content-type"));
+        } catch (e) {}
+      });
+      return xs.apply(this, arguments);
+    };
+  } catch (e) {}
 
   // ───────── element hiding ─────────
   function style(id, css) {
@@ -156,6 +203,7 @@
   }
 
   function visible(v) {
+    if (!TOP && innerWidth * innerHeight < 200 * 112) return null;
     var r = v.getBoundingClientRect();
     if (r.width < 160 || r.height < 90) return null;
     if (r.bottom < 40 || r.top > innerHeight - 40 || r.right < 40 || r.left > innerWidth - 40) return null;
@@ -183,8 +231,9 @@
   function place() {
     timer = 0;
     var v = pick();
-    var has = !!v || document.getElementsByTagName("video").length > 0;
-    if (has !== reported) {
+    // In frames only a player-sized, visible video counts (not ad slots).
+    var has = TOP ? !!v || document.getElementsByTagName("video").length > 0 : !!v || null;
+    if (has !== reported && has !== null) {
       reported = has;
       try {
         bridge.video(TOKEN, has);
@@ -237,6 +286,10 @@
       idle(scanGeneric);
     }
   });
-  mo.observe(document.documentElement, { childList: true, subtree: true });
-  schedule();
+  function start() {
+    mo.observe(document.documentElement, { childList: true, subtree: true });
+    schedule();
+  }
+  if (document.documentElement) start();
+  else document.addEventListener("readystatechange", start, { once: true });
 })();

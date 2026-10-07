@@ -163,6 +163,11 @@ object BrowserState {
         // A page you are not looking at gives way first when memory runs low.
         if (Build.VERSION.SDK_INT >= 26) v.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_IMPORTANT, true)
         v.addJavascriptInterface(PageBridge(t), "KuBridge")
+        // The page script in every frame (embedded players included), before
+        // the page's own scripts. Older WebViews: main page only, after load.
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+            runCatching { androidx.webkit.WebViewCompat.addDocumentStartJavaScript(v, PageScript.source(ctx, t), setOf("*")) }
+        }
         v.webViewClient = KuWebClient(t)
         v.webChromeClient = KuChromeClient(t)
         v.setDownloadListener(KuDownloads(t))

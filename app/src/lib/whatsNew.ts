@@ -4,6 +4,16 @@
  */
 export const WHATS_NEW: { version: string; items: string[] }[] = [
   {
+    version: "0.2.19",
+    items: [
+      "Video Downloader: one click uses the link you copied, and your recent videos are listed.",
+      "Toolbar labels now fit any window and language; nothing is cut off at the right edge.",
+      "Download progress on the taskbar icon.",
+      "Help › Check for updates checks right away; the sidebar no longer highlights two items.",
+      "Releases are signed, and every release lists its SHA-256 checksums.",
+    ],
+  },
+  {
     version: "0.2.18",
     items: [
       "Videos load about twice as fast: YouTube formats in ~2.5 s instead of ~5 s.",

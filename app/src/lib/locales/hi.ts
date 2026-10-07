@@ -969,6 +969,11 @@ const hi: Record<string, string> = {
   "Website": "वेबसाइट",
   // Settings menu
   "All settings…": "सभी सेटिंग्स…",
+  // Toolbar, Video Downloader start
+  "Link Grabber": "लिंक ग्रैबर",
+  "Sort by {name}": "{name} के अनुसार क्रमबद्ध करें",
+  "Use the link you copied": "कॉपी किया लिंक इस्तेमाल करें",
+  "Recent videos": "हाल के वीडियो",
 };
 
 export default hi;

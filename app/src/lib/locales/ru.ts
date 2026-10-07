@@ -969,6 +969,11 @@ const ru: Record<string, string> = {
   "Website": "Сайт",
   // Settings menu
   "All settings…": "Все настройки…",
+  // Toolbar, Video Downloader start
+  "Link Grabber": "Сборщик ссылок",
+  "Sort by {name}": "Сортировать по: {name}",
+  "Use the link you copied": "Использовать скопированную ссылку",
+  "Recent videos": "Недавние видео",
 };
 
 export default ru;

@@ -393,7 +393,7 @@ export function Sidebar({ collapsed }: { collapsed: boolean; onToggle?: () => vo
               <Icon icon={icon} />
             </button>
           ))}
-          <button type="button" className="nav-item" title={t("Fetch Projects")} aria-current={view === "grabber" ? "page" : undefined} onClick={() => navigate("grabber")}>
+          <button type="button" className="nav-item" title={t("Link Grabber")} aria-current={view === "grabber" ? "page" : undefined} onClick={() => navigate("grabber")}>
             <Icon icon={Hand} />
           </button>
           <button type="button" className="nav-item" title={t("Video Downloader")} aria-current={view === "video" ? "page" : undefined} onClick={() => navigate("video")}>
@@ -425,7 +425,7 @@ export function Sidebar({ collapsed }: { collapsed: boolean; onToggle?: () => vo
           queues.map((q) => (
             <TreeItem key={q.id} depth={1} icon={ListOrdered} label={queueName(q) + (q.running ? ` · ${t("running")}` : "")} active={is({ scope: "queue", queueId: q.id })} onClick={() => showList({ scope: "queue", category: "", queueId: q.id })} />
           ))}
-        <TreeItem icon={Hand} label={t("Fetch Projects")} active={view === "grabber"} onClick={() => navigate("grabber")} />
+        <TreeItem icon={Hand} label={t("Link Grabber")} active={view === "grabber"} onClick={() => navigate("grabber")} />
         <TreeItem icon={Clapperboard} label={t("Video Downloader")} active={view === "video"} onClick={() => navigate("video")} />
         <TreeItem icon={ListPlus} label={t("Batch Downloads")} active={view === "batch"} onClick={() => navigate("batch")} />
         <TreeItem icon={Radar} label="KuAirSend" count={air.peers.length || undefined} active={view === "airsend"} onClick={() => navigate("airsend")} />

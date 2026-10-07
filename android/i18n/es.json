@@ -386,5 +386,9 @@
  "Documentation": "Documentación",
  "Report a problem…": "Informar de un problema…",
  "Website": "Sitio web",
- "All settings…": "Todos los ajustes…"
+ "All settings…": "Todos los ajustes…",
+ "Link Grabber": "Capturador de enlaces",
+ "Sort by {name}": "Ordenar por {name}",
+ "Use the link you copied": "Usar el enlace copiado",
+ "Recent videos": "Vídeos recientes"
 }

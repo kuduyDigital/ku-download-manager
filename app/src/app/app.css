@@ -791,3 +791,84 @@
 .power-banner .spacer {
   flex: 1;
 }
+
+/* Video Downloader start: the copied link and recent videos. */
+.clip-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  align-self: flex-start;
+  padding: 7px 12px;
+  border: 1px dashed var(--accent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--fg-primary);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+.clip-chip:hover {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+.clip-chip > svg {
+  color: var(--accent);
+  flex: none;
+}
+.clip-chip-url {
+  color: var(--fg-secondary);
+  min-width: 0;
+  max-width: 360px;
+}
+.recent-videos h3 {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--fg-secondary);
+  margin: var(--space-2) 0 var(--space-2);
+}
+.recent-videos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-2);
+}
+.recent-video {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--bg-raised);
+  color: var(--fg-primary);
+  text-align: left;
+  cursor: pointer;
+}
+.recent-video:hover {
+  background: var(--bg-hover);
+}
+.recent-video img,
+.recent-video-ph {
+  width: 72px;
+  height: 40px;
+  flex: none;
+  border-radius: 4px;
+  object-fit: cover;
+  background: var(--bg-active);
+  display: grid;
+  place-items: center;
+  color: var(--fg-secondary);
+}
+.recent-video-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: var(--text-sm);
+}
+.recent-video-status {
+  color: var(--fg-secondary);
+  font-size: var(--text-xs);
+}
+.recent-video-status.is-error {
+  color: var(--danger);
+}

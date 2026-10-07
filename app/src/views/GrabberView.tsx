@@ -112,7 +112,7 @@ export function GrabberView() {
   return (
     <div className="main">
       <div className="toolbar">
-        <span className="toolbar-title">{t("Fetch Projects")}</span>
+        <span className="toolbar-title">{t("Link Grabber")}</span>
       </div>
       <div className="page" style={{ display: "flex", flexDirection: "column" }}>
         <div className="page-inner wide" style={{ flex: 1, width: "100%" }}>

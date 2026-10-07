@@ -969,6 +969,11 @@ const zh: Record<string, string> = {
   "Website": "网站",
   // Settings menu
   "All settings…": "全部设置…",
+  // Toolbar, Video Downloader start
+  "Link Grabber": "链接抓取",
+  "Sort by {name}": "按{name}排序",
+  "Use the link you copied": "使用复制的链接",
+  "Recent videos": "最近的视频",
 };
 
 export default zh;

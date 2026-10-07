@@ -967,6 +967,11 @@ const bn: Record<string, string> = {
   "Website": "ওয়েবসাইট",
   // Settings menu
   "All settings…": "সব সেটিংস…",
+  // Toolbar, Video Downloader start
+  "Link Grabber": "লিংক গ্র্যাবার",
+  "Sort by {name}": "{name} অনুযায়ী সাজান",
+  "Use the link you copied": "কপি করা লিংকটি ব্যবহার করুন",
+  "Recent videos": "সাম্প্রতিক ভিডিও",
 };
 
 export default bn;

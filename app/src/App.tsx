@@ -4,6 +4,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react
 import { Power } from "lucide-react";
 import { AppContext, type AppApi, type ListFilter, type View } from "./app/context";
 import { invoke } from "@tauri-apps/api/core";
+import { getCurrentWindow, ProgressBarStatus } from "@tauri-apps/api/window";
 import { Sidebar, TitleBar } from "./app/Shell";
 import { DownloadsView, pasteLink } from "./app/downloads/DownloadsView";
 import { AddDownloadDialog } from "./app/AddDownloadDialog";
@@ -16,7 +17,7 @@ import { pendingNotes, WHATS_NEW } from "./lib/whatsNew";
 import { ToolDownloadsPanel } from "./app/MediaTools";
 import { AirSendPrompts } from "./app/airsend/AirSendPrompts";
 import { loadAir } from "./lib/airsend";
-import { applyEvent, getDownload, onCoreEvent, settingsStore, startStore } from "./lib/store";
+import { allDownloads, applyEvent, getDownload, onCoreEvent, settingsStore, startStore } from "./lib/store";
 import { api } from "./lib/api";
 import type { AddRequest, CoreEvent, GrabRequest, MediaRequest } from "./lib/types";
 import { Button, Checkbox, Icon } from "./ui/primitives";
@@ -166,6 +167,7 @@ export default function App() {
   }, []);
   useTheme(setMaterial);
   useUpdateCheck(settingsNow?.checkUpdates);
+  useTaskbarProgress();
 
   const navigate = useCallback((v: View) => {
     setView(v);
@@ -431,4 +433,41 @@ export default function App() {
       <ToastHost />
     </AppContext.Provider>
   );
+}
+
+/**
+ * Overall progress of running downloads on the taskbar / dock icon, like
+ * IDM: green while downloading, cleared when idle. Checked once a second and
+ * only sent when it changes.
+ */
+function useTaskbarProgress() {
+  useEffect(() => {
+    const win = getCurrentWindow();
+    let last = "";
+    const tick = () => {
+      let done = 0;
+      let total = 0;
+      let active = false;
+      for (const d of allDownloads()) {
+        if (d.status !== "downloading" && d.status !== "processing") continue;
+        active = true;
+        if (d.total > 0) {
+          done += Math.min(d.done, d.total);
+          total += d.total;
+        }
+      }
+      const key = !active ? "none" : total ? String(Math.floor((done / total) * 100)) : "busy";
+      if (key === last) return;
+      last = key;
+      const state =
+        key === "none" ? { status: ProgressBarStatus.None } : key === "busy" ? { status: ProgressBarStatus.Indeterminate } : { status: ProgressBarStatus.Normal, progress: +key };
+      void win.setProgressBar(state).catch(() => {});
+    };
+    tick();
+    const t = setInterval(tick, 1000);
+    return () => {
+      clearInterval(t);
+      void win.setProgressBar({ status: ProgressBarStatus.None }).catch(() => {});
+    };
+  }, []);
 }

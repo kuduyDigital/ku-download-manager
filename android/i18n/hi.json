@@ -386,5 +386,9 @@
  "Documentation": "दस्तावेज़",
  "Report a problem…": "समस्या की रिपोर्ट करें…",
  "Website": "वेबसाइट",
- "All settings…": "सभी सेटिंग्स…"
+ "All settings…": "सभी सेटिंग्स…",
+ "Link Grabber": "लिंक ग्रैबर",
+ "Sort by {name}": "{name} के अनुसार क्रमबद्ध करें",
+ "Use the link you copied": "कॉपी किया लिंक इस्तेमाल करें",
+ "Recent videos": "हाल के वीडियो"
 }

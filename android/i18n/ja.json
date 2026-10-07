@@ -386,5 +386,9 @@
  "Documentation": "ドキュメント",
  "Report a problem…": "問題を報告…",
  "Website": "ウェブサイト",
- "All settings…": "すべての設定…"
+ "All settings…": "すべての設定…",
+ "Link Grabber": "リンク収集",
+ "Sort by {name}": "{name}で並べ替え",
+ "Use the link you copied": "コピーしたリンクを使う",
+ "Recent videos": "最近の動画"
 }

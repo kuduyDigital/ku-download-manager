@@ -386,5 +386,9 @@
  "Documentation": "Документация",
  "Report a problem…": "Сообщить о проблеме…",
  "Website": "Сайт",
- "All settings…": "Все настройки…"
+ "All settings…": "Все настройки…",
+ "Link Grabber": "Сборщик ссылок",
+ "Sort by {name}": "Сортировать по: {name}",
+ "Use the link you copied": "Использовать скопированную ссылку",
+ "Recent videos": "Недавние видео"
 }

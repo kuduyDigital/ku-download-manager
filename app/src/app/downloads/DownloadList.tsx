@@ -146,13 +146,19 @@ const Row = memo(function Row({
   );
 });
 
-function HeaderCell({ label, k, sort, onSort }: { label: string; k?: SortKey; sort: SortState; onSort?: (s: SortState) => void }) {
+function HeaderCell({ label, k, sort, onSort, icon }: { label: string; k?: SortKey; sort: SortState; onSort?: (s: SortState) => void; icon?: typeof ChevronUp }) {
   if (!k || !onSort) return <div className="hcell">{t(label)}</div>;
   const on = sort.key === k;
   return (
     <div className="hcell">
-      <button type="button" onClick={() => onSort({ key: k, dir: on ? ((sort.dir * -1) as 1 | -1) : k === "name" ? 1 : -1 })} aria-sort={on ? (sort.dir === 1 ? "ascending" : "descending") : undefined}>
-        {t(label)}
+      <button
+        type="button"
+        title={icon ? tf("Sort by {name}", { name: t(label) }) : undefined}
+        aria-label={icon ? t(label) : undefined}
+        onClick={() => onSort({ key: k, dir: on ? ((sort.dir * -1) as 1 | -1) : k === "name" ? 1 : -1 })}
+        aria-sort={on ? (sort.dir === 1 ? "ascending" : "descending") : undefined}
+      >
+        {icon ? <Icon icon={icon} size={13} /> : t(label)}
         {on && <Icon icon={sort.dir === 1 ? ChevronUp : ChevronDown} size={12} />}
       </button>
     </div>
@@ -408,7 +414,7 @@ export function DownloadList({
           />
         </label>
         <HeaderCell label={t("File name")} k="name" sort={sort} onSort={onSort} />
-        <HeaderCell label="Q" k="queue" sort={sort} onSort={onSort} />
+        <HeaderCell label="Queue" icon={ListOrdered} k="queue" sort={sort} onSort={onSort} />
         <HeaderCell label={t("Size")} k="size" sort={sort} onSort={onSort} />
         <HeaderCell label={t("Status")} k="status" sort={sort} onSort={onSort} />
         <HeaderCell label={t("Time Left")} k="eta" sort={sort} onSort={onSort} />

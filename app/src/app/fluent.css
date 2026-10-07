@@ -339,26 +339,21 @@ body {
   right: 3px;
 }
 
-/* Progressive collapse: secondary labels first, then all. */
-@media (max-width: 1280px) {
-  .tb-btn.is-secondary .tb-label {
-    display: none;
-  }
-  .tb-btn.is-secondary .tb-main {
-    padding: 0 var(--space-2);
-  }
+/* Progressive collapse, set by DownloadsView when the labels don't fit
+   (measured, so it works for every language): secondary labels first,
+   then all of them. */
+.toolbar-card[data-collapse="1"] .tb-btn.is-secondary .tb-label,
+.toolbar-card[data-collapse="2"] .tb-btn .tb-label {
+  display: none;
 }
 
-@media (max-width: 1040px) {
-  .tb-btn .tb-label {
-    display: none;
-  }
-  .tb-btn .tb-main {
-    padding: 0 var(--space-2);
-  }
-  .tb-search {
-    width: 180px;
-  }
+.toolbar-card[data-collapse="1"] .tb-btn.is-secondary .tb-main,
+.toolbar-card[data-collapse="2"] .tb-btn .tb-main {
+  padding: 0 var(--space-2);
+}
+
+.toolbar-card[data-collapse="2"] .tb-search {
+  width: 180px;
 }
 
 /* ───────── Download list: IDM-style columns ───────── */

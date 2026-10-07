@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { t, tf } from "../../lib/i18n";
 import {
   Plus,
@@ -215,6 +215,31 @@ export function DownloadsView() {
   const [searching, setSearching] = useState(!!search);
   const searchRef = useRef<HTMLInputElement>(null);
   const queues = queuesStore.use();
+  // Toolbar labels: show as many as fit (see .toolbar-card[data-collapse]).
+  const barRef = useRef<HTMLDivElement>(null);
+  const fitBar = useCallback(() => {
+    const el = barRef.current;
+    if (!el) return;
+    for (const level of ["0", "1", "2"]) {
+      el.dataset.collapse = level;
+      if (el.scrollWidth <= el.clientWidth + 1) break;
+    }
+  }, []);
+  useLayoutEffect(() => {
+    const el = barRef.current;
+    if (!el) return;
+    // The observer covers the sidebar and details panel; the window event
+    // is a fallback for web views that skip observers while not painting.
+    const ro = new ResizeObserver(fitBar);
+    ro.observe(el);
+    window.addEventListener("resize", fitBar);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", fitBar);
+    };
+  }, [fitBar]);
+  // Content changes too (search box, language): cheap, three measurements.
+  useLayoutEffect(fitBar);
   useEffect(() => setSort(filter.scope === "queue" ? { key: "queue", dir: 1 } : { key: "added", dir: -1 }), [filter.scope]);
   useEffect(() => {
     if (searching) searchRef.current?.focus();
@@ -304,7 +329,7 @@ export function DownloadsView() {
 
   return (
     <div className="main main-fluent">
-      <div className="toolbar-card card">
+      <div ref={barRef} className="toolbar-card card">
         <TbButton icon={Plus} label={t("Add URL")} onClick={() => openAdd(filter.scope === "queue" ? { queueId: filter.queueId } : undefined)} title={t("Add URL (Ctrl N)")} />
         <span className="toolbar-sep" />
         <TbButton icon={Play} label={t("Resume")} disabled={!sel.some(canResume)} onClick={() => void run(api.resume([...selection]), "Could not resume")} title={t("Resume (Space)")} />
@@ -336,7 +361,7 @@ export function DownloadsView() {
         <TbButton icon={ListX} label={t("Stop Queue")} secondary menu={() => queueItems("stop")} />
         <span className="toolbar-sep" />
         <TbButton icon={CalendarClock} label={t("Scheduler")} secondary onClick={() => navigate("scheduled")} />
-        <TbButton icon={Hand} label={t("Fetch")} secondary onClick={() => navigate("grabber")} />
+        <TbButton icon={Hand} label={t("Link Grabber")} secondary onClick={() => navigate("grabber")} />
         <span className="spacer" />
         {searching ? (
           <div className="input-with-icon tb-search">

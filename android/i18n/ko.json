@@ -386,5 +386,9 @@
  "Documentation": "문서",
  "Report a problem…": "문제 신고…",
  "Website": "웹사이트",
- "All settings…": "모든 설정…"
+ "All settings…": "모든 설정…",
+ "Link Grabber": "링크 수집기",
+ "Sort by {name}": "{name}(으)로 정렬",
+ "Use the link you copied": "복사한 링크 사용",
+ "Recent videos": "최근 동영상"
 }

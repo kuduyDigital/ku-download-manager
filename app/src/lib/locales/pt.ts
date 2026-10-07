@@ -969,6 +969,11 @@ const pt: Record<string, string> = {
   "Website": "Site",
   // Settings menu
   "All settings…": "Todas as configurações…",
+  // Toolbar, Video Downloader start
+  "Link Grabber": "Coletor de links",
+  "Sort by {name}": "Ordenar por {name}",
+  "Use the link you copied": "Usar o link copiado",
+  "Recent videos": "Vídeos recentes",
 };
 
 export default pt;

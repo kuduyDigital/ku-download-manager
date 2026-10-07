@@ -969,6 +969,11 @@ const ar: Record<string, string> = {
   "Website": "الموقع",
   // Settings menu
   "All settings…": "كل الإعدادات…",
+  // Toolbar, Video Downloader start
+  "Link Grabber": "جامع الروابط",
+  "Sort by {name}": "ترتيب حسب {name}",
+  "Use the link you copied": "استخدم الرابط الذي نسخته",
+  "Recent videos": "الفيديوهات الأخيرة",
 };
 
 export default ar;

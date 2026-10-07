@@ -8,6 +8,7 @@ import { settingsStore, queuesStore, queueName } from "../lib/store";
 import * as fmt from "../lib/format";
 import type { EngineInfo, MediaInfo, MediaOptions } from "../lib/types";
 import { MediaToolsNotice } from "../app/MediaTools";
+import { VideoStart } from "../app/RecentVideos";
 import { Button, Checkbox, Icon, IconButton, Input, Notice, Radio, Segmented, Select } from "../ui/primitives";
 import { showMenuAt, toast } from "../ui/overlays";
 import { useApp } from "../app/context";
@@ -211,9 +212,20 @@ export function VideoDownloaderView() {
             </Notice>
           )}
           {!info && !loading && !error && (
-            <div className="faint" style={{ fontSize: "var(--text-sm)" }}>
-              {t("Works with YouTube, Vimeo, Dailymotion and many other sites supported by yt-dlp. DRM-protected media is not supported.")}
-            </div>
+            <>
+              <div className="faint" style={{ fontSize: "var(--text-sm)" }}>
+                {t("Works with YouTube, Vimeo, Dailymotion and many other sites supported by yt-dlp. DRM-protected media is not supported.")}
+              </div>
+              <VideoStart
+                current={url}
+                onPick={(u) => {
+                  setUrl(u);
+                  const pl = /[?&]list=/.test(u) && !/[?&]v=/.test(u);
+                  setPlaylist(pl);
+                  void analyze(u, pl);
+                }}
+              />
+            </>
           )}
 
           {info && (

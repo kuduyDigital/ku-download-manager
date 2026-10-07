@@ -969,6 +969,11 @@ const ko: Record<string, string> = {
   "Website": "웹사이트",
   // Settings menu
   "All settings…": "모든 설정…",
+  // Toolbar, Video Downloader start
+  "Link Grabber": "링크 수집기",
+  "Sort by {name}": "{name}(으)로 정렬",
+  "Use the link you copied": "복사한 링크 사용",
+  "Recent videos": "최근 동영상",
 };
 
 export default ko;

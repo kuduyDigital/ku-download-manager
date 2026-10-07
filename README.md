@@ -1,61 +1,127 @@
+<div align="center">
+
+<img src="app/src-tauri/icons/128x128@2x.png" width="104" alt="KuDownloader logo">
+
 # KuDownloader
 
-A lightweight download manager for **Windows, macOS and Linux**: a Rust core
-with its own adaptive HTTP engine (KuHTTP), aria2 for torrents/FTP, yt-dlp for
-media, a compact Tauri UI and a browser extension that hands downloads and
-videos to the app. Free and open source.
+**The fast, free download manager for Windows, macOS, Linux and Android.**
+Files, videos from 1,000+ sites, torrents, and transfers between your own devices, all in one app.
 
-**[Download](https://github.com/kuduyDigital/ku-download-manager/releases/latest)** ·
-**[Project page](https://kuduydigital.github.io/ku-download-manager/)**
+[![Latest release](https://img.shields.io/github/v/release/kuduyDigital/ku-download-manager?label=release&color=2563eb)](https://github.com/kuduyDigital/ku-download-manager/releases/latest) [![Downloads](https://img.shields.io/github/downloads/kuduyDigital/ku-download-manager/total?color=16a34a)](https://github.com/kuduyDigital/ku-download-manager/releases) [![Firefox add-on](https://img.shields.io/amo/v/kudownloader?label=firefox%20add-on&color=ff7139)](https://addons.mozilla.org/firefox/addon/kudownloader/) [![License: MIT](https://img.shields.io/badge/license-MIT-64748b)](LICENSE) ![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Android-0f172a)
 
-![KuDownloader](docs/screenshots/main-dark.png)
+**[Download](https://github.com/kuduyDigital/ku-download-manager/releases/latest)** · **[Website](https://kuduydigital.github.io/ku-download-manager/)** · **[Documentation](https://kuduydigital.github.io/ku-download-manager/docs.html)** · **[Firefox add-on](https://addons.mozilla.org/firefox/addon/kudownloader/)**
 
-| Download File window (browser downloads) | Progress window |
-|---|---|
-| ![Download File](docs/screenshots/download-popup.png) | ![Progress](docs/screenshots/progress-window.png) |
+<br>
+
+<img src="docs/readme/desktop-tour.gif" width="900" alt="KuDownloader on the desktop: live downloads, menus, the details panel, the video downloader and KuAirSend">
+
+</div>
+
+## Why KuDownloader
+
+- **Fast.** KuHTTP, its own adaptive engine, splits each file across many connections and rebalances them as they finish, so downloads use your full bandwidth.
+- **Never starts over.** Pause, close the app, reboot or lose the network: downloads pick up where they stopped, and every resumed file is checked.
+- **Videos and music from 1,000+ sites** in the quality you choose (up to 4K, MP3/M4A audio, playlists, subtitles), powered by yt-dlp.
+- **Catches browser downloads.** The extension hands files and videos to KuDownloader, with a **KuDownload** button on video players.
+- **Torrents and magnets**, plus FTP, SFTP and Metalink.
+- **KuAirSend** moves files, folders, text and links between your computers and phones over your own Wi-Fi: encrypted, no cloud, no size limit.
+- **Private by design.** No ads, no accounts, no tracking. Everything stays on your devices.
+
+## Features
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+### Downloads
+- Multi-connection engine with live segment map
+- Queues, schedules and speed profiles
+- Sleep, shut down or quit when done
+- Duplicate detection, checksum verification
+- Cloud links resolved to the real file (Google Drive, Dropbox, SourceForge, GitHub)
+- Link Grabber: download every file linked on a page
+- Batch downloads and numbered patterns
+- Optional virus scan of finished files
+
+</td>
+<td width="50%" valign="top">
+
+### Video and music
+- 1,000+ sites: YouTube, Instagram, TikTok, X, Facebook, Vimeo…
+- Pick the quality before downloading, or audio only
+- Whole playlists and channels
+- Subtitles and thumbnails embedded
+- Copy a video's title or caption in one click
+- Short, clean file names, even for long non-Latin titles
+- DRM-protected media is detected and refused
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+### Browser integration
+- Extension for Firefox ([Add-ons](https://addons.mozilla.org/firefox/addon/kudownloader/)), Chrome, Edge, Brave, Opera, Vivaldi
+- Always-on-top **Download File** window for caught downloads
+- **KuDownload** button on video players (iframes and fullscreen too)
+- Right-click: download a link, or all links on a page
+
+</td>
+<td valign="top">
+
+### Made to feel at home
+- Native title bar on Windows, macOS, GNOME, KDE and tiling desktops
+- Light and dark, accent colours, palettes from OLED black to Cyberpunk and the anime themes Sakura and Sora
+- 12 languages, including Arabic (right to left)
+- Progress on the taskbar icon, tray mode, desktop notifications
+
+</td>
+</tr>
+</table>
+
+<div align="center">
+<img src="docs/readme/desktop-themes.gif" width="900" alt="Themes: dark, light, Sakura, Sora, Midnight and Cyberpunk">
+</div>
+
+## KuDownloader for Android
+
+The same engine on your phone, with a fast built-in browser:
+
+- **Download any video you're watching:** tap the button on the page, pick a quality. Press and hold it to stream in your video player or send the video to your PC.
+- **Ad and pop-up blocking:** pop-under tabs and ad redirects are stopped.
+- **Browser tools:** private tabs, find in page, translate, text size, data saver, save as PDF, add to Home screen.
+- **Background downloads** with Wi-Fi-only and battery-saver options.
+- **KuAirSend** to and from your computers.
+
+<div align="center">
+<img src="docs/readme/android-screens.png" width="900" alt="KuDownloader for Android: downloads, browser, more menu and KuAirSend">
+<br><br>
+<img src="docs/readme/android-tour.gif" width="300" alt="A tour of KuDownloader for Android">
+</div>
 
 ## Download
 
 | System | Package |
 |---|---|
-| Windows 10/11 x64 | `KuDownloader_<v>_x64-setup.exe` (per-user, no admin) |
-| macOS 11+ (beta) | `KuDownloader_<v>_aarch64.dmg` (Apple Silicon), `KuDownloader_<v>_x64.dmg` (Intel) |
-| Debian / Ubuntu (beta) | `KuDownloader_<v>_amd64.deb`, `…_arm64.deb` |
-| Fedora / openSUSE (beta) | `KuDownloader-<v>-1.x86_64.rpm`, `…aarch64.rpm` |
-| Arch (beta) | `kudownloader-<v>-1-x86_64.pkg.tar.zst` (`pacman -U`) |
-| Android 7+ | `KuDownloader_<v>_android-arm64-v8a.apk` (most phones), `…armeabi-v7a.apk`, `…x86_64.apk`, `…universal.apk` |
+| **Windows** 10/11 x64 | `KuDownloader_<v>_x64-setup.exe` (per-user, no admin needed) |
+| **macOS** 11+ *(beta)* | `KuDownloader_<v>_aarch64.dmg` (Apple silicon), `KuDownloader_<v>_x64.dmg` (Intel) |
+| **Debian / Ubuntu** *(beta)* | `KuDownloader_<v>_amd64.deb`, `…_arm64.deb` |
+| **Fedora / openSUSE** *(beta)* | `KuDownloader-<v>-1.x86_64.rpm`, `…aarch64.rpm` |
+| **Arch** *(beta)* | `kudownloader-<v>-1-x86_64.pkg.tar.zst` (`pacman -U`) |
+| **Android** 7+ | `KuDownloader_<v>_android-arm64-v8a.apk` (most phones), `…armeabi-v7a.apk`, `…x86_64.apk`, `…universal.apk` |
 
-Unsigned builds: on Windows SmartScreen may ask for “More info → Run anyway”;
-on macOS right-click the app → **Open** the first time. yt-dlp and FFmpeg are
-downloaded on demand from their official releases (SHA-256 verified); aria2 is
-bundled on Windows and used from the system (`apt/dnf/pacman/brew install
-aria2`) elsewhere — plain HTTP(S) works without it.
+All from the [latest release](https://github.com/kuduyDigital/ku-download-manager/releases/latest). Installed copies update themselves.
 
-## Features
+**First launch:**
+- **Windows:** SmartScreen may ask once; choose **More info → Run anyway**.
+- **macOS:** right-click the app and choose **Open**.
+- **Android:** allow installing from your browser or file manager.
 
-* **KuHTTP** adaptive multi-connection engine (default), resume after crash or
-  reboot, aria2 for FTP/SFTP/BitTorrent/magnet/Metalink.
-* **Browser takeover** with an IDM-style always-on-top *Download File* window,
-  a **KuDownload** button on videos on any site (iframes, fullscreen, YouTube
-  previews), right-click “Download all links”.
-* **Progress window** per download with speed, time left and a live
-  connection/segment map; **duplicate detection**; **Download again**.
-* Google Drive / Dropbox / SourceForge / GitHub links and landing pages are
-  resolved to the real file.
-* Queues, schedules, speed profiles, shut down/sleep when done, and
-  **synchronization** queues that re-download files changed on the server.
-* Video/audio downloads via yt-dlp (qualities, playlists, subtitles), cookies
-  from the extension, a cookies.txt file or a browser's store.
-* **KuAirSend**: send files, folders, text and links between KuDownloader on
-  your computers over your own Wi-Fi or network, at full speed, encrypted, no
-  cloud. Nearby devices show up as 8-bit animals; a received link downloads in
-  one click. Off until you switch it on.
-* Optional **virus scan** of finished files (Microsoft Defender or any scanner).
-* Native title bar per platform: Windows, macOS traffic lights, GNOME, KDE,
-  Cinnamon, XFCE, MATE, and tiling compositors (niri, Hyprland, Sway, i3).
-* Light/dark, 8 accent colours, graphite/midnight/OLED dark palettes, English
-  and 11 more languages (including Arabic, right to left); responsive down to
-  the minimum window size.
+yt-dlp and FFmpeg install themselves from their official releases, checked against the published checksums. aria2 comes with the Windows installer and as a dependency of the Linux packages.
+
+**Verifying a download:** every release is signed and lists the SHA-256 of each file in `SHA256SUMS.txt`. See [SIGNING.md](SIGNING.md) for what is signed with what and how to check it.
+
+## How it works
 
 ```
 Browser ── KuDownloader extension ── Native Messaging ── ku-native-host
@@ -163,8 +229,9 @@ Optional repository secrets (each feature switches on when its secrets exist):
 |---|---|
 | `TAURI_SIGNING_PRIVATE_KEY` (+ `_PASSWORD`) | auto-update: signed updater artifacts and `latest.json` (key in `.secrets/updater.key`) |
 | `KU_EXTENSION_KEY` | `kudmx.crx` in the installers (PEM of `.secrets/extension-key.pem`) |
-| `WINDOWS_CERTIFICATE` (base64 .pfx) + `WINDOWS_CERTIFICATE_PASSWORD` | Authenticode-signed Windows installer (no SmartScreen warning) |
-| `APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY`, `APPLE_ID`, `APPLE_PASSWORD`, `APPLE_TEAM_ID` | signed and notarized macOS app |
+| `WINDOWS_CERTIFICATE` (base64 .pfx) + `WINDOWS_CERTIFICATE_PASSWORD` | Authenticode-signed Windows installer and app (self-signed today; see [SIGNING.md](SIGNING.md)) |
+| `APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY`, `APPLE_ID`, `APPLE_PASSWORD`, `APPLE_TEAM_ID` | Developer ID–signed and notarized macOS app (without them the app is signed ad hoc) |
+| `KU_ANDROID_KEYSTORE_B64`, `KU_ANDROID_KEYSTORE_PASSWORD`, `KU_ANDROID_KEY_ALIAS`, `KU_ANDROID_KEY_PASSWORD` | Android APKs signed with the permanent release key |
 | `AMO_JWT_ISSUER` + `AMO_JWT_SECRET` | Mozilla-signed `kudmx.signed.xpi` attached to each release (permanent Firefox install) |
 | `CWS_EXTENSION_ID`, `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`, `CWS_REFRESH_TOKEN` | Chrome Web Store upload + publish on each release |
 
@@ -204,3 +271,5 @@ engine). Details and results: [`docs/kuhttp.md`](docs/kuhttp.md).
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+<div align="center"><sub>Made by <a href="https://kuduy.com/">Kuduy</a></sub></div>

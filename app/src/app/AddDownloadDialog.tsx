@@ -1,15 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { t, tf } from "../lib/i18n";
 import { open } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
-import { Folder, ChevronDown, ChevronRight, CircleAlert, Clapperboard, Globe, FileUp, File as FileIcon, ArrowDownToLine } from "lucide-react";
+import { Folder, ChevronDown, ChevronRight, CircleAlert, Clapperboard, Globe, FileUp, File as FileIcon, ArrowDownToLine, HardDrive } from "lucide-react";
 import { api, errorText } from "../lib/api";
 import { settingsStore, queuesStore, updateSettings } from "../lib/store";
 import * as fmt from "../lib/format";
 import type { AddRequest, ProbeInfo, Settings, TorrentInfo } from "../lib/types";
 import { Button, Checkbox, Icon, IconButton, Input, Notice, Select } from "../ui/primitives";
 import { Dialog, toast } from "../ui/overlays";
-import { CATEGORY_ICON } from "./downloads/FileGlyph";
+import { CATEGORY_ICON, glyphColor } from "./downloads/FileGlyph";
 import { DuplicateNotice } from "./DuplicateNotice";
 import { useApp } from "./context";
 
@@ -232,6 +232,15 @@ export function AddDownloadDialog({ prefill, onClose }: { prefill?: Partial<AddR
     await submit(later ? (prefill?.queueId ?? queues[0]?.id ?? "main") : (prefill?.queueId ?? null), true);
   };
   const CatIcon = CATEGORY_ICON[category || probe?.category || ""] ?? FileIcon;
+  const glyph = glyphColor({ kind: media ? "media" : torrent ? "torrent" : "http", category: category || probe?.category || "" });
+  const size = probe?.size || prefill?.sizeHint || 0;
+  // Free space where it will be saved, checked a moment after the folder changes.
+  const [free, setFree] = useState<number | null>(null);
+  useEffect(() => {
+    const t = setTimeout(() => void api.freeSpace(dir).then(setFree).catch(() => setFree(null)), 250);
+    return () => clearTimeout(t);
+  }, [dir]);
+  const tooBig = free != null && size > 0 && size > free;
   const multi = batch || text.includes("\n");
   const title = torrent ? "Add torrent" : batch ? `Download ${validLines.length} files` : "Download File";
 
@@ -263,7 +272,7 @@ export function AddDownloadDialog({ prefill, onClose }: { prefill?: Partial<AddR
     >
       {single && !torrent && (
         <div className="dl-hero">
-          <span className="dl-hero-glyph">
+          <span className="dl-hero-glyph" style={{ "--glyph": glyph } as CSSProperties}>
             <Icon icon={media ? Clapperboard : CatIcon} size={22} />
           </span>
           <div className="dl-hero-id">
@@ -406,6 +415,12 @@ export function AddDownloadDialog({ prefill, onClose }: { prefill?: Partial<AddR
               />
               <IconButton icon={Folder} label={t("Choose folder")} onClick={() => void browse()} />
             </div>
+            {free != null && (
+              <span className="dl-free" data-low={tooBig || undefined}>
+                <Icon icon={HardDrive} size={12} />
+                {tooBig ? tf("Not enough space: needs {size}, {free} free", { size: fmt.bytes(size), free: fmt.bytes(free) }) : tf("{free} free on this drive", { free: fmt.bytes(free) })}
+              </span>
+            )}
             {!media && (
               <Checkbox checked={remember} disabled={!category} onChange={setRemember}>
                 <span className="muted" style={{ fontSize: "var(--text-xs)" }}>

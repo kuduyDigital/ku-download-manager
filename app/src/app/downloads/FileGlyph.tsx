@@ -14,6 +14,24 @@ export const CATEGORY_ICON: Record<string, LucideIcon> = {
   torrents: Magnet,
 };
 
+/** A colour per kind of file, for the gradient icon tiles (same as on Android). */
+export function glyphColor(d: Pick<Download, "kind" | "category">): string {
+  if (d.kind === "torrent" || d.kind === "magnet") return "#16A34A";
+  if (d.kind === "media") return d.category === "music" ? "#7C3AED" : "#DB2777";
+  return (
+    {
+      video: "#DB2777",
+      music: "#7C3AED",
+      archives: "#EA580C",
+      "images-disk": "#0D9488",
+      programs: "#52525B",
+      documents: "#2563EB",
+      images: "#0891B2",
+      torrents: "#16A34A",
+    } as Record<string, string>
+  )[d.category] ?? "#64748B";
+}
+
 export function glyphFor(d: Pick<Download, "kind" | "category">): LucideIcon {
   if (d.kind === "torrent" || d.kind === "magnet") return Magnet;
   if (d.kind === "media") return d.category === "music" ? FileAudio : Clapperboard;

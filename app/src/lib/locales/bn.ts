@@ -975,6 +975,15 @@ const bn: Record<string, string> = {
   // Check for updates
   "You have the latest version.": "আপনার কাছে সর্বশেষ সংস্করণ আছে।",
   "Could not check for updates": "আপডেট খোঁজা যায়নি",
+  // Progress and Download File windows
+  "Close (the download continues)": "বন্ধ করুন (ডাউনলোড চলবে)",
+  "When done:": "শেষ হলে:",
+  "Open the file": "ফাইলটি খুলুন",
+  "Close this window": "এই উইন্ডো বন্ধ করুন",
+  "Speed limit for this download": "এই ডাউনলোডের গতিসীমা",
+  "{n} connections": "{n}টি সংযোগ",
+  "{free} free on this drive": "এই ড্রাইভে {free} খালি",
+  "Not enough space: needs {size}, {free} free": "জায়গা যথেষ্ট নয়: দরকার {size}, খালি {free}",
 };
 
 export default bn;

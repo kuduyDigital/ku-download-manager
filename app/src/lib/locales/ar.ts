@@ -977,6 +977,15 @@ const ar: Record<string, string> = {
   // Check for updates
   "You have the latest version.": "لديك أحدث إصدار.",
   "Could not check for updates": "تعذّر التحقق من التحديثات",
+  // Progress and Download File windows
+  "Close (the download continues)": "إغلاق (يستمر التنزيل)",
+  "When done:": "عند الانتهاء:",
+  "Open the file": "فتح الملف",
+  "Close this window": "إغلاق هذه النافذة",
+  "Speed limit for this download": "حد السرعة لهذا التنزيل",
+  "{n} connections": "{n} اتصالات",
+  "{free} free on this drive": "{free} متاحة على هذا القرص",
+  "Not enough space: needs {size}, {free} free": "مساحة غير كافية: يحتاج {size}، المتاح {free}",
 };
 
 export default ar;

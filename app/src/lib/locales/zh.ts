@@ -977,6 +977,15 @@ const zh: Record<string, string> = {
   // Check for updates
   "You have the latest version.": "已是最新版本。",
   "Could not check for updates": "无法检查更新",
+  // Progress and Download File windows
+  "Close (the download continues)": "关闭（下载继续）",
+  "When done:": "完成后：",
+  "Open the file": "打开文件",
+  "Close this window": "关闭此窗口",
+  "Speed limit for this download": "此下载的速度限制",
+  "{n} connections": "{n} 个连接",
+  "{free} free on this drive": "此磁盘可用 {free}",
+  "Not enough space: needs {size}, {free} free": "空间不足：需要 {size}，可用 {free}",
 };
 
 export default zh;

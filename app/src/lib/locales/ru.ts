@@ -977,6 +977,15 @@ const ru: Record<string, string> = {
   // Check for updates
   "You have the latest version.": "У вас последняя версия.",
   "Could not check for updates": "Не удалось проверить обновления",
+  // Progress and Download File windows
+  "Close (the download continues)": "Закрыть (загрузка продолжится)",
+  "When done:": "По завершении:",
+  "Open the file": "Открыть файл",
+  "Close this window": "Закрыть это окно",
+  "Speed limit for this download": "Ограничение скорости для этой загрузки",
+  "{n} connections": "Подключений: {n}",
+  "{free} free on this drive": "Свободно на диске: {free}",
+  "Not enough space: needs {size}, {free} free": "Недостаточно места: нужно {size}, свободно {free}",
 };
 
 export default ru;

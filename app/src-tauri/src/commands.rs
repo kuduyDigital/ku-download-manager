@@ -84,6 +84,7 @@ pub fn handler() -> impl Fn(tauri::ipc::Invoke) -> bool + Send + Sync + 'static 
         grab_page,
         extension_dirs,
         reveal_path,
+        free_space,
         open_help,
         set_window_theme,
         detect_browsers,
@@ -681,6 +682,15 @@ fn open_help(app: AppHandle, page: String) -> R<()> {
         _ => return Err("Unknown page".into()),
     };
     app.opener().open_url(url, None::<&str>).map_err(e)
+}
+
+/// Free bytes on the drive that holds `path` (the nearest existing folder).
+#[tauri::command]
+fn free_space(path: String) -> Option<u64> {
+    if path.trim().is_empty() {
+        return None;
+    }
+    kucore::kuhttp::storage::available_space(std::path::Path::new(path.trim()))
 }
 
 /// Open a folder in the file manager (folders only).

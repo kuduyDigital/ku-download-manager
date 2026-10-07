@@ -134,7 +134,8 @@
 :root[data-theme="dark"] .input,
 :root[data-theme="dark"] .select,
 :root[data-theme="dark"] .textarea {
-  background: var(--bg-sunken);
+  /* Colour only: the shorthand also cleared the select's arrow image. */
+  background-color: var(--bg-sunken);
 }
 
 .input::placeholder,

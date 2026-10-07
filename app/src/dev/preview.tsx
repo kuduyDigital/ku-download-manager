@@ -262,6 +262,8 @@ mockIPC(
           return "installed";
         })();
       }
+      case "free_space":
+        return 112 * 1024 * 1024 * 1024;
       case "read_clipboard":
         return "https://www.youtube.com/watch?v=aqz-KE-bpKQ";
       case "tool_jobs":

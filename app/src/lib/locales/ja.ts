@@ -977,6 +977,15 @@ const ja: Record<string, string> = {
   // Check for updates
   "You have the latest version.": "最新バージョンです。",
   "Could not check for updates": "アップデートを確認できませんでした",
+  // Progress and Download File windows
+  "Close (the download continues)": "閉じる（ダウンロードは続行）",
+  "When done:": "完了したら：",
+  "Open the file": "ファイルを開く",
+  "Close this window": "このウィンドウを閉じる",
+  "Speed limit for this download": "このダウンロードの速度制限",
+  "{n} connections": "{n} 接続",
+  "{free} free on this drive": "このドライブの空き {free}",
+  "Not enough space: needs {size}, {free} free": "空き容量不足：{size} 必要、空き {free}",
 };
 
 export default ja;

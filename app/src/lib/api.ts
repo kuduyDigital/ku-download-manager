@@ -50,6 +50,7 @@ export const api = {
   hostRegister: () => invoke<T.HostStatus>("native_host_register"),
   hostUnregister: () => invoke<T.HostStatus>("native_host_unregister"),
   readClipboard: () => invoke<string | null>("read_clipboard"),
+  freeSpace: (path: string) => invoke<number | null>("free_space", { path }),
   stats: () => invoke<unknown>("stats"),
   checkUpdate: () => invoke<T.UpdateInfo | null>("check_update"),
   installUpdate: () => invoke<void>("install_update"),

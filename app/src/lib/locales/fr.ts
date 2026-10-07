@@ -977,6 +977,15 @@ const fr: Record<string, string> = {
   // Check for updates
   "You have the latest version.": "Vous avez la dernière version.",
   "Could not check for updates": "Impossible de vérifier les mises à jour",
+  // Progress and Download File windows
+  "Close (the download continues)": "Fermer (le téléchargement continue)",
+  "When done:": "À la fin :",
+  "Open the file": "Ouvrir le fichier",
+  "Close this window": "Fermer cette fenêtre",
+  "Speed limit for this download": "Limite de vitesse de ce téléchargement",
+  "{n} connections": "{n} connexions",
+  "{free} free on this drive": "{free} libres sur ce disque",
+  "Not enough space: needs {size}, {free} free": "Pas assez de place : {size} nécessaires, {free} libres",
 };
 
 export default fr;

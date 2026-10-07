@@ -977,6 +977,15 @@ const hi: Record<string, string> = {
   // Check for updates
   "You have the latest version.": "आपके पास नवीनतम संस्करण है।",
   "Could not check for updates": "अपडेट की जाँच नहीं हो सकी",
+  // Progress and Download File windows
+  "Close (the download continues)": "बंद करें (डाउनलोड चलता रहेगा)",
+  "When done:": "पूरा होने पर:",
+  "Open the file": "फ़ाइल खोलें",
+  "Close this window": "यह विंडो बंद करें",
+  "Speed limit for this download": "इस डाउनलोड की गति सीमा",
+  "{n} connections": "{n} कनेक्शन",
+  "{free} free on this drive": "इस ड्राइव पर {free} खाली",
+  "Not enough space: needs {size}, {free} free": "पर्याप्त जगह नहीं: {size} चाहिए, {free} खाली",
 };
 
 export default hi;

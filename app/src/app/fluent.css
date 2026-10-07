@@ -535,14 +535,28 @@ body {
   min-width: 0;
 }
 .dl-hero-glyph {
+  --glyph: var(--accent);
   flex: none;
   display: grid;
   place-items: center;
   width: 48px;
   height: 48px;
-  border-radius: 12px;
-  color: var(--accent-fg);
-  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border-radius: 14px;
+  color: #fff;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--glyph) 72%, #fff), var(--glyph) 55%, color-mix(in srgb, var(--glyph) 82%, #000));
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--glyph) 30%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+/* Free space under Save As; red when the file won't fit. */
+.dl-free {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--text-xs);
+  color: var(--fg-secondary);
+}
+.dl-free[data-low] {
+  color: var(--danger);
+  font-weight: var(--weight-medium);
 }
 .dl-hero-id {
   flex: 1;
@@ -928,28 +942,28 @@ body {
   gap: var(--space-3);
   min-width: 0;
 }
+/* File-type tile: a small gradient in the file's colour, like an app icon. */
 .pw-glyph {
+  --glyph: var(--accent);
   flex: none;
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  color: var(--accent-fg);
-  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  color: #fff;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--glyph) 72%, #fff), var(--glyph) 55%, color-mix(in srgb, var(--glyph) 82%, #000));
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--glyph) 30%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 .pw-glyph[data-state="completed"] {
-  color: var(--success);
-  background: color-mix(in srgb, var(--success) 16%, transparent);
+  --glyph: var(--success);
 }
 .pw-glyph[data-state="error"] {
-  color: var(--danger);
-  background: color-mix(in srgb, var(--danger) 16%, transparent);
+  --glyph: var(--danger);
 }
 .pw-glyph[data-state="paused"],
 .pw-glyph[data-state="queued"] {
-  color: var(--fg-secondary);
-  background: var(--bg-hover);
+  filter: saturate(0.35);
 }
 .pw-id {
   flex: 1;
@@ -1106,9 +1120,146 @@ body {
 }
 .pw-actions {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
   gap: var(--space-2);
-  padding: 0 var(--space-4) var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--line);
+  background: var(--bg-raised);
+}
+.pw-actions .spacer {
+  flex: 1;
+}
+
+/* Name over two lines at most; host · size · resume badge under it. */
+.pw-name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  line-height: 1.3;
+  word-break: break-word;
+}
+.pw-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: var(--text-xs);
+}
+.pw-meta > .num::before {
+  content: "·";
+  margin-right: 8px;
+  opacity: 0.6;
+}
+.pw-chip {
+  flex: none;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: var(--weight-medium);
+  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 14%, transparent);
+}
+.pw-chip[data-ok="true"] {
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 14%, transparent);
+}
+
+/* A thicker bar with a sheen sweeping along while data arrives. */
+.pw-bar .progress {
+  height: 10px;
+  border-radius: 5px;
+}
+.pw-bar .progress > span {
+  overflow: hidden;
+  border-radius: 5px;
+}
+.pw-bar[data-state="downloading"] .progress > span {
+  background: linear-gradient(90deg, var(--progress), color-mix(in srgb, var(--progress) 70%, #fff));
+}
+.pw-bar[data-state="downloading"] .progress > span::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: translateX(-100%);
+  animation: pw-sheen 1.6s ease-in-out infinite;
+}
+@keyframes pw-sheen {
+  to {
+    transform: translateX(100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pw-bar .progress > span::after {
+    animation: none !important;
+    display: none;
+  }
+}
+.pw-conn-count {
+  margin-left: auto;
+  flex: none;
+  font-size: var(--text-xs);
+  color: var(--fg-tertiary, var(--fg-secondary));
+}
+
+/* Speed card: the figure over a faint line of the last minute. */
+.pw-stat-speed {
+  position: relative;
+}
+.pw-spark {
+  position: absolute;
+  inset: auto 0 0 0;
+  width: 100%;
+  height: 26px;
+  pointer-events: none;
+}
+.pw-spark .area {
+  fill: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.pw-spark .line {
+  fill: none;
+  stroke: color-mix(in srgb, var(--accent) 70%, transparent);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+.pw-stats > div > * {
+  position: relative;
+}
+.pw-path {
+  font-weight: var(--weight-medium) !important;
+}
+
+/* When done: … · speed limit */
+.pw-options {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+}
+.pw-options .spacer {
+  flex: 1;
+}
+.pw-limit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--fg-secondary);
+}
+.pw-limit .select {
+  height: 28px;
+  min-width: 112px;
+  font-size: var(--text-sm);
+}
+.pw-error {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  color: var(--danger);
+  background: var(--danger-soft);
 }
 .pw-actions .btn {
   height: 32px;

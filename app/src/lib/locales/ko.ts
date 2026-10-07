@@ -977,6 +977,15 @@ const ko: Record<string, string> = {
   // Check for updates
   "You have the latest version.": "최신 버전입니다.",
   "Could not check for updates": "업데이트를 확인할 수 없습니다",
+  // Progress and Download File windows
+  "Close (the download continues)": "닫기 (다운로드는 계속됨)",
+  "When done:": "완료되면:",
+  "Open the file": "파일 열기",
+  "Close this window": "이 창 닫기",
+  "Speed limit for this download": "이 다운로드의 속도 제한",
+  "{n} connections": "연결 {n}개",
+  "{free} free on this drive": "이 드라이브 여유 공간 {free}",
+  "Not enough space: needs {size}, {free} free": "공간 부족: {size} 필요, 여유 {free}",
 };
 
 export default ko;

@@ -974,6 +974,9 @@ const ru: Record<string, string> = {
   "Sort by {name}": "Сортировать по: {name}",
   "Use the link you copied": "Использовать скопированную ссылку",
   "Recent videos": "Недавние видео",
+  // Check for updates
+  "You have the latest version.": "У вас последняя версия.",
+  "Could not check for updates": "Не удалось проверить обновления",
 };
 
 export default ru;

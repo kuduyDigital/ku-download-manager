@@ -974,6 +974,9 @@ const ar: Record<string, string> = {
   "Sort by {name}": "ترتيب حسب {name}",
   "Use the link you copied": "استخدم الرابط الذي نسخته",
   "Recent videos": "الفيديوهات الأخيرة",
+  // Check for updates
+  "You have the latest version.": "لديك أحدث إصدار.",
+  "Could not check for updates": "تعذّر التحقق من التحديثات",
 };
 
 export default ar;

@@ -974,6 +974,9 @@ const hi: Record<string, string> = {
   "Sort by {name}": "{name} के अनुसार क्रमबद्ध करें",
   "Use the link you copied": "कॉपी किया लिंक इस्तेमाल करें",
   "Recent videos": "हाल के वीडियो",
+  // Check for updates
+  "You have the latest version.": "आपके पास नवीनतम संस्करण है।",
+  "Could not check for updates": "अपडेट की जाँच नहीं हो सकी",
 };
 
 export default hi;

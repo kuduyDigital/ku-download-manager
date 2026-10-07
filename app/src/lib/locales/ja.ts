@@ -974,6 +974,9 @@ const ja: Record<string, string> = {
   "Sort by {name}": "{name}で並べ替え",
   "Use the link you copied": "コピーしたリンクを使う",
   "Recent videos": "最近の動画",
+  // Check for updates
+  "You have the latest version.": "最新バージョンです。",
+  "Could not check for updates": "アップデートを確認できませんでした",
 };
 
 export default ja;

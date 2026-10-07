@@ -974,6 +974,9 @@ const zh: Record<string, string> = {
   "Sort by {name}": "按{name}排序",
   "Use the link you copied": "使用复制的链接",
   "Recent videos": "最近的视频",
+  // Check for updates
+  "You have the latest version.": "已是最新版本。",
+  "Could not check for updates": "无法检查更新",
 };
 
 export default zh;

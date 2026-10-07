@@ -18,8 +18,8 @@ import { ToolDownloadsPanel } from "./app/MediaTools";
 import { AirSendPrompts } from "./app/airsend/AirSendPrompts";
 import { loadAir } from "./lib/airsend";
 import { allDownloads, applyEvent, getDownload, onCoreEvent, settingsStore, startStore } from "./lib/store";
-import { api } from "./lib/api";
-import type { AddRequest, CoreEvent, GrabRequest, MediaRequest } from "./lib/types";
+import { api, errorText } from "./lib/api";
+import type { AddRequest, CoreEvent, GrabRequest, MediaRequest, UpdateInfo } from "./lib/types";
 import { Button, Checkbox, Icon } from "./ui/primitives";
 import { ConfirmDialog, MenuHost, ToastHost, toast } from "./ui/overlays";
 import { run } from "./app/downloads/actions";
@@ -64,28 +64,50 @@ function useTheme(setMaterial: (m: string) => void) {
 }
 
 /** Once per launch, shortly after startup: a toast when a newer release exists. */
+function offerUpdate(info: UpdateInfo) {
+  toast({
+    level: "info",
+    title: tf("KuDownloader {version} is available", { version: info.version }),
+    message: tf("You have {version}.", { version: info.currentVersion }),
+    timeout: 0,
+    actions: [
+      {
+        label: info.signed ? t("Install and restart") : t("Download"),
+        primary: true,
+        onClick: () => void api.installUpdate().catch((e) => toast({ level: "error", title: t("Update failed"), message: String(e) })),
+      },
+    ],
+  });
+}
+
 function useUpdateCheck(enabled: boolean | undefined) {
   useEffect(() => {
     if (!enabled) return;
     const timer = setTimeout(async () => {
       const info = await api.checkUpdate().catch(() => null);
-      if (!info) return;
-      toast({
-        level: "info",
-        title: tf("KuDownloader {version} is available", { version: info.version }),
-        message: tf("You have {version}.", { version: info.currentVersion }),
-        timeout: 0,
-        actions: [
-          {
-            label: info.signed ? "Install and restart" : "Download",
-            primary: true,
-            onClick: () => void api.installUpdate().catch((e) => toast({ level: "error", title: t("Update failed"), message: String(e) })),
-          },
-        ],
-      });
+      if (info) offerUpdate(info);
     }, 8000);
     return () => clearTimeout(timer);
   }, [enabled]);
+  // Help › Check for updates: now, and say so when there is nothing new.
+  useEffect(() => {
+    let busy = false;
+    const check = async () => {
+      if (busy) return;
+      busy = true;
+      try {
+        const info = await api.checkUpdate();
+        if (info) offerUpdate(info);
+        else toast({ level: "success", title: t("You have the latest version.") });
+      } catch (e) {
+        toast({ level: "error", title: t("Could not check for updates"), message: errorText(e) });
+      } finally {
+        busy = false;
+      }
+    };
+    window.addEventListener("ku:checkupdate", check);
+    return () => window.removeEventListener("ku:checkupdate", check);
+  }, []);
 }
 
 function PowerBanner({ action, seconds, onDone }: { action: string; seconds: number; onDone: () => void }) {

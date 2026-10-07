@@ -974,6 +974,9 @@ const pt: Record<string, string> = {
   "Sort by {name}": "Ordenar por {name}",
   "Use the link you copied": "Usar o link copiado",
   "Recent videos": "Vídeos recentes",
+  // Check for updates
+  "You have the latest version.": "Você tem a versão mais recente.",
+  "Could not check for updates": "Não foi possível verificar atualizações",
 };
 
 export default pt;

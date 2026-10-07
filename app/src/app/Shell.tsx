@@ -233,7 +233,7 @@ export function TitleBar() {
       { label: t("Browser integration setup"), onSelect: () => app.navigate("browser") },
       "sep",
       { label: t("What's new"), onSelect: () => window.dispatchEvent(new Event("ku:whatsnew")) },
-      { label: t("Check for updates…"), onSelect: () => window.dispatchEvent(new Event("ku:about")) },
+      { label: t("Check for updates…"), onSelect: () => window.dispatchEvent(new Event("ku:checkupdate")) },
       { label: t("Report a problem…"), onSelect: () => help("issue") },
       { label: t("Website"), onSelect: () => help("website") },
       "sep",

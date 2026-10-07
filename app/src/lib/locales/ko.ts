@@ -974,6 +974,9 @@ const ko: Record<string, string> = {
   "Sort by {name}": "{name}(으)로 정렬",
   "Use the link you copied": "복사한 링크 사용",
   "Recent videos": "최근 동영상",
+  // Check for updates
+  "You have the latest version.": "최신 버전입니다.",
+  "Could not check for updates": "업데이트를 확인할 수 없습니다",
 };
 
 export default ko;

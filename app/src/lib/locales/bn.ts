@@ -972,6 +972,9 @@ const bn: Record<string, string> = {
   "Sort by {name}": "{name} অনুযায়ী সাজান",
   "Use the link you copied": "কপি করা লিংকটি ব্যবহার করুন",
   "Recent videos": "সাম্প্রতিক ভিডিও",
+  // Check for updates
+  "You have the latest version.": "আপনার কাছে সর্বশেষ সংস্করণ আছে।",
+  "Could not check for updates": "আপডেট খোঁজা যায়নি",
 };
 
 export default bn;

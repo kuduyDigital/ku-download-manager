@@ -4,6 +4,10 @@
  */
 export const WHATS_NEW: { version: string; items: string[] }[] = [
   {
+    version: "0.2.25",
+    items: ["A new look for KuDownloader: a fresh logo for the app, the tray, the browser extension and the website."],
+  },
+  {
     version: "0.2.24",
     items: [
       "Compact progress and Download File windows: long names fit on one line, and the facts read at a glance.",

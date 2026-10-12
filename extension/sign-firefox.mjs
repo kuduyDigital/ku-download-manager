@@ -10,8 +10,19 @@
 // (dist/kudmx.signed.xpi, installs permanently in one click). A version number
 // can only be used once across both channels.
 import { execFileSync } from "node:child_process";
-import { existsSync, readdirSync, renameSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+
+/** This version's lines from app/src/lib/whatsNew.ts, plus a link to the full notes. */
+function releaseNotes() {
+  const version = JSON.parse(readFileSync(join(import.meta.dirname, "dist", "firefox", "manifest.json"), "utf8")).version;
+  const src = readFileSync(join(import.meta.dirname, "..", "app", "src", "lib", "whatsNew.ts"), "utf8");
+  const at = src.indexOf(`version: "${version}"`);
+  const block = at < 0 ? "" : src.slice(at, src.indexOf("]", at));
+  const items = [...block.matchAll(/"((?:[^"\\]|\\.)*)"/g)].slice(1).map((m) => JSON.parse(`"${m[1]}"`));
+  const link = `https://github.com/kuduyDigital/ku-download-manager/releases/tag/v${version}`;
+  return [...items.map((i) => `• ${i}`), "", `Works with KuDownloader ${version}. All changes: ${link}`].join("\n").trim();
+}
 
 const { AMO_JWT_ISSUER, AMO_JWT_SECRET } = process.env;
 const channel = process.env.KU_AMO_CHANNEL === "unlisted" ? "unlisted" : "listed";
@@ -21,7 +32,15 @@ if (!AMO_JWT_ISSUER || !AMO_JWT_SECRET) {
 }
 const out = join(import.meta.dirname, "dist", "signed");
 const args = ["--yes", "web-ext", "sign", "--source-dir", "dist/firefox", "--channel", channel, "--artifacts-dir", out, "--api-key", AMO_JWT_ISSUER, "--api-secret", AMO_JWT_SECRET];
-if (channel === "listed") args.push("--approval-timeout", "0");
+if (channel === "listed") {
+  args.push("--approval-timeout", "0");
+  // Release notes on the store, from the app's own "What's new" list.
+  const notes = releaseNotes();
+  const meta = join(import.meta.dirname, "dist", "amo-metadata.json");
+  writeFileSync(meta, JSON.stringify({ version: { release_notes: { "en-US": notes } } }, null, 2));
+  args.push("--amo-metadata", meta);
+  console.log(`Release notes:\n${notes}\n`);
+}
 execFileSync("npx", args, { stdio: "inherit", shell: true, cwd: import.meta.dirname });
 if (channel === "listed") {
   console.log("Submitted to Firefox Add-ons; Firefox updates store installs once Mozilla approves it.");

@@ -1,0 +1,33 @@
+name: Firefox Add-ons
+
+# Sends the extension (the version in extension/manifest.base.json) to
+# addons.mozilla.org on demand; releases do the same in ci.yml. Needs the
+# AMO_JWT_ISSUER and AMO_JWT_SECRET repository secrets.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    env:
+      AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+      AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Check the credentials
+        run: |
+          if [ -z "$AMO_JWT_ISSUER" ] || [ -z "$AMO_JWT_SECRET" ]; then
+            echo "::error::Add the AMO_JWT_ISSUER and AMO_JWT_SECRET repository secrets first."
+            exit 1
+          fi
+      - name: Build
+        working-directory: extension
+        run: node build.mjs
+      - name: Submit to Firefox Add-ons
+        working-directory: extension
+        run: npm install --no-save web-ext@8 && node sign-firefox.mjs

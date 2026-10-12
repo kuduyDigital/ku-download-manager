@@ -31,6 +31,9 @@ import digital.kuduy.kudownloader.i18n.t
 
 /** What changed in each version (newest first), shown once after an update. */
 private val NOTES = listOf(
+    "0.2.26" to listOf(
+        "The new logo in notifications, the quick-settings tile and themed icons too.",
+    ),
     "0.2.25" to listOf(
         "A fresh new logo.",
     ),

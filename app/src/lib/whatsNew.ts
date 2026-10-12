@@ -4,6 +4,13 @@
  */
 export const WHATS_NEW: { version: string; items: string[] }[] = [
   {
+    version: "0.2.26",
+    items: [
+      "The browser extension updates itself after KuDownloader updates (Chrome, Edge, Brave…), new icons included.",
+      "The extension is also a download on GitHub, for browsers that can't get it from a store.",
+    ],
+  },
+  {
     version: "0.2.25",
     items: ["A new look for KuDownloader: a fresh logo for the app, the tray, the browser extension and the website."],
   },

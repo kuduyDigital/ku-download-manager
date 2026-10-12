@@ -61,7 +61,7 @@ Files, videos from 1,000+ sites, torrents, and transfers between your own device
 <td valign="top">
 
 ### Browser integration
-- Extension for Firefox ([Add-ons](https://addons.mozilla.org/firefox/addon/kudownloader/)), Chrome, Edge, Brave, Opera, Vivaldi
+- Extension for Firefox ([Add-ons](https://addons.mozilla.org/firefox/addon/kudownloader/)), Chrome, Edge, Brave, Opera, Vivaldi: installed from the app, or by hand from `KuDownloader_<v>_browser-extension.zip` on the [releases page](https://github.com/kuduyDigital/ku-download-manager/releases/latest) (unzip, then *Load unpacked*)
 - Always-on-top **Download File** window for caught downloads
 - **KuDownload** button on video players (iframes and fullscreen too)
 - Right-click: download a link, or all links on a page
@@ -109,6 +109,7 @@ The same engine on your phone, with a fast built-in browser:
 | **Fedora / openSUSE** *(beta)* | `KuDownloader-<v>-1.x86_64.rpm`, `…aarch64.rpm` |
 | **Arch** *(beta)* | `kudownloader-<v>-1-x86_64.pkg.tar.zst` (`pacman -U`) |
 | **Android** 7+ | `KuDownloader_<v>_android-arm64-v8a.apk` (most phones), `…armeabi-v7a.apk`, `…x86_64.apk`, `…universal.apk` |
+| **Browser extension** | [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/kudownloader/); Chromium browsers: `KuDownloader_<v>_browser-extension.zip` (unzip, *Load unpacked*) |
 
 All from the [latest release](https://github.com/kuduyDigital/ku-download-manager/releases/latest). Installed copies update themselves.
 

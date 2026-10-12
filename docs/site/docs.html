@@ -116,6 +116,14 @@
           <li>Follow the steps shown: turn on <b>Developer mode</b>, choose <b>Load unpacked</b> and paste the folder path KuDownloader copied for you.</li>
           <li>Restart the browser. Start any download: the <b>Download File</b> window of KuDownloader opens.</li>
         </ol>
+        <h3>Install it yourself</h3>
+        <p>Every release also has the extension as a download, for any Chromium browser, including ones KuDownloader doesn't list:</p>
+        <ol>
+          <li>Download <code>KuDownloader_x.y.z_browser-extension.zip</code> from the <a href="https://github.com/kuduyDigital/ku-download-manager/releases/latest">latest release</a> and unzip it into a folder you keep (the browser loads it from there).</li>
+          <li>Open the browser's extensions page (<code>chrome://extensions</code>, <code>edge://extensions</code>, <code>brave://extensions</code>…) and turn on <b>Developer mode</b>.</li>
+          <li>Click <b>Load unpacked</b> and choose the folder.</li>
+        </ol>
+        <p class="note">Chrome may remind you about extensions in developer mode now and then: it says that about every extension that isn't from its store. The extension only talks to KuDownloader on your computer.</p>
         <p class="note">To let the browser keep its downloads for a while, pause the take-over from the extension's pop-up, or turn it off for a single site.</p>
       </section>
 
@@ -124,10 +132,10 @@
         <ol>
           <li>Copy a link and click <b>Add URL</b>. KuDownloader notices copied links and offers to download them too.</li>
           <li>Check the name, size and folder in the <b>Download File</b> window, then click <b>Download Now</b>.</li>
-          <li>A small progress window shows the speed, time left and each connection. <b>Hide</b> it any time; the download keeps going.</li>
+          <li>A small progress window shows the speed, time left and each connection. Close it any time; the download keeps going.</li>
         </ol>
         <p>Every file is split across several connections, and the number is tuned while it runs. If the network drops or the computer restarts, KuDownloader continues where it stopped. When a link expires, select the download, open the details panel (<kbd>Ctrl</kbd>+<kbd>I</kbd>) and use <b>Refresh download link</b> with a fresh address from the site.</p>
-        <p>For many files at once use <b>Tasks › Batch download</b> (a list or a numbered pattern like <code>file_[001-120].jpg</code>), or <b>Fetch Projects</b> to collect every file linked from a page.</p>
+        <p>For many files at once use <b>Tasks › Batch download</b> (a list or a numbered pattern like <code>file_[001-120].jpg</code>), or <b>Link Grabber</b> to collect every file linked from a page.</p>
       </section>
 
       <section id="queues">

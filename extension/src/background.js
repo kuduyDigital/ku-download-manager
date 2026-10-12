@@ -215,7 +215,44 @@ api.runtime.onInstalled.addListener(() => {
 api.runtime.onStartup?.addListener(() => {
   createMenus();
   void loadConfig(true);
+  void reloadIfAppUpdated();
 });
+
+/** "0.2.25" > "0.2.9" */
+function newer(a, b) {
+  const pa = String(a).split(".").map(Number);
+  const pb = String(b).split(".").map(Number);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    if ((pa[i] || 0) !== (pb[i] || 0)) return (pa[i] || 0) > (pb[i] || 0);
+  }
+  return false;
+}
+
+/**
+ * Loaded unpacked from KuDownloader's folder (Chrome, Edge, Brave…), the
+ * browser keeps running the copy it first read, old icons included, even
+ * after KuDownloader updates that folder. When KuDownloader is newer than this
+ * copy, reload once from disk. Store installs (Firefox Add-ons) update
+ * themselves and are left alone; once per app version, so it can't loop.
+ */
+async function reloadIfAppUpdated() {
+  try {
+    const self = await api.management?.getSelf?.();
+    if (self?.installType !== "development") return;
+    const { host } = await native("ping");
+    const mine = api.runtime.getManifest().version;
+    if (!host || !newer(host, mine)) return;
+    const { reloadedFor } = await api.storage.local.get("reloadedFor");
+    if (reloadedFor === host) return;
+    await api.storage.local.set({ reloadedFor: host });
+    api.runtime.reload();
+  } catch {
+    // Not connected to KuDownloader yet: nothing to compare.
+  }
+}
+// The service worker also starts without a browser restart (KuDownloader
+// updated while the browser stayed open); a cheap check each time.
+void reloadIfAppUpdated();
 
 function isMediaPage(url) {
   return /(youtube\.com\/(watch|shorts|playlist)|youtu\.be\/|vimeo\.com\/\d|dailymotion\.com\/video)/i.test(url);

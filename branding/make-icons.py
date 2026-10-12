@@ -71,6 +71,31 @@ def save(im: Image.Image, path: Path, size: int | None = None) -> None:
     print(path.relative_to(ROOT), f"{size or im.width}px")
 
 
+def silhouette(drawing: Image.Image) -> Image.Image:
+    """One-colour version for Android's notification, tile and themed icons:
+    the bright parts (arrow, drive) as the shape, the black lines as gaps."""
+    lum = drawing.convert("L").filter(ImageFilter.GaussianBlur(6))
+    shape = lum.point(lambda v: 255 if v > 105 else 0)
+    solid = drawing.getchannel("A").point(lambda v: 255 if v > 128 else 0)
+    shape = ImageChops.multiply(shape, solid).filter(ImageFilter.MedianFilter(9))
+    out = Image.new("RGBA", shape.size, (255, 255, 255, 255))
+    out.putalpha(shape)
+    return out
+
+
+def android_small(drawing: Image.Image) -> None:
+    mono = silhouette(drawing)
+    # Notification and quick-settings tile: 24 dp at every density.
+    for folder, px in (("mdpi", 24), ("hdpi", 36), ("xhdpi", 48), ("xxhdpi", 72), ("xxxhdpi", 96)):
+        save(mono, RES / f"drawable-{folder}/ic_notification.png", px)
+        save(mono, RES / f"drawable-{folder}/ic_tile.png", px)
+    # Themed launcher icon (Android 13+): the silhouette inside the safe zone.
+    layer = Image.new("RGBA", (432, 432), (0, 0, 0, 0))
+    small = mono.resize((230, 230), Image.LANCZOS)
+    layer.alpha_composite(small, ((432 - 230) // 2, (432 - 230) // 2))
+    save(layer, RES / "drawable-nodpi/ic_launcher_mono.png")
+
+
 def android(logo: Image.Image) -> None:
     tile = square(inner(logo))
     # Adaptive icon (API 26+): blue background layer + the tile as foreground
@@ -101,6 +126,7 @@ def main() -> None:
     save(square(logo), ROOT / "app/src/assets/logo.png", 256)
     tray = visible(Image.open(TRAY_SRC).convert("RGBA")) if TRAY_SRC.exists() else cutout(logo)
     tray = square(tray)
+    android_small(tray)
     save(tray.filter(ImageFilter.UnsharpMask(1, 60, 2)), ROOT / "app/src-tauri/icons/tray.png", 64)
     # Browser extension.
     for s in (16, 32, 48, 128):

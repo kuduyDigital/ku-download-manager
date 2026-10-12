@@ -243,8 +243,33 @@ jobs:
 
   # SHA256SUMS.txt for every file of the release (the Android workflow
   # refreshes it after attaching the APKs).
+  # The extension as a download, for browsers that can't get it from a store:
+  # unzip and "Load unpacked" (Chrome, Edge, Brave, Opera, Vivaldi). Built from
+  # the folder with the manifest key, so its ID is the one KuDownloader trusts.
+  extension-download:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Build
+        working-directory: extension
+        run: node build.mjs
+      - name: Attach to the release
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          f="KuDownloader_${v}_browser-extension.zip"
+          grep -q '"key"' extension/dist/chrome/manifest.json || { echo "::error::manifest key missing"; exit 1; }
+          (cd extension/dist/chrome && zip -qr "../../../$f" .)
+          gh release upload "$GITHUB_REF_NAME" "$f" --clobber --repo "$GITHUB_REPOSITORY"
+
   checksums:
-    needs: [update-feed, linux-extras]
+    needs: [update-feed, linux-extras, extension-download]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -277,12 +302,12 @@ jobs:
       - name: Build
         working-directory: extension
         run: node build.mjs && node pack.mjs
-      - name: Firefox — Mozilla-signed kudmx.xpi (unlisted, self-distributed)
+      - name: Firefox Add-ons — submit this version (the store updates installs once approved)
         if: env.AMO_JWT_ISSUER != ''
         working-directory: extension
         run: npm install --no-save web-ext@8 && node sign-firefox.mjs
-      - name: Attach the signed add-on to the draft release
-        if: env.AMO_JWT_ISSUER != ''
+      - name: Attach a self-distributed signed add-on (KU_AMO_CHANNEL=unlisted only)
+        if: env.AMO_JWT_ISSUER != '' && hashFiles('extension/dist/kudmx.signed.xpi') != ''
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release upload "${{ github.ref_name }}" extension/dist/kudmx.signed.xpi --clobber --repo "${{ github.repository }}" || echo "release not created yet; the signed xpi is in the job artifacts"

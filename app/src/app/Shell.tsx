@@ -32,6 +32,7 @@ import { CATEGORY_ICON } from "./downloads/FileGlyph";
 import { invoke } from "@tauri-apps/api/core";
 import { pasteLink, pickTorrent } from "./downloads/DownloadsView";
 import { useAir } from "../lib/airsend";
+import logoUrl from "../assets/logo.png";
 
 
 export interface PlatformInfo {
@@ -101,14 +102,7 @@ function WindowControls({ buttons }: { buttons: string[] }) {
 }
 
 export function LogoMark({ size }: { size: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 1024 1024" aria-hidden="true">
-      <rect x="64" y="64" width="896" height="896" rx="208" fill="#2563EB" />
-      <path d="M512 248v396" stroke="#fff" strokeWidth="88" strokeLinecap="round" />
-      <path d="M340 480l172 172 172-172" fill="none" stroke="#fff" strokeWidth="88" strokeLinecap="round" strokeLinejoin="round" />
-      <rect x="308" y="728" width="408" height="72" rx="36" fill="#D4FF00" />
-    </svg>
-  );
+  return <img className="logo-mark" src={logoUrl} width={size} height={size} alt="" draggable={false} />;
 }
 
 const MENU_ORDER = ["File", "View", "Downloads", "Tasks", "Settings", "Help"];

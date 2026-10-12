@@ -31,6 +31,9 @@ import digital.kuduy.kudownloader.i18n.t
 
 /** What changed in each version (newest first), shown once after an update. */
 private val NOTES = listOf(
+    "0.2.25" to listOf(
+        "A fresh new logo.",
+    ),
     "0.2.21" to listOf(
         "Download videos on movie and streaming sites: the Download button now appears on embedded players too.",
         "Safari-style browser: the address bar sits at the bottom and shrinks while you scroll.",

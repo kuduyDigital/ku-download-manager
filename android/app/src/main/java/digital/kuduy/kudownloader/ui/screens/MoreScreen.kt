@@ -108,9 +108,7 @@ fun AboutScreen() {
     }
     KuScaffold(t("About KuDownloader"), back = true) { pad ->
         Column(Modifier.fillMaxSize().padding(pad).verticalScroll(rememberScrollState()).padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            androidx.compose.foundation.layout.Box(Modifier.size(88.dp).clip(RoundedCornerShape(22.dp)).background(androidx.compose.ui.graphics.Color(0xFF2563EB))) {
-                androidx.compose.foundation.Image(painterResource(R.drawable.ic_launcher_foreground), null, Modifier.size(88.dp))
-            }
+            androidx.compose.foundation.Image(painterResource(R.drawable.logo), null, Modifier.size(96.dp))
             Text("KuDownloader", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
             Text("${t("Version")} ${BuildConfig.VERSION_NAME}", color = MaterialTheme.colorScheme.onSurfaceVariant)
             val u = update
